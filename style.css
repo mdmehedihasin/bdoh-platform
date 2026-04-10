@@ -992,3 +992,61 @@ body::before {
     height: 400px !important; /* Gives the torch room to float */
   }
 }
+@media (max-width: 768px) {
+  /* --- Global Reset for Header --- */
+  .nav-links, .desktop-only { 
+    display: none !important; /* Hide desktop links so they don't squish the logo */
+  }
+
+  /* --- Container & Hero --- */
+  .container { padding: 0 15px; }
+  
+  .hero { 
+    padding: 60px 15px 30px; 
+    text-align: center; /* Center everything for a cleaner mobile look */
+  }
+
+  .hero-h1 {
+    font-size: clamp(32px, 8vw, 42px); /* Smaller range so it doesn't break words */
+    line-height: 1.1;
+  }
+
+  .hero-h2 {
+    font-size: 22px; /* Fixed size is often safer on mobile than clamp */
+    margin-top: 10px;
+  }
+
+  /* --- Buttons Fix --- */
+  .hero-btns {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px; /* Keeps buttons from becoming giant rectangles */
+    margin: 0 auto 30px;
+    gap: 12px;
+  }
+  
+  .hero-btns .btn { 
+    width: 100%; /* Full width within that 300px box */
+    justify-content: center;
+  }
+
+  /* --- The Stats Strip (2x2 Grid) --- */
+  .stats-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px; /* Creates a nice thin divider line if background is different */
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+  }
+
+  /* --- Grids --- */
+  .feat-grid, .cat-grid, .prob-grid, .team-grid {
+    grid-template-columns: 1fr !important;
+    padding: 0 10px;
+  }
+
+  /* --- The Torch (Hero Visual) --- */
+  .hero-visual {
+    margin-top: 20px;
+    order: -1; /* Puts the torch ABOVE the text on mobile for better branding */
+  }
+}
