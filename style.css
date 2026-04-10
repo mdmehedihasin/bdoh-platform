@@ -949,9 +949,14 @@ body::before {
 }
 
 /* ================================================================
-   BDOH — Premium Mobile Fixes
+   BDOH — Final Masterpiece Mobile Fixes
    This CSS is designed to be appended to the existing style.css
    or included as a separate stylesheet after style.css.
+
+   NOTE: Due to HTML structure, placing the torch *between* the H2
+   and the subsequent paragraph/buttons/stats with pure CSS is not
+   directly possible. This CSS provides the closest visual order:
+   (Eyebrow, H1, H2) -> Torch -> (Subtext, Buttons, Stats).
 ================================================================ */
 
 @media (max-width: 1200px) {
@@ -972,67 +977,93 @@ body::before {
     padding: clamp(50px, 8vw, 80px) 0; /* Adjusted section padding */
   }
 
-  /* --- Homepage Layout: Text -> Torch -> Stats --- */
+  /* --- Homepage Layout: Text -> Torch -> Subtext -> Buttons -> Stats --- */
   .hero-inner {
-    grid-template-columns: 1fr !important; /* Force single column layout */
-    flex-direction: column !important; /* Ensure stacking for flexbox fallback */
+    display: flex !important; /* Make hero-inner a flex container */
+    flex-direction: column !important; /* Stack its children vertically */
+    align-items: center; /* Center align items within hero-inner */
     text-align: center; /* Center align text content */
     padding-top: 40px; /* Add some top padding */
-    gap: clamp(30px, 5vw, 50px) !important; /* Adjust gap between stacked elements */
+    gap: 0; /* Reset gap to control spacing more precisely with margins */
   }
 
   .hero-text {
-    order: 1; /* Ensure text comes first */
+    order: 1; /* Ensure hero-text block comes first */
+    display: flex; /* Make hero-text itself a flex container */
+    flex-direction: column; /* Stack its children vertically */
+    align-items: center; /* Center align items within hero-text */
     width: 100%;
   }
 
   .hero-visual {
-    order: 2; /* Torch comes after text */
+    order: 2; /* Torch comes after the hero-text block */
     width: 100%;
-    margin-top: 30px; /* Space between text and torch */
+    margin-top: 30px; /* Space between hero-text and torch */
+    margin-bottom: 30px; /* Space after torch */
     display: flex !important; /* Ensure it's visible */
     justify-content: center;
   }
 
-  .torch-stage {
-    width: clamp(280px, 70vw, 400px) !important; /* Responsive width for torch */
-    height: clamp(350px, 80vw, 500px) !important; /* Responsive height for torch */
-    margin: 0 auto; /* Center the torch stage */
+  /* Re-ordering and styling *within* .hero-text */
+  .hero-eyebrow {
+    order: 1; /* Eyebrow first within hero-text */
+    margin-bottom: 15px; /* Space below eyebrow */
+  }
+
+  .hero-h1 {
+    order: 2; /* IGNITING MINDS second */
+    font-size: clamp(60px, 15vw, 90px) !important; /* Significantly larger main title */
+    letter-spacing: 0px; /* Adjust letter spacing for better readability */
+    line-height: 0.9; /* Tighter line height */
+    margin-bottom: 5px !important;
+  }
+
+  .hero-h2 {
+    order: 3; /* FORGING CHAMPIONS third */
+    font-size: clamp(36px, 8vw, 50px) !important; /* Significantly larger subtitle */
+    margin-bottom: 25px !important; /* Space before subtext */
+    line-height: 1; /* Consistent line height */
+  }
+
+  .hero-sub {
+    order: 4; /* Subtext after titles */
+    font-size: 16px; /* Consistent body text size */
+    max-width: 90%; /* Better readability */
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px !important; /* Space before buttons */
+  }
+
+  .hero-btns {
+    order: 5; /* Buttons after subtext */
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 12px;
+    margin-bottom: 40px !important; /* Space before stats */
+    width: 100%; /* Ensure buttons take full width */
+  }
+
+  .hero-btns .btn-primary, .hero-btns .btn-ghost {
+    width: 80%; /* Make buttons a bit narrower than full width */
+    max-width: 300px; /* Max width for buttons */
+    margin: 0 auto; /* Center buttons */
   }
 
   .hero-stats {
-    order: 3; /* Stats come after torch */
+    order: 6; /* Stats come last in the hero-text block */
     flex-direction: column; /* Stack stats vertically */
-    gap: 18px; /* Adjust gap between stats */
+    gap: 20px; /* Adjust gap between stats */
     width: 100%;
-    margin-top: 30px; /* Space between torch and stats */
+    margin-top: 0; /* No extra margin */
   }
 
   .hstat-div {
     display: none; /* Hide dividers between stats on mobile */
   }
 
-  .hero-h1 {
-    font-size: clamp(52px, 12vw, 80px) !important; /* More impactful main title */
-    letter-spacing: 0.5px; /* Slightly reduced letter spacing */
-  }
-
-  .hero-h2 {
-    font-size: clamp(32px, 6vw, 48px) !important; /* More impactful subtitle */
-    margin-bottom: 20px;
-  }
-
-  .hero-sub {
-    font-size: 15px; /* Consistent body text size */
-    max-width: 90%; /* Better readability */
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .hero-btns {
-    flex-direction: column; /* Stack buttons vertically */
-    gap: 12px;
-    margin-bottom: 30px;
+  .torch-stage {
+    width: clamp(280px, 70vw, 400px) !important; /* Responsive width for torch */
+    height: clamp(350px, 80vw, 500px) !important; /* Responsive height for torch */
+    margin: 0 auto; /* Center the torch stage */
   }
 
   /* --- Mobile Menu Enhancements (`.mob-menu`) --- */
@@ -1219,11 +1250,11 @@ body::before {
 
 @media (max-width: 480px) {
   .hero-h1 {
-    font-size: clamp(42px, 12vw, 60px) !important; /* Further refinement for smaller screens */
+    font-size: clamp(48px, 12vw, 70px) !important; /* Further refinement for smaller screens */
   }
 
   .hero-h2 {
-    font-size: clamp(26px, 6vw, 36px) !important;
+    font-size: clamp(30px, 6vw, 40px) !important;
   }
 
   .mob-link {
