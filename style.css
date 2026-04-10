@@ -947,106 +947,308 @@ body::before {
 .torch-aura {
   display: none !important;
 }
-/* ════════════════════════════════════
-   THE ULTIMATE MOBILE FIX
-════════════════════════════════════ */
-@media (max-width: 768px) {
-  
-  /* 1. NAVBAR FIX: Clean up the top menu */
-  .nav-links {
-    display: none !important; /* Hides desktop text links */
-  }
-  .nav-actions .btn-primary {
-    display: none !important; /* Hides desktop 'Join' button */
-  }
-  .navbar {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    width: 100% !important;
-    padding: 15px 20px !important;
-  }
-  .nav-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 15px !important;
-  }
-  .hamburger {
-    display: flex !important; /* Ensures the 3-line menu shows */
-  }
 
-  /* 2. TORCH FIX: Stack the text and the torch properly */
-  .hero-inner {
-    flex-direction: column !important; /* Stacks torch UNDER the text */
-    text-align: center;
-    padding-top: 40px;
-  }
+/* ================================================================
+   BDOH — Premium Mobile Fixes
+   This CSS is designed to be appended to the existing style.css
+   or included as a separate stylesheet after style.css.
+================================================================ */
+
+@media (max-width: 1200px) {
+  /* Ensure hero visual is not hidden prematurely on larger mobile breakpoints */
   .hero-visual {
-    width: 100%;
-    margin-top: 40px; 
-    display: flex;
-    justify-content: center;
-  }
-  .torch-stage {
-    width: 100% !important;
-    height: 400px !important; /* Gives the torch room to float */
+    display: flex !important; /* Override previous display: none */
   }
 }
+
 @media (max-width: 768px) {
-  /* --- Global Reset for Header --- */
-  .nav-links, .desktop-only { 
-    display: none !important; /* Hide desktop links so they don't squish the logo */
+
+  /* --- General Adjustments & Overrides --- */
+  .container {
+    padding: 0 clamp(15px, 4vw, 30px); /* More refined padding for mobile containers */
   }
 
-  /* --- Container & Hero --- */
-  .container { padding: 0 15px; }
-  
-  .hero { 
-    padding: 60px 15px 30px; 
-    text-align: center; /* Center everything for a cleaner mobile look */
+  .section {
+    padding: clamp(50px, 8vw, 80px) 0; /* Adjusted section padding */
+  }
+
+  /* --- Homepage Layout: Text -> Torch -> Stats --- */
+  .hero-inner {
+    grid-template-columns: 1fr !important; /* Force single column layout */
+    flex-direction: column !important; /* Ensure stacking for flexbox fallback */
+    text-align: center; /* Center align text content */
+    padding-top: 40px; /* Add some top padding */
+    gap: clamp(30px, 5vw, 50px) !important; /* Adjust gap between stacked elements */
+  }
+
+  .hero-text {
+    order: 1; /* Ensure text comes first */
+    width: 100%;
+  }
+
+  .hero-visual {
+    order: 2; /* Torch comes after text */
+    width: 100%;
+    margin-top: 30px; /* Space between text and torch */
+    display: flex !important; /* Ensure it's visible */
+    justify-content: center;
+  }
+
+  .torch-stage {
+    width: clamp(280px, 70vw, 400px) !important; /* Responsive width for torch */
+    height: clamp(350px, 80vw, 500px) !important; /* Responsive height for torch */
+    margin: 0 auto; /* Center the torch stage */
+  }
+
+  .hero-stats {
+    order: 3; /* Stats come after torch */
+    flex-direction: column; /* Stack stats vertically */
+    gap: 18px; /* Adjust gap between stats */
+    width: 100%;
+    margin-top: 30px; /* Space between torch and stats */
+  }
+
+  .hstat-div {
+    display: none; /* Hide dividers between stats on mobile */
   }
 
   .hero-h1 {
-    font-size: clamp(32px, 8vw, 42px); /* Smaller range so it doesn't break words */
-    line-height: 1.1;
+    font-size: clamp(52px, 12vw, 80px) !important; /* More impactful main title */
+    letter-spacing: 0.5px; /* Slightly reduced letter spacing */
   }
 
   .hero-h2 {
-    font-size: 22px; /* Fixed size is often safer on mobile than clamp */
-    margin-top: 10px;
+    font-size: clamp(32px, 6vw, 48px) !important; /* More impactful subtitle */
+    margin-bottom: 20px;
   }
 
-  /* --- Buttons Fix --- */
-  .hero-btns {
-    flex-direction: column;
-    width: 100%;
-    max-width: 300px; /* Keeps buttons from becoming giant rectangles */
-    margin: 0 auto 30px;
-    gap: 12px;
+  .hero-sub {
+    font-size: 15px; /* Consistent body text size */
+    max-width: 90%; /* Better readability */
+    margin-left: auto;
+    margin-right: auto;
   }
-  
-  .hero-btns .btn { 
-    width: 100%; /* Full width within that 300px box */
+
+  .hero-btns {
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+
+  /* --- Mobile Menu Enhancements (`.mob-menu`) --- */
+  .mob-menu {
+    background: rgba(6, 9, 26, 0.98) !important; /* Darker, more opaque background */
+    backdrop-filter: blur(28px) saturate(1.5) !important; /* Stronger blur and saturation */
+    -webkit-backdrop-filter: blur(28px) saturate(1.5) !important;
+    justify-content: center; /* Center content vertically */
+    padding: 80px 20px; /* Top and side padding */
+    gap: 12px; /* Increased gap between menu items */
+  }
+
+  .mob-close {
+    top: 20px !important;
+    right: 20px !important;
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 22px !important;
+    background: var(--sf-hov) !important; /* More prominent close button background */
+    border-color: var(--bd-a) !important;
+    color: var(--txt) !important;
+  }
+
+  .mob-close:hover {
+    background: var(--teal) !important; /* Teal hover for close button */
+    color: #fff !important;
+    transform: rotate(90deg); /* Subtle rotation on hover */
+  }
+
+  .mob-link {
+    font-size: 24px !important; /* Larger, more readable menu items */
+    padding: 14px 40px !important;
+    border-radius: 18px !important; /* More rounded corners */
+    width: 90%; /* Wider touch target */
+    text-align: center;
+    transition: all .25s var(--ease) !important; /* Smoother transition */
+  }
+
+  .mob-link:hover {
+    color: var(--teal-lt) !important; /* Highlight with teal on hover */
+    background: rgba(0, 123, 143, 0.15) !important; /* Subtle teal background on hover */
+    transform: scale(1.03); /* Slight scale effect */
+  }
+
+  .mob-cta {
+    margin-top: 40px !important; /* More space above CTA */
+    padding: 16px 50px !important;
+    font-size: 17px !important;
+    border-radius: 36px !important;
+    box-shadow: 0 8px 30px var(--teal-glow) !important; /* Enhanced shadow */
+  }
+
+  /* --- Other Sections: Ensure stacking and responsiveness --- */
+  .feat-grid, .cat-grid, .prob-grid, .team-grid, .wa-grid, .social-pair, .news-grid {
+    grid-template-columns: 1fr !important; /* Force single column for all grids */
+    gap: 25px !important; /* Consistent spacing */
+  }
+
+  .stats-strip {
+    grid-template-columns: 1fr !important; /* Stack stats strip items */
+  }
+
+  .sstat {
+    padding: 25px 20px !important; /* Adjusted padding for stats */
+  }
+
+  .cta-inner {
+    flex-direction: column; /* Stack CTA content */
+    text-align: center;
+    gap: 30px;
+  }
+
+  .cta-btns {
+    flex-direction: column; /* Stack CTA buttons */
+    width: 100%;
+  }
+
+  .cta-btns .btn-primary, .cta-btns .btn-ghost {
+    width: 100%; /* Full width buttons */
+  }
+
+  .footer-top {
+    grid-template-columns: 1fr; /* Stack footer columns */
+    text-align: center;
+  }
+
+  .footer-brand p {
+    max-width: 100%;
+  }
+
+  .footer-social {
     justify-content: center;
   }
 
-  /* --- The Stats Strip (2x2 Grid) --- */
-  .stats-strip {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1px; /* Creates a nice thin divider line if background is different */
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
+  .footer-col ul {
+    align-items: center;
   }
 
-  /* --- Grids --- */
-  .feat-grid, .cat-grid, .prob-grid, .team-grid {
-    grid-template-columns: 1fr !important;
-    padding: 0 10px;
+  .footer-bottom {
+    flex-direction: column; /* Stack footer bottom content */
+    gap: 15px;
   }
 
-  /* --- The Torch (Hero Visual) --- */
-  .hero-visual {
-    margin-top: 20px;
-    order: -1; /* Puts the torch ABOVE the text on mobile for better branding */
+  .practice-header {
+    flex-direction: column; /* Stack practice header elements */
+    align-items: center; /* Center align items */
+    gap: 20px;
+  }
+
+  .filter-row {
+    justify-content: center; /* Center filter buttons */
+  }
+
+  .con-card {
+    flex-direction: column; /* Stack contest card elements */
+    align-items: center;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .con-left {
+    flex-direction: column; /* Stack date and info */
+    gap: 10px;
+  }
+
+  .con-info h4 {
+    white-space: normal !important; /* Allow title to wrap */
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .con-tags {
+    justify-content: center; /* Center tags */
+  }
+
+  .pres-wrap {
+    grid-template-columns: 1fr !important; /* Stack president section */
+    text-align: center;
+  }
+
+  .pres-photo-wrap {
+    order: 1; /* Photo first */
+  }
+
+  .pres-content {
+    order: 2; /* Content second */
+  }
+
+  .pres-quote {
+    text-align: center !important; /* Center quote */
+    padding-left: 0 !important;
+    border-left: none !important;
+    border-top: 3px solid var(--green); /* Add top border for separation */
+    padding-top: 20px;
+  }
+
+  .pres-achievements {
+    align-items: center; /* Center achievements */
+  }
+
+  .member {
+    padding: clamp(20px, 3vw, 25px) !important; /* Adjust member card padding */
+  }
+
+  .wa-card {
+    padding: clamp(20px, 3vw, 25px) !important; /* Adjust WhatsApp card padding */
+  }
+
+  .sc-card {
+    flex-direction: column; /* Stack social card content */
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .sc-cta {
+    width: 100%; /* Full width social CTA */
+  }
+
+  .news-card h3 {
+    font-size: clamp(15px, 4vw, 18px) !important; /* Adjust news title size */
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-h1 {
+    font-size: clamp(42px, 12vw, 60px) !important; /* Further refinement for smaller screens */
+  }
+
+  .hero-h2 {
+    font-size: clamp(26px, 6vw, 36px) !important;
+  }
+
+  .mob-link {
+    font-size: 20px !important;
+    padding: 12px 30px !important;
+  }
+
+  .mob-cta {
+    padding: 14px 40px !important;
+    font-size: 16px !important;
+  }
+
+  .torch-stage {
+    height: clamp(300px, 80vw, 400px) !important; /* Smaller torch height */
+  }
+
+  .sstat {
+    padding: 18px 10px !important; /* Smaller padding for stats */
+  }
+
+  .sstat-n {
+    font-size: clamp(24px, 4vw, 36px) !important;
+  }
+
+  .sstat-l {
+    font-size: 11px !important;
   }
 }
