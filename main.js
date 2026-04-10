@@ -732,3 +732,29 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderProblems();
   renderWA();
 });
+
+// --- MOBILE MENU LOGIC ---
+const menuBtn = document.getElementById('menuBtn');
+const menuClose = document.getElementById('menuClose');
+const navLinks = document.getElementById('navLinks');
+
+// 1. Open Menu (3 dots)
+if (menuBtn && navLinks) {
+    menuBtn.onclick = () => {
+        navLinks.classList.add('active');
+    };
+}
+
+// 2. Close Menu (The X button)
+if (menuClose && navLinks) {
+    menuClose.onclick = () => {
+        navLinks.classList.remove('active');
+    };
+}
+
+// 3. Close Menu when clicking any link inside
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.onclick = () => {
+        navLinks.classList.remove('active');
+    };
+});
