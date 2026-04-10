@@ -947,3 +947,48 @@ body::before {
 .torch-aura {
   display: none !important;
 }
+/* ════════════════════════════════════
+   THE ULTIMATE MOBILE FIX
+════════════════════════════════════ */
+@media (max-width: 768px) {
+  
+  /* 1. NAVBAR FIX: Clean up the top menu */
+  .nav-links {
+    display: none !important; /* Hides desktop text links */
+  }
+  .nav-actions .btn-primary {
+    display: none !important; /* Hides desktop 'Join' button */
+  }
+  .navbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 15px 20px !important;
+  }
+  .nav-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
+  }
+  .hamburger {
+    display: flex !important; /* Ensures the 3-line menu shows */
+  }
+
+  /* 2. TORCH FIX: Stack the text and the torch properly */
+  .hero-inner {
+    flex-direction: column !important; /* Stacks torch UNDER the text */
+    text-align: center;
+    padding-top: 40px;
+  }
+  .hero-visual {
+    width: 100%;
+    margin-top: 40px; 
+    display: flex;
+    justify-content: center;
+  }
+  .torch-stage {
+    width: 100% !important;
+    height: 400px !important; /* Gives the torch room to float */
+  }
+}
