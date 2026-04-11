@@ -327,15 +327,46 @@
    4. MOBILE MENU
 ════════════════════════════════════════════════════════════════ */
 (function initMob(){
-  const hb=document.getElementById('hbBtn');
-  const mob=document.getElementById('mobMenu');
-  const close=document.getElementById('mobClose');
+  const hb=document.getElementById('hbBtn')||document.querySelector('.hamburger');
+  const mob=document.querySelector('.mob-menu');
+  const close=document.querySelector('.mob-close');
   if(!hb||!mob) return;
-  function open(){mob.classList.add('open');hb.classList.add('open');hb.setAttribute('aria-expanded','true');document.body.style.overflow='hidden'}
-  function shut(){mob.classList.remove('open');hb.classList.remove('open');hb.setAttribute('aria-expanded','false');document.body.style.overflow=''}
-  hb.addEventListener('click',open);
-  close.addEventListener('click',shut);
-  document.querySelectorAll('.mob-link').forEach(a=>a.addEventListener('click',shut));
+
+  /* Inject top-pad header if not already present */
+  if(!mob.querySelector('.mob-menu-top-pad')){
+    const pad=document.createElement('div');
+    pad.className='mob-menu-top-pad';
+    mob.insertBefore(pad,mob.firstChild);
+  }
+
+  /* Create backdrop if not present */
+  let backdrop=document.querySelector('.mob-menu-backdrop');
+  if(!backdrop){
+    backdrop=document.createElement('div');
+    backdrop.className='mob-menu-backdrop';
+    document.body.appendChild(backdrop);
+  }
+
+  function openMenu(){
+    mob.classList.add('open');
+    hb.classList.add('open');
+    hb.setAttribute('aria-expanded','true');
+    backdrop.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function closeMenu(){
+    mob.classList.remove('open');
+    hb.classList.remove('open');
+    hb.setAttribute('aria-expanded','false');
+    backdrop.classList.remove('open');
+    document.body.style.overflow='';
+  }
+
+  hb.addEventListener('click',openMenu);
+  if(close) close.addEventListener('click',closeMenu);
+  backdrop.addEventListener('click',closeMenu);
+  document.querySelectorAll('.mob-link').forEach(a=>a.addEventListener('click',closeMenu));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
 })();
 
 /* ════════════════════════════════════════════════════════════════
@@ -739,262 +770,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 /* ════════════════════════════════════════════════════════════════
-   11. MOBILE MENU — professional slide-in drawer (mobile only)
+   11. MOBILE MENU — handled by section 4 above
 ════════════════════════════════════════════════════════════════ */
-(function initMobileMenu(){
-  /* Inject styles for the mobile drawer */
-  const style = document.createElement('style');
-  style.textContent = `
-    /* ── Hamburger / three-dot button ── */
-    #hbBtn {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      padding: 0;
-      border-radius: 8px;
-      transition: background 0.2s;
-      z-index: 1100;
-      position: relative;
-    }
-    #hbBtn:hover { background: rgba(0,180,204,0.1); }
-    #hbBtn .hb-bar {
-      display: block;
-      width: 22px;
-      height: 2px;
-      background: var(--teal, #00b4cc);
-      border-radius: 2px;
-      transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
-      transform-origin: center;
-    }
-    #hbBtn .hb-lines {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      align-items: center;
-    }
-    /* Animate to X when open */
-    #hbBtn.open .hb-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    #hbBtn.open .hb-bar:nth-child(2) { opacity: 0; width: 0; }
-    #hbBtn.open .hb-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-    @media (max-width: 767px) {
-      #hbBtn { display: flex !important; }
-    }
-
-    /* ── Full-screen overlay backdrop ── */
-    #mobMenu {
-      position: fixed;
-      inset: 0;
-      z-index: 1050;
-      display: flex;
-      pointer-events: none;
-    }
-    #mobMenu.open { pointer-events: all; }
-
-    /* Dimmed backdrop */
-    #mobMenu::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(3px);
-      opacity: 0;
-      transition: opacity 0.35s ease;
-    }
-    #mobMenu.open::before { opacity: 1; }
-
-    /* Slide-in drawer panel */
-    .mob-drawer {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: min(300px, 80vw);
-      height: 100%;
-      background: var(--surface, #0d1117);
-      border-left: 1px solid rgba(0,180,204,0.18);
-      box-shadow: -8px 0 40px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      transform: translateX(100%);
-      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-      overflow-y: auto;
-    }
-    #mobMenu.open .mob-drawer { transform: translateX(0); }
-
-    /* Drawer header */
-    .mob-drawer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px 24px 18px;
-      border-bottom: 1px solid rgba(0,180,204,0.12);
-    }
-    .mob-drawer-logo {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      background: linear-gradient(90deg, var(--teal,#00b4cc), var(--green,#4caf50));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    #mobClose {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      border: 1px solid rgba(0,180,204,0.2);
-      border-radius: 8px;
-      background: transparent;
-      cursor: pointer;
-      color: var(--txt-d, #8b9dc3);
-      font-size: 18px;
-      transition: all 0.2s;
-      line-height: 1;
-    }
-    #mobClose:hover {
-      border-color: var(--teal, #00b4cc);
-      color: var(--teal, #00b4cc);
-      background: rgba(0,180,204,0.08);
-    }
-
-    /* Nav links list */
-    .mob-nav-list {
-      display: flex;
-      flex-direction: column;
-      padding: 16px 0;
-      gap: 2px;
-    }
-    .mob-link {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 13px 24px;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-      color: var(--txt-d, #8b9dc3);
-      text-decoration: none;
-      border-radius: 0;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .mob-link::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%) scaleY(0);
-      width: 3px;
-      height: 60%;
-      background: var(--teal, #00b4cc);
-      border-radius: 0 3px 3px 0;
-      transition: transform 0.2s ease;
-    }
-    .mob-link:hover {
-      color: var(--txt, #e8f4f8);
-      background: rgba(0,180,204,0.07);
-      padding-left: 30px;
-    }
-    .mob-link:hover::before { transform: translateY(-50%) scaleY(1); }
-
-    .mob-link .mob-link-icon {
-      font-size: 17px;
-      width: 20px;
-      text-align: center;
-      flex-shrink: 0;
-    }
-
-    /* Divider */
-    .mob-divider {
-      height: 1px;
-      background: rgba(0,180,204,0.1);
-      margin: 8px 24px;
-    }
-
-    /* Footer tag inside drawer */
-    .mob-drawer-footer {
-      margin-top: auto;
-      padding: 20px 24px;
-      border-top: 1px solid rgba(0,180,204,0.1);
-      font-size: 11px;
-      color: var(--txt-d, #8b9dc3);
-      opacity: 0.7;
-      letter-spacing: 0.04em;
-    }
-  `;
-  document.head.appendChild(style);
-
-  /* Build the drawer HTML if mobMenu exists but is empty / missing proper structure */
-  const mob = document.getElementById('mobMenu');
-  if (!mob) return;
-
-  /* Only inject drawer if there isn't one already */
-  if (!mob.querySelector('.mob-drawer')) {
-    mob.innerHTML = `
-      <div class="mob-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
-        <div class="mob-drawer-header">
-          <span class="mob-drawer-logo">BDOH</span>
-          <button id="mobClose" aria-label="Close menu">&#x2715;</button>
-        </div>
-        <nav class="mob-nav-list">
-          <a href="#home"       class="mob-link"><span class="mob-link-icon">🏠</span>Home</a>
-          <a href="#about"      class="mob-link"><span class="mob-link-icon">ℹ️</span>About</a>
-          <a href="#practice"   class="mob-link"><span class="mob-link-icon">📐</span>Practice</a>
-          <a href="#contests"   class="mob-link"><span class="mob-link-icon">🏆</span>Contests</a>
-          <a href="#president"  class="mob-link"><span class="mob-link-icon">👤</span>President</a>
-          <div class="mob-divider"></div>
-          <a href="#community"  class="mob-link"><span class="mob-link-icon">🤝</span>Community</a>
-          <a href="#social"     class="mob-link"><span class="mob-link-icon">💬</span>Social</a>
-          <a href="#news"       class="mob-link"><span class="mob-link-icon">📰</span>News</a>
-        </nav>
-        <div class="mob-drawer-footer">Bangladesh Olympiadians Hub</div>
-      </div>`;
-  }
-
-  /* Ensure hamburger button has proper bar markup */
-  const hb = document.getElementById('hbBtn');
-  if (hb && !hb.querySelector('.hb-lines')) {
-    hb.innerHTML = `<span class="hb-lines"><span class="hb-bar"></span><span class="hb-bar"></span><span class="hb-bar"></span></span>`;
-    hb.setAttribute('aria-label', 'Open menu');
-    hb.setAttribute('aria-expanded', 'false');
-  }
-
-  function openMenu(){
-    mob.classList.add('open');
-    if(hb){ hb.classList.add('open'); hb.setAttribute('aria-expanded','true'); }
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMenu(){
-    mob.classList.remove('open');
-    if(hb){ hb.classList.remove('open'); hb.setAttribute('aria-expanded','false'); }
-    document.body.style.overflow = '';
-  }
-
-  if(hb) hb.addEventListener('click', openMenu);
-
-  /* Re-bind close button (may have been recreated) */
-  mob.addEventListener('click', e => {
-    if(e.target.id === 'mobClose' || e.target.closest('#mobClose')) closeMenu();
-  });
-
-  /* Close on backdrop click (outside drawer) */
-  mob.addEventListener('click', e => {
-    if(!e.target.closest('.mob-drawer')) closeMenu();
-  });
-
-  /* Close on link click */
-  mob.querySelectorAll('.mob-link').forEach(a => a.addEventListener('click', closeMenu));
-
-  /* Close on Escape */
-  document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && mob.classList.contains('open')) closeMenu();
-  });
-})();
+/* Section 11 removed — mobile menu is fully managed by initMob() in section 4. */
