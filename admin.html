@@ -193,6 +193,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8.5 1a.5.5 0 000-1h-7A1.5 1.5 0 000 1.5v13A1.5 1.5 0 001.5 16h13A1.5 1.5 0 0016 14.5v-7a.5.5 0 00-1 0v7a.5.5 0 01-.5.5h-13a.5.5 0 01-.5-.5v-13a.5.5 0 01.5-.5h7z"/><path d="M16 .5a.5.5 0 00-.5-.5h-5a.5.5 0 000 1h3.793L6.146 9.146a.5.5 0 10.708.708L15 1.707V5.5a.5.5 0 001 0v-5z"/></svg>
         Preview Site
       </a>
+      <button class="btn-secondary" onclick="exportDataSnapshot()" title="Download a data.js snapshot">⬇ Export Data</button>
+      <button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:#f87171" onclick="if(confirm('Reset ALL data to defaults? This cannot be undone.')){localStorage.removeItem(BDOH_STORAGE_KEY);location.reload()}" title="Reset to factory defaults">🗑 Reset</button>
       <button class="btn-theme-sm" onclick="toggleT()" title="Toggle theme">☀️</button>
       <div class="admin-badge">Admin Panel</div>
     </div>
@@ -575,8 +577,8 @@ let pIdx=-1;
 function renderPTbl(){const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard'};document.getElementById('ptbl').innerHTML=BDOH.problems.map((p,i)=>`<tr><td>${p.title}</td><td>${p.subject}</td><td><span class="bs ${DM[p.difficulty]}">${p.difficulty}</span></td><td style="font-family:monospace">${p.answer}</td><td>${p.points}</td><td>${p.solves.toLocaleString()}</td><td><div class="act-row"><button class="act" onclick="editP(${i})">Edit</button><button class="act del" onclick="delP(${i})">Delete</button></div></td></tr>`).join('')}
 function openPF(){pIdx=-1;document.getElementById('pFTitle').textContent='Add problem';['pf-t','pf-st','pf-h','pf-sol','pf-a'].forEach(id=>document.getElementById(id).value='');document.getElementById('pf-tol').value='0';document.getElementById('pf-tm').value='20';document.getElementById('pf-pt').value='10';document.getElementById('pModal').classList.add('open')}
 function editP(i){pIdx=i;const p=BDOH.problems[i];document.getElementById('pFTitle').textContent='Edit problem';document.getElementById('pf-t').value=p.title;document.getElementById('pf-s').value=p.subject;document.getElementById('pf-d').value=p.difficulty;document.getElementById('pf-st').value=p.statement;document.getElementById('pf-h').value=p.hint;document.getElementById('pf-sol').value=p.solution||'';document.getElementById('pf-a').value=p.answer;document.getElementById('pf-tol').value=p.tolerance;document.getElementById('pf-tm').value=p.timeMin;document.getElementById('pf-pt').value=p.points||10;document.getElementById('pModal').classList.add('open')}
-function saveP(){const np={id:pIdx>=0?BDOH.problems[pIdx].id:'q'+(Date.now()),title:document.getElementById('pf-t').value,subject:document.getElementById('pf-s').value,difficulty:document.getElementById('pf-d').value,statement:document.getElementById('pf-st').value,hint:document.getElementById('pf-h').value,solution:document.getElementById('pf-sol').value,answer:document.getElementById('pf-a').value,tolerance:parseFloat(document.getElementById('pf-tol').value)||0,timeMin:parseInt(document.getElementById('pf-tm').value)||20,points:parseInt(document.getElementById('pf-pt').value)||10,solves:pIdx>=0?BDOH.problems[pIdx].solves:0};if(pIdx>=0)BDOH.problems[pIdx]=np;else BDOH.problems.push(np);closePF();renderPTbl();updateMetrics();toast(pIdx>=0?'Problem updated.':'Problem added.')}
-function delP(i){if(!confirm('Delete this problem?'))return;BDOH.problems.splice(i,1);renderPTbl();updateMetrics();toast('Deleted.',false)}
+function saveP(){const np={id:pIdx>=0?BDOH.problems[pIdx].id:'q'+(Date.now()),title:document.getElementById('pf-t').value,subject:document.getElementById('pf-s').value,difficulty:document.getElementById('pf-d').value,statement:document.getElementById('pf-st').value,hint:document.getElementById('pf-h').value,solution:document.getElementById('pf-sol').value,answer:document.getElementById('pf-a').value,tolerance:parseFloat(document.getElementById('pf-tol').value)||0,timeMin:parseInt(document.getElementById('pf-tm').value)||20,points:parseInt(document.getElementById('pf-pt').value)||10,solves:pIdx>=0?BDOH.problems[pIdx].solves:0};if(pIdx>=0)BDOH.problems[pIdx]=np;else BDOH.problems.push(np);closePF();renderPTbl();updateMetrics();bdohSave();toast(pIdx>=0?'Problem updated.':'Problem added.')}
+function delP(i){if(!confirm('Delete this problem?'))return;BDOH.problems.splice(i,1);renderPTbl();updateMetrics();bdohSave();toast('Deleted.',false)}
 function closePF(){document.getElementById('pModal').classList.remove('open')}
 
 // ============================================================
@@ -789,6 +791,7 @@ function saveContest(){
   closeContestWizard();
   renderCTbl();
   updateMetrics();
+  bdohSave();
   toast(cwEditId?'Contest updated!':'Contest created! Share exam.html?id='+id);
 }
 
@@ -896,7 +899,7 @@ function editContest(id){
   document.getElementById('contestWizard').classList.add('open');
 }
 
-function delC(i){if(!confirm('Delete this contest?'))return;BDOH.contests.splice(i,1);renderCTbl();updateMetrics();toast('Deleted.',false)}
+function delC(i){if(!confirm('Delete this contest?'))return;BDOH.contests.splice(i,1);renderCTbl();updateMetrics();bdohSave();toast('Deleted.',false)}
 
 // ============================================================
 // RESULTS
@@ -961,8 +964,8 @@ let plIdx=-1;
 function renderPlTbl(){document.getElementById('pltbl').innerHTML=BDOH.panelists.map((p,i)=>`<tr><td>${p.name}</td><td>${p.role}</td><td>${p.subject}</td><td>${p.isPresident?'<span class="bs s-live">President</span>':'No'}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--d)">${p.photo||'(initials avatar)'}</td><td><div class="act-row"><button class="act" onclick="editPl(${i})">Edit</button><button class="act del" onclick="delPl(${i})">Delete</button></div></td></tr>`).join('')}
 function openPlF(){plIdx=-1;['pl-n','pl-i','pl-r','pl-a','pl-ph','pl-q'].forEach(id=>document.getElementById(id).value='');document.getElementById('plModal').classList.add('open')}
 function editPl(i){plIdx=i;const p=BDOH.panelists[i];document.getElementById('pl-n').value=p.name;document.getElementById('pl-i').value=p.initials;document.getElementById('pl-r').value=p.role;document.getElementById('pl-s').value=p.subject;document.getElementById('pl-p').value=p.isPresident?'true':'false';document.getElementById('pl-q').value=p.quote||'';document.getElementById('pl-a').value=(p.achievements||[]).join('\n');document.getElementById('pl-ph').value=p.photo||'';document.getElementById('plModal').classList.add('open')}
-function savePl(){const np={id:plIdx>=0?BDOH.panelists[plIdx].id:'pl'+(Date.now()),name:document.getElementById('pl-n').value,initials:document.getElementById('pl-i').value.toUpperCase(),role:document.getElementById('pl-r').value,subject:document.getElementById('pl-s').value,isPresident:document.getElementById('pl-p').value==='true',quote:document.getElementById('pl-q').value,achievements:document.getElementById('pl-a').value.split('\n').filter(Boolean),photo:document.getElementById('pl-ph').value||null};if(plIdx>=0)BDOH.panelists[plIdx]=np;else BDOH.panelists.push(np);closePlF();renderPlTbl();updateMetrics();toast('Panelist saved.')}
-function delPl(i){if(!confirm('Remove panelist?'))return;BDOH.panelists.splice(i,1);renderPlTbl();updateMetrics();toast('Removed.',false)}
+function savePl(){const np={id:plIdx>=0?BDOH.panelists[plIdx].id:'pl'+(Date.now()),name:document.getElementById('pl-n').value,initials:document.getElementById('pl-i').value.toUpperCase(),role:document.getElementById('pl-r').value,subject:document.getElementById('pl-s').value,isPresident:document.getElementById('pl-p').value==='true',quote:document.getElementById('pl-q').value,achievements:document.getElementById('pl-a').value.split('\n').filter(Boolean),photo:document.getElementById('pl-ph').value||null};if(plIdx>=0)BDOH.panelists[plIdx]=np;else BDOH.panelists.push(np);closePlF();renderPlTbl();updateMetrics();bdohSave();toast('Panelist saved.')}
+function delPl(i){if(!confirm('Remove panelist?'))return;BDOH.panelists.splice(i,1);renderPlTbl();updateMetrics();bdohSave();toast('Removed.',false)}
 function closePlF(){document.getElementById('plModal').classList.remove('open')}
 
 // ============================================================
@@ -972,6 +975,32 @@ if(!BDOH.submissions)BDOH.submissions=[];
 if(!BDOH.contests)BDOH.contests=[];
 updateMetrics();
 renderDashboard();
+
+// ============================================================
+// EXPORT DATA SNAPSHOT
+// ============================================================
+function exportDataSnapshot(){
+  const json=JSON.stringify({
+    panelists:BDOH.panelists,
+    contests:BDOH.contests,
+    problems:BDOH.problems,
+    whatsapp:BDOH.whatsapp,
+    submissions:BDOH.submissions
+  },null,2);
+  const blob=new Blob([
+    `/* BDOH DATA SNAPSHOT — generated ${new Date().toLocaleString()} */\n` +
+    `const BDOH_DEFAULTS=` + json + `;\n\n` +
+    `const BDOH_STORAGE_KEY='bdoh_data_v1';\n` +
+    `function bdohLoad(){try{const r=localStorage.getItem(BDOH_STORAGE_KEY);if(r){const s=JSON.parse(r);return{panelists:s.panelists||BDOH_DEFAULTS.panelists,contests:s.contests||BDOH_DEFAULTS.contests,problems:s.problems||BDOH_DEFAULTS.problems,whatsapp:s.whatsapp||BDOH_DEFAULTS.whatsapp,submissions:s.submissions||BDOH_DEFAULTS.submissions};}}catch(e){}return JSON.parse(JSON.stringify(BDOH_DEFAULTS));}\n` +
+    `function bdohSave(){try{localStorage.setItem(BDOH_STORAGE_KEY,JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions}));}catch(e){}}\n` +
+    `const BDOH=bdohLoad();\n`
+  ],{type:'text/javascript'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='data.js';
+  a.click();
+  toast('data.js exported! Replace your file with this download.');
+}
 </script>
 <script type="module">
   // Import Firebase Auth tools

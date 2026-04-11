@@ -503,17 +503,43 @@ function renderPanelists(){
 function renderContests(){
   const box=document.getElementById('contestBox');
   if(!box) return;
-  const DT={live:{d:'09',m:'APR'},open:{d:'15',m:'APR'},soon:{d:'30',m:'APR'},past:{d:'12',m:'MAR'}};
+
   const BADGE={
-    live:`<span class="badge b-live" role="status">Live now</span>`,
-    open:`<span class="badge b-open">Registration open</span>`,
-    soon:`<span class="badge b-soon">Opens soon</span>`,
+    live:`<span class="badge b-live" role="status">🔴 Live now — Enter</span>`,
+    open:`<span class="badge b-open">✅ Registration open — Enter</span>`,
+    soon:`<span class="badge b-soon">⏳ Opens soon</span>`,
     past:`<span class="badge b-past">View results</span>`
   };
+
+  /* Determine if a contest is enterable (live or open) */
+  function isEnterable(c){ return c.status==='live'||c.status==='open'; }
+
+  /* Format date nicely from openTime or date string */
+  function fmtDate(c){
+    const src=c.openTime||c.date||'';
+    if(!src) return {d:'--',m:'---'};
+    const d=new Date(src);
+    if(isNaN(d)) return {d:'--',m:'---'};
+    return {
+      d:d.getDate().toString().padStart(2,'0'),
+      m:d.toLocaleString('en-US',{month:'short'}).toUpperCase()
+    };
+  }
+
+  const qCount=(c)=>(c.questions||[]).length||c.problems||0;
+  const tags=(c)=>(c.tags||[]);
+
   box.innerHTML=BDOH.contests.map((c,i)=>{
-    const dt=DT[c.status]||{d:'??',m:'???'};
-    return `<div class="con-card reveal rd${i%3+1}" role="listitem" tabindex="0"
-               aria-label="${c.title}">
+    const dt=fmtDate(c);
+    const enterable=isEnterable(c);
+    const examURL=`exam.html?id=${c.id}`;
+    /* Clickable for live/open; non-clickable for soon/past */
+    const clickAttr=enterable
+      ?`onclick="window.location.href='${examURL}'" onkeydown="if(event.key==='Enter')window.location.href='${examURL}'" style="cursor:pointer"`
+      :`style="cursor:default"`;
+
+    return `<div class="con-card reveal rd${i%3+1}" role="listitem" tabindex="${enterable?0:-1}"
+               aria-label="${c.title}${enterable?' — Click to enter':''}" ${clickAttr}>
       <div class="con-left">
         <div class="con-date" ${c.status==='live'?'style="background:rgba(239,68,68,.15)"':''}>
           <div class="con-day" ${c.status==='live'?'style="color:#f87171;-webkit-text-fill-color:#f87171"':''}>${dt.d}</div>
@@ -521,13 +547,13 @@ function renderContests(){
         </div>
         <div class="con-info">
           <h4>${c.title}</h4>
-          <p>${c.duration} min &nbsp;·&nbsp; ${c.problems} problems &nbsp;·&nbsp; ${c.level}</p>
-          <div class="con-tags">${c.tags.map(t=>`<span class="con-tag">${t}</span>`).join('')}</div>
+          <p>${c.duration} min &nbsp;·&nbsp; ${qCount(c)} questions &nbsp;·&nbsp; ${c.level||c.subject||''}</p>
+          <div class="con-tags">${tags(c).map(t=>`<span class="con-tag">${t}</span>`).join('')}</div>
         </div>
       </div>
-      ${BADGE[c.status]}
+      ${BADGE[c.status]||''}
     </div>`;
-  }).join('');
+  }).join('') || '<p style="text-align:center;color:var(--txt-d);padding:40px 0">No contests available right now. Check back soon!</p>';
   reObserve();
 }
 

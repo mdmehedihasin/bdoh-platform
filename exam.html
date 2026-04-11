@@ -280,6 +280,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 
   document.title=contest.title+' — BDOH Exam';
   questions=contest.questions||[];
+  if(questions.length===0){
+    document.getElementById('scr-error').querySelector('h1').textContent='No Questions Found';
+    document.getElementById('scr-error').querySelector('p').textContent='This contest has no questions configured yet. Please contact the administrator.';
+    show('scr-error');return;
+  }
   if(contest.security&&contest.security.shuffleQuestions){
     questions=[...questions].sort(()=>Math.random()-.5);
   }
@@ -306,6 +311,7 @@ function checkAvailability(){
   const open=contest.openTime?new Date(contest.openTime):null;
   const close=contest.closeTime?new Date(contest.closeTime):null;
 
+  /* Past contests: reject unless explicitly past AND no late allowance */
   if(contest.status==='past'||(close&&now>close&&!contest.allowLate)){
     document.getElementById('closed-icon').textContent='🏁';
     document.getElementById('closed-title').textContent='Exam Has Ended';
@@ -313,11 +319,11 @@ function checkAvailability(){
     show('scr-closed');return;
   }
 
+  /* Not open yet — only block if openTime is explicitly set and in the future */
   if(open&&now<open){
     document.getElementById('closed-icon').textContent='⏳';
     document.getElementById('closed-title').textContent='Exam Not Open Yet';
     document.getElementById('closed-msg').textContent='This exam opens at: '+open.toLocaleString();
-    // countdown
     const cd=document.getElementById('closed-countdown');
     function updateCd(){
       const diff=open-new Date();
@@ -330,6 +336,14 @@ function checkAvailability(){
       </div>`;
     }
     updateCd();setInterval(updateCd,1000);
+    show('scr-closed');return;
+  }
+
+  /* For 'soon' status without openTime — show coming soon */
+  if(contest.status==='soon'&&!open){
+    document.getElementById('closed-icon').textContent='⏳';
+    document.getElementById('closed-title').textContent='Coming Soon';
+    document.getElementById('closed-msg').textContent='This exam has not opened yet. Please check back later.';
     show('scr-closed');return;
   }
 
@@ -543,6 +557,7 @@ function submitExam(auto=false){
   };
   if(!BDOH.submissions)BDOH.submissions=[];
   BDOH.submissions.push(submission);
+  bdohSave();
 
   showDone(submission);
 }
@@ -646,6 +661,7 @@ function disqualify(msg){
   const sub={id:'sub'+Date.now(),contestId,name:participantInfo.name,category:participantInfo.category,classGrade:participantInfo.classGrade,institution:participantInfo.institution,score:0,rawScore:0,maxScore:questions.reduce((s,q)=>s+(q.points||0),0),tabSwitches,penalties:0,answers,submittedAt:new Date().toISOString(),disqualified:true};
   if(!BDOH.submissions)BDOH.submissions=[];
   BDOH.submissions.push(sub);
+  bdohSave();
 }
 </script>
 </body>
