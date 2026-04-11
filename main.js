@@ -500,21 +500,22 @@ function renderPanelists(){
 }
 
 /* ── Contests ── */
-function renderContests(){
+function renderContests(contests){
   const box=document.getElementById('contestBox');
   if(!box) return;
 
+  /* Use passed-in contests, or fall back to BDOH.contests */
+  const list = contests || BDOH.contests || [];
+
   const BADGE={
     live:`<span class="badge b-live" role="status">🔴 Live now — Enter</span>`,
-    open:`<span class="badge b-open">✅ Registration open — Enter</span>`,
+    open:`<span class="badge b-open">✅ Open — Enter Now</span>`,
     soon:`<span class="badge b-soon">⏳ Opens soon</span>`,
-    past:`<span class="badge b-past">View results</span>`
+    past:`<span class="badge b-past">Ended</span>`
   };
 
-  /* Determine if a contest is enterable (live or open) */
   function isEnterable(c){ return c.status==='live'||c.status==='open'; }
 
-  /* Format date nicely from openTime or date string */
   function fmtDate(c){
     const src=c.openTime||c.date||'';
     if(!src) return {d:'--',m:'---'};
@@ -529,14 +530,18 @@ function renderContests(){
   const qCount=(c)=>(c.questions||[]).length||c.problems||0;
   const tags=(c)=>(c.tags||[]);
 
-  box.innerHTML=BDOH.contests.map((c,i)=>{
+  if(list.length===0){
+    box.innerHTML='<p style="text-align:center;color:var(--txt-d);padding:40px 0;font-family:var(--fH)">No contests available right now. Check back soon!</p>';
+    return;
+  }
+
+  box.innerHTML=list.map((c,i)=>{
     const dt=fmtDate(c);
     const enterable=isEnterable(c);
     const examURL=`exam.html?id=${c.id}`;
-    /* Clickable for live/open; non-clickable for soon/past */
     const clickAttr=enterable
       ?`onclick="window.location.href='${examURL}'" onkeydown="if(event.key==='Enter')window.location.href='${examURL}'" style="cursor:pointer"`
-      :`style="cursor:default"`;
+      :`style="cursor:default;opacity:0.8"`;
 
     return `<div class="con-card reveal rd${i%3+1}" role="listitem" tabindex="${enterable?0:-1}"
                aria-label="${c.title}${enterable?' — Click to enter':''}" ${clickAttr}>
@@ -553,7 +558,7 @@ function renderContests(){
       </div>
       ${BADGE[c.status]||''}
     </div>`;
-  }).join('') || '<p style="text-align:center;color:var(--txt-d);padding:40px 0">No contests available right now. Check back soon!</p>';
+  }).join('');
   reObserve();
 }
 
@@ -804,9 +809,48 @@ document.addEventListener('keydown',e=>{
 ════════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded',()=>{
   renderPanelists();
-  renderContests();
   renderProblems();
   renderWA();
+
+  /* Show loading placeholder for contests while Firestore loads */
+  const box=document.getElementById('contestBox');
+  if(box) box.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:14px">
+      ${[1,2,3].map(()=>`
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:20px 24px;
+             display:flex;gap:18px;align-items:center;animation:pulse 1.6s ease-in-out infinite">
+          <div style="width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.07);flex-shrink:0"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <div style="height:16px;border-radius:6px;background:rgba(255,255,255,.07);width:65%"></div>
+            <div style="height:12px;border-radius:6px;background:rgba(255,255,255,.05);width:45%"></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  /* Subscribe to real-time Firestore updates — fires on every device instantly */
+  if(window.BDOH_DB){
+    window.BDOH_DB.onContestsChange(contests=>{
+      renderContests(contests);
+      /* Cache locally so page works offline after first load */
+      try{ localStorage.setItem('bdoh_contests_cache', JSON.stringify(contests)); }catch(_){}
+    });
+  } else {
+    /* Firestore not ready yet — wait for it */
+    bdohFirebaseReady(()=>{
+      if(window.BDOH_DB){
+        window.BDOH_DB.onContestsChange(contests=>{
+          renderContests(contests);
+          try{ localStorage.setItem('bdoh_contests_cache', JSON.stringify(contests)); }catch(_){}
+        });
+      } else {
+        /* Full offline fallback — use cached data */
+        try{
+          const cached=JSON.parse(localStorage.getItem('bdoh_contests_cache')||'[]');
+          renderContests(cached);
+        }catch(_){ renderContests([]); }
+      }
+    });
+  }
 });
 
 /* ════════════════════════════════════════════════════════════════

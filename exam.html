@@ -272,38 +272,61 @@ function show(id){
 }
 
 // Init
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded',async ()=>{
   if(!contestId){show('scr-error');return;}
-  if(!BDOH||!BDOH.contests){show('scr-error');return;}
-  contest=(BDOH.contests||[]).find(c=>c.id===contestId);
-  if(!contest){show('scr-error');return;}
 
-  document.title=contest.title+' — BDOH Exam';
-  questions=contest.questions||[];
-  if(questions.length===0){
-    document.getElementById('scr-error').querySelector('h1').textContent='No Questions Found';
-    document.getElementById('scr-error').querySelector('p').textContent='This contest has no questions configured yet. Please contact the administrator.';
-    show('scr-error');return;
-  }
-  if(contest.security&&contest.security.shuffleQuestions){
-    questions=[...questions].sort(()=>Math.random()-.5);
-  }
-  // shuffle options for MCQ if enabled
-  if(contest.security&&contest.security.shuffleOptions){
-    questions=questions.map(q=>{
-      if(q.type==='mcq'){
-        const idxArr=q.options.map((_,i)=>i);
-        idxArr.sort(()=>Math.random()-.5);
-        const correctOrig=q.answer;
-        const newOpts=idxArr.map(i=>q.options[i]);
-        const newAnswer=idxArr.findIndex(i=>String(i)===String(correctOrig));
-        return{...q,options:newOpts,answer:String(newAnswer)};
+  /* Wait for Firebase to be ready, then fetch the specific contest */
+  async function loadContest(){
+    try{
+      if(window.BDOH_DB){
+        const contests = await window.BDOH_DB.getContests();
+        return contests.find(c=>c.id===contestId)||null;
       }
-      return q;
-    });
+    }catch(e){ console.warn('Firestore fetch failed, trying cache', e); }
+
+    /* Fallback: try localStorage cache */
+    try{
+      const cached=JSON.parse(localStorage.getItem('bdoh_contests_cache')||'[]');
+      return cached.find(c=>c.id===contestId)||null;
+    }catch(_){ return null; }
   }
 
-  checkAvailability();
+  /* Give Firebase up to 6 seconds to initialise */
+  let attempts=0;
+  const waitAndLoad=async()=>{
+    contest = await loadContest();
+    if(!contest && attempts<12){
+      attempts++;
+      setTimeout(waitAndLoad, 500);
+      return;
+    }
+    if(!contest){ show('scr-error'); return; }
+
+    document.title=contest.title+' — BDOH Exam';
+    questions=contest.questions||[];
+    if(questions.length===0){
+      document.getElementById('scr-error').querySelector('h1').textContent='No Questions Found';
+      document.getElementById('scr-error').querySelector('p').textContent='This contest has no questions configured yet. Please contact the administrator.';
+      show('scr-error');return;
+    }
+    if(contest.security&&contest.security.shuffleQuestions){
+      questions=[...questions].sort(()=>Math.random()-.5);
+    }
+    if(contest.security&&contest.security.shuffleOptions){
+      questions=questions.map(q=>{
+        if(q.type==='mcq'){
+          const idxArr=q.options.map((_,i)=>i);
+          idxArr.sort(()=>Math.random()-.5);
+          const newOpts=idxArr.map(i=>q.options[i]);
+          const newAnswer=idxArr.findIndex(i=>String(i)===String(q.answer));
+          return{...q,options:newOpts,answer:String(newAnswer)};
+        }
+        return q;
+      });
+    }
+    checkAvailability();
+  };
+  waitAndLoad();
 });
 
 function checkAvailability(){
@@ -557,7 +580,8 @@ function submitExam(auto=false){
   };
   if(!BDOH.submissions)BDOH.submissions=[];
   BDOH.submissions.push(submission);
-  bdohSave();
+  /* Save to Firestore so admin can see it */
+  if(window.BDOH_DB){ window.BDOH_DB.saveSubmission(submission).catch(e=>console.warn('submission save error',e)); }
 
   showDone(submission);
 }
@@ -661,7 +685,7 @@ function disqualify(msg){
   const sub={id:'sub'+Date.now(),contestId,name:participantInfo.name,category:participantInfo.category,classGrade:participantInfo.classGrade,institution:participantInfo.institution,score:0,rawScore:0,maxScore:questions.reduce((s,q)=>s+(q.points||0),0),tabSwitches,penalties:0,answers,submittedAt:new Date().toISOString(),disqualified:true};
   if(!BDOH.submissions)BDOH.submissions=[];
   BDOH.submissions.push(sub);
-  bdohSave();
+  if(window.BDOH_DB){ window.BDOH_DB.saveSubmission(sub).catch(e=>console.warn('submission save error',e)); }
 }
 </script>
 </body>

@@ -773,7 +773,6 @@ function saveContest(){
       phone:document.getElementById('req-phone').checked,
       email:document.getElementById('req-email').checked,
     },
-    // legacy compat
     date:document.getElementById('cw-open').value?document.getElementById('cw-open').value.split('T')[0]:'',
     problems:cwQuestions.length,
     tags:[]
@@ -788,11 +787,18 @@ function saveContest(){
     BDOH.contests.push(contest);
   }
 
+  /* Save to Firestore — this syncs to ALL devices instantly */
+  if(window.BDOH_DB){
+    window.BDOH_DB.saveContest(contest)
+      .then(()=>toast(cwEditId?'Contest updated on all devices!':'Contest live on all devices! exam.html?id='+id))
+      .catch(e=>{console.error(e);toast('Saved locally but Firestore sync failed.',false);});
+  } else {
+    toast(cwEditId?'Contest updated!':'Contest created! exam.html?id='+id);
+  }
+
   closeContestWizard();
   renderCTbl();
   updateMetrics();
-  bdohSave();
-  toast(cwEditId?'Contest updated!':'Contest created! Share exam.html?id='+id);
 }
 
 // ============================================================
@@ -899,7 +905,17 @@ function editContest(id){
   document.getElementById('contestWizard').classList.add('open');
 }
 
-function delC(i){if(!confirm('Delete this contest?'))return;BDOH.contests.splice(i,1);renderCTbl();updateMetrics();bdohSave();toast('Deleted.',false)}
+function delC(i){
+  if(!confirm('Delete this contest?'))return;
+  const c=BDOH.contests[i];
+  BDOH.contests.splice(i,1);
+  renderCTbl();updateMetrics();
+  if(window.BDOH_DB&&c){
+    window.BDOH_DB.deleteContest(c.id)
+      .then(()=>toast('Deleted from all devices.',false))
+      .catch(e=>{console.error(e);toast('Deleted locally; Firestore sync failed.',false);});
+  } else { toast('Deleted.',false); }
+}
 
 // ============================================================
 // RESULTS
@@ -969,12 +985,50 @@ function delPl(i){if(!confirm('Remove panelist?'))return;BDOH.panelists.splice(i
 function closePlF(){document.getElementById('plModal').classList.remove('open')}
 
 // ============================================================
-// INIT
+// INIT — load live data from Firestore
 // ============================================================
 if(!BDOH.submissions)BDOH.submissions=[];
 if(!BDOH.contests)BDOH.contests=[];
-updateMetrics();
-renderDashboard();
+
+async function adminInit(){
+  updateMetrics();
+  renderDashboard();
+
+  if(window.BDOH_DB){
+    try{
+      /* Load contests */
+      const contests = await window.BDOH_DB.getContests();
+      BDOH.contests = contests;
+      /* Load submissions */
+      const subs = await window.BDOH_DB.getSubmissions();
+      BDOH.submissions = subs;
+      updateMetrics();
+      renderDashboard();
+      toast('Data loaded from cloud ☁️');
+    }catch(e){
+      console.error('Admin Firestore load error',e);
+      toast('Could not load from cloud. Check connection.',false);
+    }
+  } else {
+    /* Wait for Firebase to init */
+    bdohFirebaseReady(async()=>{
+      if(window.BDOH_DB){
+        try{
+          const contests = await window.BDOH_DB.getContests();
+          BDOH.contests = contests;
+          const subs = await window.BDOH_DB.getSubmissions();
+          BDOH.submissions = subs;
+          updateMetrics();
+          renderDashboard();
+          toast('Data loaded from cloud ☁️');
+        }catch(e){ console.error(e); }
+      }
+    });
+  }
+}
+
+/* Wait a tick for BDOH_DB to be set by data.js async init */
+setTimeout(adminInit, 800);
 
 // ============================================================
 // EXPORT DATA SNAPSHOT
@@ -1003,53 +1057,40 @@ function exportDataSnapshot(){
 }
 </script>
 <script type="module">
-  // Import Firebase Auth tools
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  // YOUR REAL BDOH FIREBASE KEYS
   const firebaseConfig = {
-  apiKey: "AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",
-  authDomain: "bdoh-project.firebaseapp.com",
-  projectId: "bdoh-project",
-  storageBucket: "bdoh-project.firebasestorage.app",
-  messagingSenderId: "413106966781",
-  appId: "1:413106966781:web:f3123769a8d2cec02e2e94",
-  measurementId: "G-C0Y2JTJ0BR"
-};
+    apiKey: "AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",
+    authDomain: "bdoh-project.firebaseapp.com",
+    projectId: "bdoh-project",
+    storageBucket: "bdoh-project.firebasestorage.app",
+    messagingSenderId: "413106966781",
+    appId: "1:413106966781:web:f3123769a8d2cec02e2e94"
+  };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+  /* Reuse the app initialised by data.js if already exists */
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
-  // Listen for login button click
   document.getElementById('login-btn').addEventListener('click', () => {
     const email = document.getElementById('admin-email').value;
-    const pass = document.getElementById('admin-pass').value;
-    const btn = document.getElementById('login-btn');
-    const err = document.getElementById('login-error');
-    
+    const pass  = document.getElementById('admin-pass').value;
+    const btn   = document.getElementById('login-btn');
+    const err   = document.getElementById('login-error');
     btn.textContent = "Verifying...";
     err.style.display = "none";
-
     signInWithEmailAndPassword(auth, email, pass)
-      .then((userCredential) => {
-        // Success!
-      })
       .catch((error) => {
         btn.textContent = "Unlock Dashboard";
-        // This adds the technical error code to your red error message
-        err.textContent = "Technical Error: " + error.code;
+        err.textContent = "Login failed: " + error.code;
         err.style.display = "block";
-        console.error("Full Error:", error);
       });
   });
 
-  // Watch to see if the user is logged in
   onAuthStateChanged(auth, (user) => {
     if (user) {
       document.getElementById('login-overlay').style.display = 'none';
-      console.log("Logged in as:", user.email);
     } else {
       document.getElementById('login-overlay').style.display = 'flex';
     }
