@@ -238,10 +238,9 @@ ul{list-style:none;padding:0;margin:0}
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:8px;
   position:fixed;inset:0;z-index:750;
-  background:var(--bg);backdrop-filter:blur(24px) saturate(1.6);
-  -webkit-backdrop-filter:blur(24px) saturate(1.6);
+  background:rgba(6,9,26,.97);backdrop-filter:blur(24px);
   transform:translateX(100%);
-  transition:transform .38s var(--ease),background .4s var(--ease);
+  transition:transform .38s var(--ease);
 }
 .mob-menu.open{transform:none}
 .mob-close{
@@ -877,12 +876,49 @@ ul{list-style:none;padding:0;margin:0}
 .fb-no{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#f87171;display:block}
 .exam-divider{height:1px;background:var(--bd);flex-shrink:0}
 
-.solution-box{background:rgba(0,0,0,.2);border:1px solid var(--bd);border-radius:12px;padding:18px;min-height:80px;flex:1}
-.solution-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;min-height:100px;text-align:center}
+/* Solution box: must NOT use flex:1 — that lets it collapse and causes overlap */
+.solution-box{
+  background:rgba(0,0,0,.2);
+  border:1px solid var(--bd);
+  border-radius:12px;
+  padding:18px;
+  /* Let height grow with content, never collapse */
+  width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+  word-break:break-word;
+  overflow-wrap:break-word;
+}
+.solution-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:100px;text-align:center}
 .solution-locked p{font-size:13.5px;color:var(--txt-d);font-family:var(--fH)}
-.solution-content{font-size:14px;color:var(--txt-m);line-height:1.74}
+.solution-content{
+  font-size:14px;
+  color:var(--txt-m);
+  line-height:1.74;
+  width:100%;
+  box-sizing:border-box;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  white-space:pre-wrap;
+}
 
-.exam-nav-btns{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:16px;border-top:1px solid var(--bd);flex-shrink:0}
+/* Nav buttons: NOT margin-top:auto — that pulls them up over the solution */
+.exam-nav-btns{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  /* Use normal flow margin, not auto */
+  margin-top:8px;
+  padding-top:16px;
+  border-top:1px solid var(--bd);
+  flex-shrink:0;
+  /* Stick to bottom of scrollable area naturally */
+  position:sticky;
+  bottom:0;
+  background:var(--bg2);
+  z-index:2;
+  padding-bottom:4px;
+}
 .exam-progress{font-family:var(--fH);font-size:12px;font-weight:600;color:var(--txt-d)}
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
@@ -897,9 +933,11 @@ ul{list-style:none;padding:0;margin:0}
   .feat-grid,.cat-grid,.prob-grid,.team-grid,.news-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .wa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .footer-top{grid-template-columns:1fr 1fr}
-  .exam-body{grid-template-columns:1fr;overflow:visible}
-  .exam-left{border-right:none;border-bottom:1px solid var(--bd);max-height:45vh}
-  .exam-right{max-height:50vh}
+  /* On tablet: stack exam body vertically, each side scrolls independently */
+  .exam-body{grid-template-columns:1fr;overflow-y:auto;overflow-x:hidden}
+  .exam-left{border-right:none;border-bottom:1px solid var(--bd);max-height:42vh;overflow-y:auto}
+  /* exam-right: NO max-height cap — let it grow so solution is never clipped */
+  .exam-right{max-height:none;overflow-y:visible}
 }
 @media(max-width:768px){
   .navbar{padding:14px 20px}.navbar.scrolled{padding:10px 20px}
@@ -1329,11 +1367,11 @@ body::before {
 
   /* Mobile Menu Overlay Redesign */
   .mob-menu {
-    background: var(--bg) !important;
+    background: rgba(6, 9, 26, 0.96) !important;
     backdrop-filter: blur(30px) saturate(1.8) !important;
     -webkit-backdrop-filter: blur(30px) saturate(1.8) !important;
     clip-path: circle(0% at 100% 0%);
-    transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1), background 0.4s var(--ease) !important;
+    transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1) !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -1392,40 +1430,10 @@ body::before {
   .mob-menu.open .mob-link:nth-child(8) { transition-delay: 0.55s !important; }
 
   .mob-link:hover {
-    color: var(--teal-lt) !important;
+    color: #fff !important;
     transform: scale(1.1) translateX(10px) !important;
     letter-spacing: 4px;
     background: transparent !important;
-  }
-
-  /* ── Light theme: ensure mob-menu blobs don't wash out text ── */
-  [data-theme=light] .mob-menu::before { opacity: 0.07; }
-  [data-theme=light] .mob-menu::after  { opacity: 0.07; }
-
-  /* ── mob-drawer (injected by JS) light mode ── */
-  [data-theme=light] .mob-drawer {
-    background: var(--bg) !important;
-    border-left-color: rgba(0,123,143,0.2) !important;
-  }
-  [data-theme=light] .mob-drawer-logo {
-    background: linear-gradient(90deg, var(--teal), var(--green));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  [data-theme=light] #mobClose {
-    color: var(--txt-m) !important;
-    border-color: var(--bd) !important;
-  }
-  [data-theme=light] .mob-link {
-    color: var(--txt-m) !important;
-  }
-  [data-theme=light] .mob-link:hover {
-    color: var(--teal) !important;
-    background: rgba(0,123,143,0.06) !important;
-  }
-  [data-theme=light] .mob-drawer-footer {
-    color: var(--txt-d) !important;
   }
 
   /* Close Button */
