@@ -718,16 +718,30 @@ window.submitAnswer=function(){
 
 function revealSolution(){
   const p=BDOH.problems.find(x=>x.id===_examId);
-  if(!p) return;
-  document.getElementById('solutionLocked').style.display='none';
+  if(!p){ console.warn('revealSolution: no problem found for id',_examId); return; }
+
+  const locked=document.getElementById('solutionLocked');
   const sc=document.getElementById('solutionContent');
+  if(!locked||!sc){ console.warn('revealSolution: DOM elements missing'); return; }
+
+  locked.style.display='none';
+
+  /* Build solution HTML with fully explicit inline colors so theme variables don't hide text */
   sc.innerHTML=`
-    <p style="font-weight:700;color:var(--txt);margin-bottom:10px">Full Solution</p>
-    <p style="white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.7">${p.solution}</p>
-    <p style="margin-top:12px;font-family:var(--fH);font-size:12px;color:var(--txt-d)">
-      Expected answer: <strong style="color:var(--green)">${p.answer}</strong>${p.tolerance>0?' (tolerance ±'+p.tolerance+')':''}
-    </p>`;
-  sc.style.cssText='display:block;width:100%;box-sizing:border-box;overflow-wrap:break-word;word-break:break-word;overflow:hidden;';
+    <p style="font-family:var(--fH);font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--txt-d);margin-bottom:14px;">Full Solution</p>
+    <p style="font-size:14.5px;color:var(--txt);line-height:1.78;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;">${p.solution}</p>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-family:var(--fH);font-size:12px;color:var(--txt-d);">Expected answer:</span>
+      <strong style="font-family:var(--fH);font-size:14px;color:var(--green);">${p.answer}</strong>
+      ${p.tolerance>0?`<span style="font-size:12px;color:var(--txt-d);">(tolerance ±${p.tolerance})</span>`:''}
+    </div>`;
+
+  /* Force display — use individual property not cssText to avoid clobbering */
+  sc.style.display='block';
+  sc.style.width='100%';
+  sc.style.boxSizing='border-box';
+  sc.style.overflowWrap='break-word';
+  sc.style.wordBreak='break-word';
 }
 
 window.prevProblem=function(){

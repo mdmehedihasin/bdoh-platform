@@ -939,13 +939,13 @@ ul{list-style:none;padding:0;margin:0}
 .solution-locked p{font-size:13.5px;color:var(--txt-d);font-family:var(--fH)}
 .solution-content{
   font-size:14px;
-  color:var(--txt-m);
+  color:var(--txt);
   line-height:1.74;
   width:100%;
   box-sizing:border-box;
   word-break:break-word;
   overflow-wrap:break-word;
-  white-space:pre-wrap;
+  /* white-space handled per-element inline */
 }
 
 /* Nav buttons: NOT margin-top:auto — that pulls them up over the solution */
