@@ -238,9 +238,10 @@ ul{list-style:none;padding:0;margin:0}
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:8px;
   position:fixed;inset:0;z-index:750;
-  background:rgba(6,9,26,.97);backdrop-filter:blur(24px);
+  background:var(--bg);backdrop-filter:blur(24px) saturate(1.6);
+  -webkit-backdrop-filter:blur(24px) saturate(1.6);
   transform:translateX(100%);
-  transition:transform .38s var(--ease);
+  transition:transform .38s var(--ease),background .4s var(--ease);
 }
 .mob-menu.open{transform:none}
 .mob-close{
@@ -1328,11 +1329,11 @@ body::before {
 
   /* Mobile Menu Overlay Redesign */
   .mob-menu {
-    background: rgba(6, 9, 26, 0.96) !important;
+    background: var(--bg) !important;
     backdrop-filter: blur(30px) saturate(1.8) !important;
     -webkit-backdrop-filter: blur(30px) saturate(1.8) !important;
     clip-path: circle(0% at 100% 0%);
-    transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1) !important;
+    transition: clip-path 0.8s cubic-bezier(0.77, 0, 0.175, 1), background 0.4s var(--ease) !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
@@ -1391,10 +1392,40 @@ body::before {
   .mob-menu.open .mob-link:nth-child(8) { transition-delay: 0.55s !important; }
 
   .mob-link:hover {
-    color: #fff !important;
+    color: var(--teal-lt) !important;
     transform: scale(1.1) translateX(10px) !important;
     letter-spacing: 4px;
     background: transparent !important;
+  }
+
+  /* ── Light theme: ensure mob-menu blobs don't wash out text ── */
+  [data-theme=light] .mob-menu::before { opacity: 0.07; }
+  [data-theme=light] .mob-menu::after  { opacity: 0.07; }
+
+  /* ── mob-drawer (injected by JS) light mode ── */
+  [data-theme=light] .mob-drawer {
+    background: var(--bg) !important;
+    border-left-color: rgba(0,123,143,0.2) !important;
+  }
+  [data-theme=light] .mob-drawer-logo {
+    background: linear-gradient(90deg, var(--teal), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  [data-theme=light] #mobClose {
+    color: var(--txt-m) !important;
+    border-color: var(--bd) !important;
+  }
+  [data-theme=light] .mob-link {
+    color: var(--txt-m) !important;
+  }
+  [data-theme=light] .mob-link:hover {
+    color: var(--teal) !important;
+    background: rgba(0,123,143,0.06) !important;
+  }
+  [data-theme=light] .mob-drawer-footer {
+    color: var(--txt-d) !important;
   }
 
   /* Close Button */
