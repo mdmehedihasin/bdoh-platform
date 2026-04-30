@@ -751,16 +751,24 @@ function submitExam(auto=false){
   const finalScore=Math.max(0,score-penaltyPts);
   const timeTaken=startTime?Math.round((new Date()-startTime)/1000):0;
 
+  const uid=window.BDOH?.currentUser?.uid||null;
+  const contest=BDOH.contests.find(c=>c.id===contestId)||{};
   const sub={
     id:'sub'+Date.now(),
     contestId,
-    userId:window.BDOH?.currentUser?.uid||null,
+    /* BOTH field names — userId for admin.html, user_id for profile.html */
+    userId:      uid,
+    user_id:     uid,
     name:participantInfo.name,
+    /* profile.html shows s.problem_title and s.subject — map from contest */
+    problem_title: contest.title||'Contest',
+    title:         contest.title||'Contest',
+    subject:       contest.subject||'',
     category:participantInfo.category,
     classGrade:participantInfo.classGrade,
     institution:participantInfo.institution,
     phone:participantInfo.phone,
-    email:participantInfo.email,
+    email:participantInfo.email||BDOH.currentUser?.email||'',
     score:finalScore,
     rawScore:score,
     maxScore,
@@ -768,7 +776,11 @@ function submitExam(auto=false){
     penalties:penaltyPts,
     answers,
     timeTaken,
-    submittedAt:new Date().toISOString(),
+    /* status + isCorrect for profile.html submission display */
+    status:      finalScore>=(maxScore*.5)?'correct':'incorrect',
+    isCorrect:   finalScore>=(maxScore*.5),
+    submittedAt: new Date().toISOString(),
+    /* timestamp as ISO string (Firestore converts via saveSubmission) */
     autoSubmitted:auto,
     disqualified:false
   };

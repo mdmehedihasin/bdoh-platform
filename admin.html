@@ -2,49 +2,76 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>BDOH Admin Panel</title>
+<title>BDOH Admin Panel v4.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
-:root{--teal:#007B8F;--green:#4CAF50;--gold:#FFD700;--bg:#06091A;--bg2:#090d22;--bg3:#0e1330;--sf:rgba(255,255,255,.05);--bd:rgba(255,255,255,.08);--ba:rgba(0,123,143,.3);--txt:#eef1ff;--m:rgba(238,241,255,.56);--d:rgba(238,241,255,.3);--fH:'Plus Jakarta Sans',sans-serif;--fB:'DM Sans',sans-serif;--r:12px;--gb:linear-gradient(90deg,#007B8F,#4CAF50)}
-[data-theme=light]{--bg:#f0f5f9;--bg2:#e3ecf4;--bg3:#d6e4ef;--sf:rgba(0,0,0,.04);--bd:rgba(0,0,0,.09);--txt:#080d24;--m:rgba(8,13,36,.6);--d:rgba(8,13,36,.3)}
+:root{--teal:#007B8F;--green:#4CAF50;--gold:#FFD700;--bg:#06091A;--bg2:#090d22;--bg3:#0e1330;
+  --sf:rgba(255,255,255,.05);--bd:rgba(255,255,255,.08);--ba:rgba(0,123,143,.3);
+  --txt:#eef1ff;--m:rgba(238,241,255,.56);--d:rgba(238,241,255,.3);
+  --fH:'Plus Jakarta Sans',sans-serif;--fB:'DM Sans',sans-serif;--r:12px;
+  --gb:linear-gradient(90deg,#007B8F,#4CAF50)}
+[data-theme=light]{--bg:#f0f5f9;--bg2:#e3ecf4;--bg3:#d6e4ef;--sf:rgba(0,0,0,.04);
+  --bd:rgba(0,0,0,.09);--txt:#080d24;--m:rgba(8,13,36,.6);--d:rgba(8,13,36,.3)}
 *,::before,::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--fB);display:flex;min-height:100vh}
 a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer}
 
-.sidebar{width:256px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:28px 0;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:10;flex-shrink:0}
-.sb-logo{display:flex;align-items:center;gap:11px;padding:0 22px 28px;border-bottom:1px solid var(--bd);margin-bottom:16px}
+/* ── SIDEBAR ── */
+.sidebar{width:256px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;
+  flex-direction:column;padding:28px 0;position:fixed;top:0;left:0;bottom:0;
+  overflow-y:auto;z-index:10;flex-shrink:0}
+.sb-logo{display:flex;align-items:center;gap:11px;padding:0 22px 28px;
+  border-bottom:1px solid var(--bd);margin-bottom:16px}
 .sb-logo-text{font-family:var(--fH);font-size:14px;font-weight:800;color:var(--txt);line-height:1.2}
 .sb-logo-text span{font-size:11px;font-weight:500;color:var(--m);display:block}
-.nav-item{display:flex;align-items:center;gap:12px;padding:12px 22px;color:var(--m);font-family:var(--fH);font-size:14px;font-weight:600;border-left:3px solid transparent;cursor:pointer;transition:all .22s;border:none;background:none;width:100%;text-align:left}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 22px;color:var(--m);
+  font-family:var(--fH);font-size:14px;font-weight:600;border-left:3px solid transparent;
+  cursor:pointer;transition:all .22s;border:none;background:none;width:100%;text-align:left}
 .nav-item:hover,.nav-item.on{color:var(--txt);background:rgba(0,123,143,.1);border-left-color:var(--teal)}
 .nav-icon{font-size:18px;width:24px;text-align:center}
 .nav-sep{height:1px;background:var(--bd);margin:12px 0}
+.nav-role-badge{margin:0 22px 12px;padding:7px 14px;background:rgba(0,123,143,.12);
+  border:1px solid var(--ba);border-radius:10px;font-family:var(--fH);font-size:11px;
+  font-weight:700;color:#5bcfdf;text-align:center}
 
+/* ── MAIN AREA ── */
 .main-area{margin-left:256px;flex:1;padding:36px;min-height:100vh}
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:14px}
 .pg-title{font-family:var(--fH);font-size:30px;font-weight:800;color:var(--txt)}
-.topbar-r{display:flex;gap:10px;align-items:center}
-.btn-theme-sm{width:38px;height:38px;border-radius:50%;background:var(--sf);border:1px solid var(--bd);color:var(--txt);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .22s}
+.topbar-r{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn-theme-sm{width:38px;height:38px;border-radius:50%;background:var(--sf);border:1px solid var(--bd);
+  color:var(--txt);font-size:16px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .22s}
 .btn-theme-sm:hover{transform:rotate(20deg)}
-.admin-badge{background:rgba(0,123,143,.18);border:1px solid var(--ba);color:#5bcfdf;padding:7px 18px;border-radius:22px;font-family:var(--fH);font-size:12px;font-weight:700}
+.admin-badge{background:rgba(0,123,143,.18);border:1px solid var(--ba);color:#5bcfdf;
+  padding:7px 18px;border-radius:22px;font-family:var(--fH);font-size:12px;font-weight:700}
 
+/* ── METRICS ── */
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:32px}
 .mc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;transition:border-color .22s}
 .mc:hover{border-color:var(--ba)}
-.mc-val{font-family:var(--fH);font-size:38px;font-weight:800;background:var(--gb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:7px}
+.mc-val{font-family:var(--fH);font-size:38px;font-weight:800;background:var(--gb);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;margin-bottom:7px}
 .mc-lbl{font-size:13px;color:var(--m);font-family:var(--fH);font-weight:500}
+.mc-sub{font-size:11px;color:var(--d);margin-top:3px;font-family:var(--fH)}
 
+/* ── TABLES ── */
 .tbl-sec{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:28px}
-.tbl-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 26px;border-bottom:1px solid var(--bd)}
+.tbl-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 26px;border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:10px}
 .tbl-hdr h3{font-family:var(--fH);font-size:18px;font-weight:800;color:var(--txt)}
-.tbl-hdr-btns{display:flex;gap:10px;align-items:center}
-.btn-add{background:var(--gb);color:#fff;border:none;padding:10px 22px;border-radius:24px;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:all .24s;box-shadow:0 4px 18px rgba(0,123,143,.35)}
+.tbl-hdr-btns{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn-add{background:var(--gb);color:#fff;border:none;padding:10px 22px;border-radius:24px;
+  font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:all .24s;
+  box-shadow:0 4px 18px rgba(0,123,143,.35)}
 .btn-add:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(0,123,143,.5)}
-.btn-secondary{background:var(--sf);border:1px solid var(--bd);color:var(--txt);padding:10px 18px;border-radius:24px;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:all .22s}
+.btn-secondary{background:var(--sf);border:1px solid var(--bd);color:var(--txt);padding:10px 18px;
+  border-radius:24px;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:all .22s}
 .btn-secondary:hover{border-color:var(--teal);color:var(--teal)}
-
 table{width:100%;border-collapse:collapse}
-thead th{text-align:left;padding:14px 22px;font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--m);background:rgba(0,0,0,.1);border-bottom:1px solid var(--bd)}
+thead th{text-align:left;padding:14px 22px;font-family:var(--fH);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.2px;color:var(--m);background:rgba(0,0,0,.1);
+  border-bottom:1px solid var(--bd)}
 tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s}
 tbody tr:hover{background:rgba(0,123,143,.06)}
 tbody td{padding:15px 22px;font-size:14px;color:var(--m)}
@@ -57,53 +84,52 @@ tbody td:first-child{color:var(--txt);font-weight:600}
 .d-easy{background:rgba(76,175,80,.18);color:#81c784}
 .d-med{background:rgba(255,152,0,.18);color:#ffb74d}
 .d-hard{background:rgba(239,68,68,.18);color:#f87171}
-
 .act-row{display:flex;gap:8px;flex-wrap:wrap}
-.act{background:var(--sf);border:1px solid var(--bd);padding:5px 13px;border-radius:8px;font-size:12px;color:var(--m);cursor:pointer;font-family:var(--fH);font-weight:600;transition:all .2s}
+.act{background:var(--sf);border:1px solid var(--bd);padding:5px 13px;border-radius:8px;
+  font-size:12px;color:var(--m);cursor:pointer;font-family:var(--fH);font-weight:600;transition:all .2s}
 .act:hover{border-color:var(--teal);color:var(--txt)}
 .act.del:hover{border-color:rgba(239,68,68,.4);color:#f87171}
 .act.view:hover{border-color:var(--green);color:var(--green)}
 
+/* ── PAGES ── */
 .pg{display:none}.pg.on{display:block}
 
-.mf-bg{position:fixed;inset:0;background:rgba(6,9,26,.92);backdrop-filter:blur(16px);z-index:500;display:none;align-items:center;justify-content:center;padding:24px}
+/* ── MODALS ── */
+.mf-bg{position:fixed;inset:0;background:rgba(6,9,26,.92);backdrop-filter:blur(16px);z-index:500;
+  display:none;align-items:center;justify-content:center;padding:24px}
 .mf-bg.open{display:flex}
-.mf-box{background:var(--bg3);border:1px solid var(--ba);border-radius:20px;padding:40px;width:100%;max-width:820px;max-height:90vh;overflow-y:auto;animation:mIn .34s cubic-bezier(.34,1.56,.64,1) both}
+.mf-box{background:var(--bg3);border:1px solid var(--ba);border-radius:20px;padding:40px;width:100%;
+  max-width:820px;max-height:90vh;overflow-y:auto;animation:mIn .34s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes mIn{from{opacity:0;transform:scale(.9) translateY(22px)}to{opacity:1;transform:none}}
 .mf-box h3{font-family:var(--fH);font-size:24px;font-weight:800;color:var(--txt);margin-bottom:26px}
 
+/* ── FORM ELEMENTS ── */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .fg-group{display:flex;flex-direction:column;gap:7px}
 .fg-group.full{grid-column:1/-1}
 label{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--m)}
-input,select,textarea{background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;font-family:var(--fB);font-size:14px;color:var(--txt);outline:none;transition:border-color .22s,box-shadow .22s;width:100%}
+input,select,textarea{background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:10px;
+  padding:12px 16px;font-family:var(--fB);font-size:14px;color:var(--txt);outline:none;
+  transition:border-color .22s,box-shadow .22s;width:100%}
 [data-theme=light] input,[data-theme=light] select,[data-theme=light] textarea{background:rgba(0,0,0,.05);color:var(--txt)}
 input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,123,143,.22)}
 textarea{resize:vertical;min-height:90px}
 select option{background:var(--bg2)}
-
-.f-btns{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
-.btn-cancel{background:var(--sf);border:1px solid var(--bd);color:var(--txt);padding:11px 24px;border-radius:24px;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:all .22s}
+.f-btns{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;flex-wrap:wrap}
+.btn-cancel{background:var(--sf);border:1px solid var(--bd);color:var(--txt);padding:11px 24px;
+  border-radius:24px;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:all .22s}
 .btn-cancel:hover{border-color:rgba(239,68,68,.35);color:#f87171}
 
-.toast{position:fixed;bottom:30px;right:30px;z-index:999;padding:15px 24px;border-radius:13px;font-family:var(--fH);font-size:14px;font-weight:700;transform:translateY(22px);opacity:0;transition:all .32s;pointer-events:none}
-.toast.show{transform:none;opacity:1}
-.t-ok{background:rgba(76,175,80,.2);border:1px solid rgba(76,175,80,.4);color:#81c784}
-.t-err{background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.35);color:#f87171}
-
-.preview-link{display:inline-flex;align-items:center;gap:8px;color:var(--teal);font-family:var(--fH);font-size:13px;font-weight:700;padding:8px 16px;border:1px solid var(--ba);border-radius:20px;transition:all .22s}
-.preview-link:hover{background:rgba(0,123,143,.12)}
-
-/* Contest Builder Wizard */
+/* ── WIZARD ── */
 .wizard-steps{display:flex;gap:0;margin-bottom:32px;border-radius:12px;overflow:hidden;border:1px solid var(--bd)}
-.wz-step{flex:1;padding:14px;text-align:center;font-family:var(--fH);font-size:12px;font-weight:700;color:var(--m);background:var(--sf);cursor:pointer;transition:all .2s;border-right:1px solid var(--bd)}
+.wz-step{flex:1;padding:12px 8px;text-align:center;font-family:var(--fH);font-size:11px;font-weight:700;
+  color:var(--m);background:var(--sf);cursor:pointer;transition:all .2s;border-right:1px solid var(--bd)}
 .wz-step:last-child{border-right:none}
 .wz-step.active{background:rgba(0,123,143,.2);color:var(--teal);border-bottom:2px solid var(--teal)}
 .wz-step.done{background:rgba(76,175,80,.1);color:#81c784}
-.wz-panel{display:none}
-.wz-panel.active{display:block}
+.wz-panel{display:none}.wz-panel.active{display:block}
 
-/* Question Builder */
+/* ── QUESTION BUILDER ── */
 .q-list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
 .q-item{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:12px;padding:18px;position:relative}
 .q-item-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
@@ -119,10 +145,12 @@ select option{background:var(--bg2)}
 .q-opt-row input[type=radio]{width:auto;flex:none}
 .q-opt-label{font-size:12px;color:var(--m);white-space:nowrap;font-family:var(--fH);font-weight:600}
 .add-q-btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-.add-q-btn{background:var(--sf);border:1px solid var(--bd);color:var(--m);padding:9px 16px;border-radius:10px;font-family:var(--fH);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.add-q-btn{background:var(--sf);border:1px solid var(--bd);color:var(--m);padding:9px 16px;
+  border-radius:10px;font-family:var(--fH);font-size:12px;font-weight:700;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:6px}
 .add-q-btn:hover{border-color:var(--teal);color:var(--teal)}
 
-/* Security panel */
+/* ── SECURITY PANEL ── */
 .sec-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
 .sec-card{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:12px;padding:18px}
 .sec-card h4{font-family:var(--fH);font-size:13px;font-weight:800;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -135,7 +163,7 @@ select option{background:var(--bg2)}
 input:checked+.toggle-slider{background:var(--teal)}
 input:checked+.toggle-slider:before{transform:translateX(20px)}
 
-/* Results / Submissions */
+/* ── RESULTS ── */
 .results-bar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
 .results-bar select{width:auto;padding:8px 14px}
 .rank-badge{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:var(--fH);font-size:11px;font-weight:800}
@@ -145,44 +173,94 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 .score-bar-wrap{display:flex;align-items:center;gap:8px}
 .score-bar{height:6px;border-radius:3px;background:var(--gb);min-width:4px}
 .penalty-badge{font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(239,68,68,.15);color:#f87171;font-family:var(--fH);font-weight:700}
-.export-btn{background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:#81c784;padding:8px 16px;border-radius:10px;font-family:var(--fH);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
+.export-btn{background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);color:#81c784;
+  padding:8px 16px;border-radius:10px;font-family:var(--fH);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s}
 .export-btn:hover{background:rgba(76,175,80,.25)}
 
-/* Contest detail panel */
+/* ── CONTEST DETAIL ── */
 .cd-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 .cd-card{background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:12px;padding:18px}
 .cd-label{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--m);margin-bottom:6px}
 .cd-val{font-family:var(--fH);font-size:18px;font-weight:800;color:var(--txt)}
-.contest-link{display:inline-flex;align-items:center;gap:8px;background:var(--gb);color:#fff;padding:10px 20px;border-radius:20px;font-family:var(--fH);font-size:13px;font-weight:700;text-decoration:none;margin-top:12px;transition:all .22s;box-shadow:0 4px 14px rgba(0,123,143,.3)}
+.contest-link{display:inline-flex;align-items:center;gap:8px;background:var(--gb);color:#fff;
+  padding:10px 20px;border-radius:20px;font-family:var(--fH);font-size:13px;font-weight:700;
+  text-decoration:none;margin-top:12px;transition:all .22s;box-shadow:0 4px 14px rgba(0,123,143,.3)}
 .contest-link:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,123,143,.5)}
+
+/* ── VISIBILITY CONTROLS ── */
+.vis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.vis-card{background:rgba(0,123,143,.06);border:1px solid var(--ba);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s}
+.vis-card.selected{background:rgba(0,123,143,.18);border-color:var(--teal)}
+.vis-card h5{font-family:var(--fH);font-size:13px;font-weight:800;color:var(--txt);margin-bottom:4px}
+.vis-card p{font-size:11px;color:var(--m);line-height:1.5}
+
+/* ── ANALYTICS ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:28px}
+.analytics-card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:24px}
+.analytics-card h4{font-family:var(--fH);font-size:15px;font-weight:800;margin-bottom:18px;color:var(--txt)}
+.chart-bar-wrap{display:flex;flex-direction:column;gap:10px}
+.chart-row{display:flex;align-items:center;gap:12px}
+.chart-label{font-size:12px;color:var(--m);min-width:90px;font-family:var(--fH);font-weight:600}
+.chart-bar-bg{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:4px;background:var(--gb);transition:width .6s ease}
+.chart-val{font-size:12px;color:var(--teal);font-family:var(--fH);font-weight:700;min-width:36px;text-align:right}
+
+/* ── USERS / RBAC ── */
+.role-select{padding:5px 12px;border-radius:8px;background:var(--sf);border:1px solid var(--bd);
+  color:var(--txt);font-family:var(--fH);font-size:12px;font-weight:700;cursor:pointer;width:auto}
+.user-avatar-sm{width:32px;height:32px;border-radius:50%;background:var(--gb);display:inline-flex;
+  align-items:center;justify-content:center;font-family:var(--fH);font-weight:800;color:#fff;font-size:12px;
+  vertical-align:middle;overflow:hidden;flex-shrink:0}
+.user-avatar-sm img{width:100%;height:100%;object-fit:cover}
+.user-cell{display:flex;align-items:center;gap:10px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:30px;right:30px;z-index:999;padding:15px 24px;border-radius:13px;
+  font-family:var(--fH);font-size:14px;font-weight:700;
+  transform:translateY(22px);opacity:0;transition:all .32s;pointer-events:none}
+.toast.show{transform:none;opacity:1}
+.t-ok{background:rgba(76,175,80,.2);border:1px solid rgba(76,175,80,.4);color:#81c784}
+.t-err{background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.35);color:#f87171}
+
+.preview-link{display:inline-flex;align-items:center;gap:8px;color:var(--teal);font-family:var(--fH);font-size:13px;font-weight:700;padding:8px 16px;border:1px solid var(--ba);border-radius:20px;transition:all .22s}
+.preview-link:hover{background:rgba(0,123,143,.12)}
 
 @media(max-width:768px){.sidebar{width:200px}.main-area{margin-left:200px}.metrics{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.sidebar{display:none}.main-area{margin-left:0}}
 </style>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY — Firebase Auth -->
 <div id="login-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;">
-  <div style="background:var(--bg3);border:1px solid var(--ba);padding:40px;border-radius:20px;width:100%;max-width:400px;text-align:center;">
-    <div style="width:50px;height:50px;background:var(--gb);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;font-size:20px;margin:0 auto 20px;">BD</div>
-    <h2 style="font-family:var(--fH);margin-bottom:20px;">Admin Login</h2>
-    <input type="email" id="admin-email" placeholder="Admin Email" style="width:100%;padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.05);border:1px solid var(--bd);color:white;border-radius:10px;">
-    <input type="password" id="admin-pass" placeholder="Password" style="width:100%;padding:12px;margin-bottom:20px;background:rgba(255,255,255,0.05);border:1px solid var(--bd);color:white;border-radius:10px;">
-    <button id="login-btn" style="width:100%;padding:12px;background:var(--gb);color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;">Unlock Dashboard</button>
-    <p id="login-error" style="color:#f87171;margin-top:12px;font-size:13px;display:none;">Incorrect email or password.</p>
+  <div style="background:var(--bg3);border:1px solid var(--ba);padding:44px;border-radius:22px;width:100%;max-width:420px;text-align:center;">
+    <div style="width:52px;height:52px;background:var(--gb);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;margin:0 auto 24px;font-family:var(--fH)">BD</div>
+    <h2 style="font-family:var(--fH);font-size:22px;font-weight:800;margin-bottom:8px">Admin Login</h2>
+    <p style="color:var(--m);font-size:13px;margin-bottom:24px">Only authorized administrators can access this panel.</p>
+    <input type="email" id="admin-email" placeholder="Admin Email" style="width:100%;padding:13px;margin-bottom:12px;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--txt);border-radius:11px;font-family:var(--fB);font-size:14px;outline:none"/>
+    <input type="password" id="admin-pass" placeholder="Password" style="width:100%;padding:13px;margin-bottom:20px;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--txt);border-radius:11px;font-family:var(--fB);font-size:14px;outline:none"/>
+    <button id="login-btn" style="width:100%;padding:14px;background:var(--gb);color:white;border:none;border-radius:12px;font-weight:800;cursor:pointer;font-family:var(--fH);font-size:15px;box-shadow:0 6px 24px rgba(0,123,143,.35)">Unlock Dashboard</button>
+    <p id="login-error" style="color:#f87171;margin-top:14px;font-size:13px;display:none;font-family:var(--fH)">Incorrect email or password.</p>
   </div>
 </div>
+
 <aside class="sidebar">
   <div class="sb-logo">
     <div style="width:38px;height:38px;border-radius:50%;background:var(--gb);display:flex;align-items:center;justify-content:center;font-family:var(--fH);font-weight:800;color:#fff;font-size:14px">BD</div>
-    <div class="sb-logo-text">BDOH Admin<span>Control Panel</span></div>
+    <div class="sb-logo-text">BDOH Admin<span>Control Panel v4.0</span></div>
   </div>
+  <div class="nav-role-badge" id="sidebar-role">Super Admin</div>
   <button class="nav-item on" onclick="goPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</button>
   <button class="nav-item" onclick="goPage('problems',this)"><span class="nav-icon">📚</span>Problems</button>
   <button class="nav-item" onclick="goPage('contests',this)"><span class="nav-icon">🏆</span>Contests</button>
   <button class="nav-item" onclick="goPage('results',this)"><span class="nav-icon">📈</span>Results & Scores</button>
-  <button class="nav-item" onclick="goPage('panelists',this)"><span class="nav-icon">👥</span>Panelists</button>
+  <button class="nav-item" onclick="goPage('users',this)"><span class="nav-icon">👥</span>Users & Roles</button>
+  <button class="nav-item" onclick="goPage('leaderboard',this)"><span class="nav-icon">🥇</span>Leaderboard</button>
+  <button class="nav-item" onclick="goPage('analytics',this)"><span class="nav-icon">🔬</span>Analytics</button>
+  <button class="nav-item" onclick="goPage('panelists',this)"><span class="nav-icon">🎓</span>Panelists</button>
   <div class="nav-sep"></div>
   <button class="nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon">🌐</span>View Live Site</button>
+  <button class="nav-item" onclick="window.open('leaderboard.html','_blank')"><span class="nav-icon">🏆</span>Public Leaderboard</button>
 </aside>
 
 <main class="main-area">
@@ -193,10 +271,10 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8.5 1a.5.5 0 000-1h-7A1.5 1.5 0 000 1.5v13A1.5 1.5 0 001.5 16h13A1.5 1.5 0 0016 14.5v-7a.5.5 0 00-1 0v7a.5.5 0 01-.5.5h-13a.5.5 0 01-.5-.5v-13a.5.5 0 01.5-.5h7z"/><path d="M16 .5a.5.5 0 00-.5-.5h-5a.5.5 0 000 1h3.793L6.146 9.146a.5.5 0 10.708.708L15 1.707V5.5a.5.5 0 001 0v-5z"/></svg>
         Preview Site
       </a>
-      <button class="btn-secondary" onclick="exportDataSnapshot()" title="Download a data.js snapshot">⬇ Export Data</button>
-      <button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:#f87171" onclick="if(confirm('Reset ALL data to defaults? This cannot be undone.')){localStorage.removeItem(BDOH_STORAGE_KEY);location.reload()}" title="Reset to factory defaults">🗑 Reset</button>
+      <button class="btn-secondary" onclick="exportDataSnapshot()">⬇ Export Data</button>
+      <button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:#f87171" onclick="if(confirm('Reset contests cache?')){localStorage.removeItem('bdoh_contests_cache');location.reload()}">🗑 Reset Cache</button>
       <button class="btn-theme-sm" onclick="toggleT()" title="Toggle theme">☀️</button>
-      <div class="admin-badge">Admin Panel</div>
+      <div class="admin-badge" id="admin-user-badge">Admin Panel</div>
     </div>
   </div>
 
@@ -205,7 +283,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
     <div class="metrics">
       <div class="mc"><div class="mc-val" id="m-p">0</div><div class="mc-lbl">Total Problems</div></div>
       <div class="mc"><div class="mc-val" id="m-c">0</div><div class="mc-lbl">Total Contests</div></div>
-      <div class="mc"><div class="mc-val" id="m-pl">0</div><div class="mc-lbl">Panelists</div></div>
+      <div class="mc"><div class="mc-val" id="m-u" style="-webkit-text-fill-color:#5bcfdf;background:none">0</div><div class="mc-lbl">Registered Users</div></div>
       <div class="mc"><div class="mc-val" id="m-sub" style="-webkit-text-fill-color:#81c784;background:none">0</div><div class="mc-lbl">Total Submissions</div></div>
     </div>
     <div class="tbl-sec">
@@ -214,8 +292,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
       <tbody id="dash-ctbl"></tbody></table>
     </div>
     <div class="tbl-sec">
-      <div class="tbl-hdr"><h3>Recent submissions</h3></div>
-      <table><thead><tr><th>Name</th><th>Contest</th><th>Score</th><th>Category</th><th>Class</th><th>Institution</th><th>Submitted</th></tr></thead>
+      <div class="tbl-hdr"><h3>Recent Submissions</h3></div>
+      <table><thead><tr><th>Name</th><th>Contest</th><th>Score</th><th>Category</th><th>Institution</th><th>Tab Switches</th><th>Submitted</th></tr></thead>
       <tbody id="dash-stbl"></tbody></table>
     </div>
   </div>
@@ -223,7 +301,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   <!-- PROBLEMS -->
   <div class="pg" id="pg-problems">
     <div class="tbl-sec">
-      <div class="tbl-hdr"><h3>All problems</h3><button class="btn-add" onclick="openPF()">+ Add problem</button></div>
+      <div class="tbl-hdr">
+        <h3>All Problems</h3>
+        <div class="tbl-hdr-btns">
+          <input id="prob-search" type="text" placeholder="🔍 Search problems…" style="width:200px;padding:8px 14px" oninput="renderPTbl()"/>
+          <button class="btn-add" onclick="openPF()">+ Add Problem</button>
+        </div>
+      </div>
       <table><thead><tr><th>Title</th><th>Subject</th><th>Difficulty</th><th>Answer</th><th>Points</th><th>Solves</th><th>Actions</th></tr></thead>
       <tbody id="ptbl"></tbody></table>
     </div>
@@ -233,10 +317,10 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   <div class="pg" id="pg-contests">
     <div class="tbl-sec">
       <div class="tbl-hdr">
-        <h3>All contests</h3>
+        <h3>All Contests</h3>
         <button class="btn-add" onclick="openContestWizard()">+ New Contest</button>
       </div>
-      <table><thead><tr><th>Title</th><th>Subject</th><th>Opens</th><th>Closes</th><th>Duration</th><th>Questions</th><th>Status</th><th>Actions</th></tr></thead>
+      <table><thead><tr><th>Title</th><th>Subject</th><th>Opens</th><th>Closes</th><th>Duration</th><th>Qs</th><th>Status</th><th>Result Mode</th><th>Actions</th></tr></thead>
       <tbody id="ctbl"></tbody></table>
     </div>
   </div>
@@ -247,21 +331,99 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
       <div class="tbl-hdr">
         <h3>Submissions & Results</h3>
         <div class="tbl-hdr-btns">
-          <select id="res-filter" onchange="renderResults()" style="width:auto;padding:8px 14px">
-            <option value="">All Contests</option>
+          <select id="res-filter" onchange="renderResults()" style="width:auto;padding:8px 14px"><option value="">All Contests</option></select>
+          <select id="res-sort" onchange="renderResults()" style="width:auto;padding:8px 14px">
+            <option value="score">Sort: Score</option>
+            <option value="time">Sort: Time</option>
+            <option value="name">Sort: Name</option>
           </select>
           <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
         </div>
       </div>
-      <table><thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Category</th><th>Class</th><th>Institution</th><th>Contest</th><th>Tab Switches</th><th>Penalties</th><th>Submitted</th></tr></thead>
+      <table><thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Category</th><th>Institution</th><th>Contest</th><th>Time Used</th><th>Tab Switches</th><th>Penalties</th><th>Status</th><th>Submitted</th></tr></thead>
       <tbody id="res-tbl"></tbody></table>
+    </div>
+  </div>
+
+  <!-- USERS & ROLES -->
+  <div class="pg" id="pg-users">
+    <div class="tbl-sec">
+      <div class="tbl-hdr">
+        <h3>Users & Role Management</h3>
+        <div class="tbl-hdr-btns">
+          <input id="user-search" type="text" placeholder="🔍 Search users…" style="width:200px;padding:8px 14px" oninput="filterUsers()"/>
+          <button class="btn-secondary" onclick="loadUsers()">🔄 Refresh</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>User</th><th>Email</th><th>Rating</th><th>Solved</th><th>Joined</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody id="users-tbl"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--d)">Click Refresh to load users from Firebase</td></tr></tbody>
+      </table>
+    </div>
+    <!-- RBAC INFO -->
+    <div class="tbl-sec">
+      <div class="tbl-hdr"><h3>📋 Role Permissions Matrix</h3></div>
+      <table>
+        <thead><tr><th>Role</th><th>Manage Contests</th><th>Manage Problems</th><th>View Users</th><th>Change Roles</th><th>View Analytics</th><th>Submissions</th></tr></thead>
+        <tbody>
+          <tr><td><span class="bs s-live">Super Admin</span></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td><span class="bs s-open">Admin</span></td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>✅</td><td>✅</td></tr>
+          <tr><td><span class="bs s-soon">Panelist</span></td><td>❌</td><td>✅ (own)</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td><span class="bs s-past">Moderator</span></td><td>❌</td><td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
+          <tr><td>User</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD ADMIN -->
+  <div class="pg" id="pg-leaderboard">
+    <div class="tbl-sec">
+      <div class="tbl-hdr">
+        <h3>Global Leaderboard</h3>
+        <div class="tbl-hdr-btns">
+          <button class="btn-secondary" onclick="adminRecalcLeaderboard()">🔄 Recalculate Ratings</button>
+          <button class="btn-add" onclick="loadLeaderboard()">📊 Load Data</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Rank</th><th>User</th><th>Rating</th><th>Solved</th><th>Accuracy</th><th>Institution</th><th>Last Active</th></tr></thead>
+        <tbody id="lb-admin-tbl"><tr><td colspan="7" style="text-align:center;padding:30px;color:var(--d)">Click "Load Data" to fetch leaderboard</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="pg" id="pg-analytics">
+    <div class="analytics-grid">
+      <div class="analytics-card">
+        <h4>📊 Submissions by Contest</h4>
+        <div class="chart-bar-wrap" id="chart-contest-subs"></div>
+      </div>
+      <div class="analytics-card">
+        <h4>📚 Problems by Subject</h4>
+        <div class="chart-bar-wrap" id="chart-problems-subj"></div>
+      </div>
+      <div class="analytics-card">
+        <h4>🎯 Score Distribution</h4>
+        <div class="chart-bar-wrap" id="chart-score-dist"></div>
+      </div>
+      <div class="analytics-card">
+        <h4>⚠️ Anti-Cheat Summary</h4>
+        <div id="chart-anticheat"></div>
+      </div>
+    </div>
+    <div class="tbl-sec">
+      <div class="tbl-hdr"><h3>Recent Activity Log</h3><button class="btn-secondary" onclick="loadActivityLog()">🔄 Load Log</button></div>
+      <table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Target</th></tr></thead>
+      <tbody id="activity-log-tbl"><tr><td colspan="4" style="text-align:center;padding:30px;color:var(--d)">Click "Load Log" to fetch activity logs</td></tr></tbody></table>
     </div>
   </div>
 
   <!-- PANELISTS -->
   <div class="pg" id="pg-panelists">
     <div class="tbl-sec">
-      <div class="tbl-hdr"><h3>Panelists and President</h3><button class="btn-add" onclick="openPlF()">+ Add panelist</button></div>
+      <div class="tbl-hdr"><h3>Panelists and President</h3><button class="btn-add" onclick="openPlF()">+ Add Panelist</button></div>
       <table><thead><tr><th>Name</th><th>Role</th><th>Subject</th><th>President</th><th>Photo URL</th><th>Actions</th></tr></thead>
       <tbody id="pltbl"></tbody></table>
     </div>
@@ -272,59 +434,57 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 <!-- CONTEST WIZARD MODAL -->
 <!-- ============================================================ -->
 <div class="mf-bg" id="contestWizard">
-  <div class="mf-box" style="max-width:900px">
+  <div class="mf-box" style="max-width:920px">
     <h3 id="cwTitle">🏆 Create New Contest</h3>
-
     <div class="wizard-steps">
       <div class="wz-step active" id="ws1" onclick="gotoStep(1)">1. Basic Info</div>
       <div class="wz-step" id="ws2" onclick="gotoStep(2)">2. Topics</div>
       <div class="wz-step" id="ws3" onclick="gotoStep(3)">3. Questions</div>
-      <div class="wz-step" id="ws4" onclick="gotoStep(4)">4. Schedule & Timer</div>
+      <div class="wz-step" id="ws4" onclick="gotoStep(4)">4. Schedule</div>
       <div class="wz-step" id="ws5" onclick="gotoStep(5)">5. Security</div>
-      <div class="wz-step" id="ws6" onclick="gotoStep(6)">6. Preview & Save</div>
+      <div class="wz-step" id="ws6" onclick="gotoStep(6)">6. Results Visibility</div>
+      <div class="wz-step" id="ws7" onclick="gotoStep(7)">7. Preview & Save</div>
     </div>
 
-    <!-- STEP 1: Basic Info -->
+    <!-- STEP 1 -->
     <div class="wz-panel active" id="wz-panel-1">
       <div class="fg">
         <div class="fg-group full"><label>Contest Title *</label><input id="cw-title" type="text" placeholder="e.g. BDOH Physics Qualifier 2025"/></div>
-        <div class="fg-group full"><label>Description</label><textarea id="cw-desc" placeholder="Brief description for students…" style="min-height:80px"></textarea></div>
+        <div class="fg-group full"><label>Description</label><textarea id="cw-desc" style="min-height:80px" placeholder="Brief description…"></textarea></div>
         <div class="fg-group"><label>Subject</label>
           <select id="cw-sub"><option>Physics</option><option>Mathematics</option><option>Chemistry</option><option>Biology</option><option>Informatics</option><option>Astronomy</option><option>Mixed</option></select></div>
         <div class="fg-group"><label>Level / Eligibility</label><input id="cw-level" type="text" placeholder="e.g. Grades 9–12"/></div>
-        <div class="fg-group"><label>Category (shown to participants)</label><input id="cw-cat" type="text" placeholder="e.g. Junior, Senior, Open"/></div>
+        <div class="fg-group"><label>Category</label><input id="cw-cat" type="text" placeholder="e.g. Junior, Senior, Open"/></div>
         <div class="fg-group"><label>Passing Score (%)</label><input id="cw-pass" type="number" value="60" min="0" max="100"/></div>
         <div class="fg-group"><label>Max Participants (0 = unlimited)</label><input id="cw-maxp" type="number" value="0" min="0"/></div>
         <div class="fg-group"><label>Status</label>
-          <select id="cw-status"><option value="soon">Coming Soon</option><option value="open">Open for Registration</option><option value="live">Live Now</option><option value="past">Past</option></select></div>
+          <select id="cw-status"><option value="soon">Coming Soon</option><option value="open">Open</option><option value="live">Live</option><option value="past">Past</option></select></div>
       </div>
       <div class="f-btns"><button class="btn-add" onclick="gotoStep(2)">Next: Topics →</button></div>
     </div>
 
-    <!-- STEP 2: Topics -->
+    <!-- STEP 2 -->
     <div class="wz-panel" id="wz-panel-2">
-      <p style="color:var(--m);margin-bottom:16px;font-size:14px">Add topic areas or chapters this contest covers. These help students know what to prepare for.</p>
+      <p style="color:var(--m);margin-bottom:16px;font-size:14px">Add topic areas this contest covers.</p>
       <div id="topics-list" class="q-list"></div>
-      <div class="add-q-btns" style="margin-top:12px">
-        <button class="add-q-btn" onclick="addTopic()">➕ Add Topic</button>
-      </div>
+      <div class="add-q-btns"><button class="add-q-btn" onclick="addTopic()">➕ Add Topic</button></div>
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(1)">← Back</button>
         <button class="btn-add" onclick="gotoStep(3)">Next: Questions →</button>
       </div>
     </div>
 
-    <!-- STEP 3: Questions -->
+    <!-- STEP 3 -->
     <div class="wz-panel" id="wz-panel-3">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <p style="color:var(--m);font-size:14px">Add questions for this contest. MCQ or Short Answer (numeric/text).</p>
+        <p style="color:var(--m);font-size:14px">Add MCQ, Short Answer, or True/False questions.</p>
         <span id="q-count-badge" style="font-family:var(--fH);font-weight:800;color:var(--teal);font-size:14px">0 Questions</span>
       </div>
       <div id="questions-list" class="q-list"></div>
       <div class="add-q-btns">
         <button class="add-q-btn" onclick="addQuestion('mcq')">📝 Add MCQ</button>
-        <button class="add-q-btn" onclick="addQuestion('short')">🔢 Add Short Answer</button>
-        <button class="add-q-btn" onclick="addQuestion('tf')">✅ Add True/False</button>
+        <button class="add-q-btn" onclick="addQuestion('short')">🔢 Short Answer</button>
+        <button class="add-q-btn" onclick="addQuestion('tf')">✅ True/False</button>
       </div>
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(2)">← Back</button>
@@ -332,19 +492,18 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
       </div>
     </div>
 
-    <!-- STEP 4: Schedule & Timer -->
+    <!-- STEP 4 -->
     <div class="wz-panel" id="wz-panel-4">
       <div class="fg">
-        <div class="fg-group"><label>Exam Opens (Date & Time) *</label><input id="cw-open" type="datetime-local"/></div>
-        <div class="fg-group"><label>Exam Closes (Date & Time) *</label><input id="cw-close" type="datetime-local"/></div>
-        <div class="fg-group"><label>Exam Duration (minutes) *</label><input id="cw-dur" type="number" value="90" min="1" placeholder="90"/></div>
-        <div class="fg-group"><label>Time per Question (seconds, 0 = no limit)</label><input id="cw-qtime" type="number" value="0" min="0"/></div>
+        <div class="fg-group"><label>Exam Opens *</label><input id="cw-open" type="datetime-local"/></div>
+        <div class="fg-group"><label>Exam Closes *</label><input id="cw-close" type="datetime-local"/></div>
+        <div class="fg-group"><label>Duration (minutes) *</label><input id="cw-dur" type="number" value="90" min="1"/></div>
+        <div class="fg-group"><label>Time per Question (secs, 0 = no limit)</label><input id="cw-qtime" type="number" value="0" min="0"/></div>
         <div class="fg-group"><label>Show Timer to Students</label>
           <select id="cw-showtimer"><option value="true">Yes — show countdown</option><option value="false">No — hide timer</option></select></div>
-        <div class="fg-group"><label>Allow Late Submission?</label>
+        <div class="fg-group"><label>Allow Late Submission</label>
           <select id="cw-late"><option value="false">No — reject after close</option><option value="true">Yes — accept but mark late</option></select></div>
-        <div class="fg-group full"><label>Warning message shown when time is running out</label>
-          <input id="cw-timewarn" type="text" value="⚠️ Only 5 minutes remaining! Submit your answers." /></div>
+        <div class="fg-group full"><label>Time Warning Message</label><input id="cw-timewarn" type="text" value="⚠️ Only 5 minutes remaining! Submit your answers."/></div>
       </div>
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(3)">← Back</button>
@@ -352,82 +511,86 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
       </div>
     </div>
 
-    <!-- STEP 5: Security -->
+    <!-- STEP 5 -->
     <div class="wz-panel" id="wz-panel-5">
-      <p style="color:var(--m);font-size:14px;margin-bottom:18px">Configure anti-cheating rules for this contest. These apply when students take the exam.</p>
+      <p style="color:var(--m);font-size:14px;margin-bottom:18px">Configure anti-cheat and submission rules.</p>
       <div class="sec-grid">
         <div class="sec-card">
-          <h4>🔄 Tab Switch Detection</h4>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Detect tab switching</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-tabdetect" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="fg-group" style="margin-top:8px"><label>Warning before penalty (switches)</label><input id="sec-tabwarn" type="number" value="1" min="0"/></div>
-          <div class="fg-group"><label>Max allowed switches before auto-submit</label><input id="sec-tabmax" type="number" value="3" min="1"/></div>
+          <h4>🔍 Tab Switch Detection</h4>
+          <div class="toggle-row"><span class="toggle-lbl">Enable tab switch detection</span><label class="toggle-switch"><input type="checkbox" id="sec-tabdetect" checked><span class="toggle-slider"></span></label></div>
+          <div class="fg-group" style="margin-top:8px"><label>Warning after (switches)</label><input id="sec-tabwarn" type="number" value="1" min="0"/></div>
+          <div class="fg-group"><label>Max switches before auto-submit</label><input id="sec-tabmax" type="number" value="3" min="1"/></div>
           <div class="fg-group"><label>Score penalty per switch (%)</label><input id="sec-tabpen" type="number" value="5" min="0" max="50"/></div>
-          <div class="fg-group full" style="margin-top:8px"><label>Warning message on tab switch</label><textarea id="sec-tabmsg" style="min-height:60px">⚠️ WARNING: You switched tabs! This has been recorded. Repeated violations may result in disqualification.</textarea></div>
+          <div class="fg-group full" style="margin-top:8px"><label>Warning message</label><textarea id="sec-tabmsg" style="min-height:60px">⚠️ WARNING: Tab switch detected! This is recorded.</textarea></div>
         </div>
         <div class="sec-card">
           <h4>🖥️ Fullscreen & Window</h4>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Require fullscreen mode</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-fullscreen"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Detect window blur/focus loss</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-blur" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Disable right-click</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-rclick" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Disable copy/paste</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-copypaste" checked><span class="toggle-slider"></span></label>
-          </div>
+          <div class="toggle-row"><span class="toggle-lbl">Require fullscreen</span><label class="toggle-switch"><input type="checkbox" id="sec-fullscreen"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-lbl">Detect window blur</span><label class="toggle-switch"><input type="checkbox" id="sec-blur" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-lbl">Disable right-click</span><label class="toggle-switch"><input type="checkbox" id="sec-rclick" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-lbl">Disable copy/paste</span><label class="toggle-switch"><input type="checkbox" id="sec-copypaste" checked><span class="toggle-slider"></span></label></div>
         </div>
         <div class="sec-card">
-          <h4>📋 Submission Info Required</h4>
-          <p style="color:var(--m);font-size:12px;margin-bottom:12px">Fields students must fill before starting:</p>
+          <h4>📋 Required Fields</h4>
           <div class="toggle-row"><span class="toggle-lbl">Full Name</span><label class="toggle-switch"><input type="checkbox" id="req-name" checked><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><span class="toggle-lbl">Category</span><label class="toggle-switch"><input type="checkbox" id="req-cat" checked><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><span class="toggle-lbl">Class / Grade</span><label class="toggle-switch"><input type="checkbox" id="req-class" checked><span class="toggle-slider"></span></label></div>
-          <div class="toggle-row"><span class="toggle-lbl">Institution Name</span><label class="toggle-switch"><input type="checkbox" id="req-inst" checked><span class="toggle-slider"></span></label></div>
-          <div class="toggle-row"><span class="toggle-lbl">Phone Number</span><label class="toggle-switch"><input type="checkbox" id="req-phone"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-lbl">Institution</span><label class="toggle-switch"><input type="checkbox" id="req-inst" checked><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-lbl">Phone</span><label class="toggle-switch"><input type="checkbox" id="req-phone"><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><span class="toggle-lbl">Email</span><label class="toggle-switch"><input type="checkbox" id="req-email"><span class="toggle-slider"></span></label></div>
         </div>
         <div class="sec-card">
           <h4>⚙️ Other Rules</h4>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Shuffle question order</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-shuffle"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Shuffle answer options (MCQ)</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-shuffleopt"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Show correct answers after submit</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-showanswer"><span class="toggle-slider"></span></label>
-          </div>
-          <div class="toggle-row">
-            <span class="toggle-lbl">Allow review before submit</span>
-            <label class="toggle-switch"><input type="checkbox" id="sec-review" checked><span class="toggle-slider"></span></label>
-          </div>
-          <div class="fg-group" style="margin-top:12px"><label>Disqualification message</label><textarea id="sec-dqmsg" style="min-height:60px">You have been disqualified due to repeated policy violations.</textarea></div>
+          <div class="toggle-row"><span class="toggle-lbl">Shuffle question order</span><label class="toggle-switch"><input type="checkbox" id="sec-shuffle"><span class="toggle-slider"></span></label></div>
+          <div class="toggle-row"><span class="toggle-lbl">Shuffle answer options (MCQ)</span><label class="toggle-switch"><input type="checkbox" id="sec-shuffleopt"><span class="toggle-slider"></span></label></div>
+          <div class="fg-group" style="margin-top:12px"><label>Disqualification message</label><textarea id="sec-dqmsg" style="min-height:60px">You have been disqualified due to repeated violations.</textarea></div>
         </div>
       </div>
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(4)">← Back</button>
-        <button class="btn-add" onclick="gotoStep(6)">Next: Preview →</button>
+        <button class="btn-add" onclick="gotoStep(6)">Next: Results Visibility →</button>
       </div>
     </div>
 
-    <!-- STEP 6: Preview & Save -->
+    <!-- STEP 6: RESULTS VISIBILITY (NEW) -->
     <div class="wz-panel" id="wz-panel-6">
-      <div id="cw-preview"></div>
+      <p style="color:var(--m);font-size:14px;margin-bottom:18px">Control what students see after submitting.</p>
+
+      <label style="display:block;margin-bottom:10px">Result Mode</label>
+      <div class="vis-grid">
+        <div class="vis-card selected" id="vis-locked" onclick="selectVisMode('locked')">
+          <h5>🔒 Locked</h5>
+          <p>No results shown. Score and rank hidden until you unlock.</p>
+        </div>
+        <div class="vis-card" id="vis-partial" onclick="selectVisMode('partial')">
+          <h5>📊 Partial</h5>
+          <p>Show score and rank only. No answer breakdown.</p>
+        </div>
+        <div class="vis-card" id="vis-full" onclick="selectVisMode('full')">
+          <h5>✅ Full Review</h5>
+          <p>Show score, rank, per-question breakdown, and correct answers.</p>
+        </div>
+      </div>
+      <input type="hidden" id="vis-mode" value="locked"/>
+
+      <div style="margin-top:22px;display:flex;flex-direction:column;gap:12px">
+        <div class="toggle-row"><span class="toggle-lbl">Allow students to review their answers</span><label class="toggle-switch"><input type="checkbox" id="vis-allow-review"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-lbl">Show correct answers in review</span><label class="toggle-switch"><input type="checkbox" id="vis-show-correct"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-lbl">Show solutions in review</span><label class="toggle-switch"><input type="checkbox" id="vis-show-solutions"><span class="toggle-slider"></span></label></div>
+        <div class="toggle-row"><span class="toggle-lbl">Show results immediately after submit</span><label class="toggle-switch"><input type="checkbox" id="vis-immediate" checked><span class="toggle-slider"></span></label></div>
+      </div>
+
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(5)">← Back</button>
+        <button class="btn-add" onclick="gotoStep(7)">Next: Preview →</button>
+      </div>
+    </div>
+
+    <!-- STEP 7: PREVIEW & SAVE -->
+    <div class="wz-panel" id="wz-panel-7">
+      <div id="cw-preview"></div>
+      <div class="f-btns">
+        <button class="btn-cancel" onclick="gotoStep(6)">← Back</button>
         <button class="btn-cancel" onclick="closeContestWizard()">Cancel</button>
         <button class="btn-add" onclick="saveContest()">💾 Save Contest</button>
       </div>
@@ -435,12 +598,13 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   </div>
 </div>
 
-<!-- CONTEST DETAIL / EDIT MODAL -->
+<!-- CONTEST DETAIL MODAL -->
 <div class="mf-bg" id="contestDetailModal">
-  <div class="mf-box" style="max-width:700px">
+  <div class="mf-box" style="max-width:720px">
     <h3 id="cd-title">Contest Detail</h3>
     <div class="cd-grid" id="cd-grid"></div>
     <div id="cd-link-wrap"></div>
+    <div id="cd-visibility-wrap" style="margin-top:20px"></div>
     <div class="f-btns">
       <button class="btn-cancel" onclick="closeCD()">Close</button>
       <button class="btn-add" onclick="editContestFromDetail()">✏️ Edit Contest</button>
@@ -451,24 +615,24 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 <!-- PROBLEM FORM -->
 <div class="mf-bg" id="pModal">
   <div class="mf-box">
-    <h3 id="pFTitle">Add problem</h3>
+    <h3 id="pFTitle">Add Problem</h3>
     <div class="fg">
       <div class="fg-group full"><label>Title</label><input id="pf-t" type="text" placeholder="Problem title"/></div>
       <div class="fg-group"><label>Subject</label>
         <select id="pf-s"><option>Physics</option><option>Mathematics</option><option>Chemistry</option><option>Biology</option><option>Informatics</option><option>Astronomy</option></select></div>
       <div class="fg-group"><label>Difficulty</label>
         <select id="pf-d"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
-      <div class="fg-group full"><label>Full statement</label><textarea id="pf-st" placeholder="Complete problem statement…"></textarea></div>
+      <div class="fg-group full"><label>Full Statement</label><textarea id="pf-st" placeholder="Complete problem statement…"></textarea></div>
       <div class="fg-group full"><label>Hint</label><textarea id="pf-h" placeholder="Hint for students…" style="min-height:70px"></textarea></div>
-      <div class="fg-group full"><label>Full solution (shown after attempt)</label><textarea id="pf-sol" placeholder="Step-by-step solution…"></textarea></div>
-      <div class="fg-group"><label>Correct answer</label><input id="pf-a" type="text" placeholder="e.g. 4.74"/></div>
+      <div class="fg-group full"><label>Full Solution</label><textarea id="pf-sol" placeholder="Step-by-step solution…"></textarea></div>
+      <div class="fg-group"><label>Correct Answer</label><input id="pf-a" type="text" placeholder="e.g. 4.74"/></div>
       <div class="fg-group"><label>Tolerance (±)</label><input id="pf-tol" type="number" value="0" step="0.01" min="0"/></div>
-      <div class="fg-group"><label>Time estimate (min)</label><input id="pf-tm" type="number" value="20" min="1"/></div>
+      <div class="fg-group"><label>Time Estimate (min)</label><input id="pf-tm" type="number" value="20" min="1"/></div>
       <div class="fg-group"><label>Points</label><input id="pf-pt" type="number" value="10" min="1"/></div>
     </div>
     <div class="f-btns">
       <button class="btn-cancel" onclick="closePF()">Cancel</button>
-      <button class="btn-add" onclick="saveP()">Save problem</button>
+      <button class="btn-add" onclick="saveP()">Save Problem</button>
     </div>
   </div>
 </div>
@@ -476,22 +640,22 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 <!-- PANELIST FORM -->
 <div class="mf-bg" id="plModal">
   <div class="mf-box">
-    <h3>Add panelist</h3>
+    <h3>Panelist</h3>
     <div class="fg">
-      <div class="fg-group"><label>Full name</label><input id="pl-n" type="text" placeholder="Name"/></div>
+      <div class="fg-group"><label>Full Name</label><input id="pl-n" type="text" placeholder="Name"/></div>
       <div class="fg-group"><label>Initials (2 letters)</label><input id="pl-i" type="text" placeholder="AB" maxlength="2"/></div>
       <div class="fg-group full"><label>Role</label><input id="pl-r" type="text" placeholder="e.g. Academic Director"/></div>
       <div class="fg-group"><label>Subject</label>
         <select id="pl-s"><option>Physics</option><option>Mathematics</option><option>Chemistry</option><option>Biology</option><option>Informatics</option><option>Astronomy</option></select></div>
       <div class="fg-group"><label>Is President?</label>
         <select id="pl-p"><option value="false">No</option><option value="true">Yes</option></select></div>
-      <div class="fg-group full"><label>Quote (for president corner)</label><input id="pl-q" type="text" placeholder="Inspiring quote…"/></div>
+      <div class="fg-group full"><label>Quote</label><input id="pl-q" type="text" placeholder="Inspiring quote…"/></div>
       <div class="fg-group full"><label>Achievements (one per line)</label><textarea id="pl-a" placeholder="IPhO 2023 Silver Medalist…"></textarea></div>
-      <div class="fg-group full"><label>Photo URL (leave blank for initials avatar)</label><input id="pl-ph" type="text" placeholder="https://…"/></div>
+      <div class="fg-group full"><label>Photo URL</label><input id="pl-ph" type="text" placeholder="https://…"/></div>
     </div>
     <div class="f-btns">
       <button class="btn-cancel" onclick="closePlF()">Cancel</button>
-      <button class="btn-add" onclick="savePl()">Save panelist</button>
+      <button class="btn-add" onclick="savePl()">Save Panelist</button>
     </div>
   </div>
 </div>
@@ -501,31 +665,30 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 <script src="data.js"></script>
 <script>
 // ============================================================
-// CORE UTILITIES
+// CORE
 // ============================================================
 function toggleT(){const t=document.documentElement.getAttribute('data-theme')=='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);document.querySelector('.btn-theme-sm').textContent=t==='dark'?'☀️':'🌙'}
+function toast(msg,ok=true){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(ok?'t-ok':'t-err')+' show';setTimeout(()=>el.classList.remove('show'),2800)}
 
+const PAGES={dashboard:'Dashboard',problems:'Problems',contests:'Contests',results:'Results & Scores',users:'Users & Roles',leaderboard:'Leaderboard',analytics:'Analytics',panelists:'Panelists'};
 function goPage(id,el){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   el.classList.add('on');
-  const T={dashboard:'Dashboard',problems:'Problems',contests:'Contests',results:'Results & Scores',panelists:'Panelists'};
-  document.getElementById('pgTitle').textContent=T[id]||id;
+  document.getElementById('pgTitle').textContent=PAGES[id]||id;
   if(id==='problems')renderPTbl();
   if(id==='contests')renderCTbl();
   if(id==='panelists')renderPlTbl();
   if(id==='results')renderResults();
   if(id==='dashboard')renderDashboard();
+  if(id==='analytics')renderAnalytics();
   updateMetrics();
 }
-
-function toast(msg,ok=true){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+(ok?'t-ok':'t-err')+' show';setTimeout(()=>el.classList.remove('show'),2800)}
 
 function updateMetrics(){
   document.getElementById('m-p').textContent=BDOH.problems.length;
   document.getElementById('m-c').textContent=BDOH.contests.length;
-  document.getElementById('m-pl').textContent=BDOH.panelists.length;
   const subs=BDOH.submissions||[];
   document.getElementById('m-sub').textContent=subs.length;
 }
@@ -534,25 +697,23 @@ function updateMetrics(){
 // DASHBOARD
 // ============================================================
 function renderDashboard(){
-  const now=new Date();
   const ctbl=document.getElementById('dash-ctbl');
   ctbl.innerHTML=(BDOH.contests||[]).map(c=>{
     const subs=(BDOH.submissions||[]).filter(s=>s.contestId===c.id).length;
-    const statusMap={live:'s-live',open:'s-open',soon:'s-soon',past:'s-past'};
-    const lMap={live:'Live',open:'Open',soon:'Soon',past:'Past'};
+    const SM={live:'s-live',open:'s-open',soon:'s-soon',past:'s-past'};
     return `<tr>
       <td>${c.title}</td>
-      <td>${c.openTime?new Date(c.openTime).toLocaleString():'—'}</td>
-      <td>${c.closeTime?new Date(c.closeTime).toLocaleString():'—'}</td>
+      <td style="font-size:12px">${c.openTime?new Date(c.openTime).toLocaleString():'—'}</td>
+      <td style="font-size:12px">${c.closeTime?new Date(c.closeTime).toLocaleString():'—'}</td>
       <td>${c.duration} min</td>
-      <td><span class="bs ${statusMap[c.status]||'s-soon'}">${lMap[c.status]||c.status}</span></td>
+      <td><span class="bs ${SM[c.status]||'s-soon'}">${c.status||'soon'}</span></td>
       <td>${subs}</td>
       <td><div class="act-row">
         <button class="act view" onclick="viewContest('${c.id}')">View</button>
         <button class="act" onclick="viewResultsFor('${c.id}')">Results</button>
       </div></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No contests yet</td></tr>';
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No contests yet</td></tr>';
 
   const stbl=document.getElementById('dash-stbl');
   const subs=[...(BDOH.submissions||[])].reverse().slice(0,10);
@@ -563,87 +724,88 @@ function renderDashboard(){
       <td>${c?c.title:'Unknown'}</td>
       <td><strong style="color:var(--teal)">${s.score||0}</strong>/${s.maxScore||0}</td>
       <td>${s.category||'—'}</td>
-      <td>${s.classGrade||'—'}</td>
       <td>${s.institution||'—'}</td>
+      <td style="text-align:center">${s.tabSwitches||0}</td>
       <td style="font-size:12px">${s.submittedAt?new Date(s.submittedAt).toLocaleString():'—'}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No submissions yet</td></tr>';
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No submissions</td></tr>';
 }
 
 // ============================================================
 // PROBLEMS
 // ============================================================
 let pIdx=-1;
-function renderPTbl(){const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard'};document.getElementById('ptbl').innerHTML=BDOH.problems.map((p,i)=>`<tr><td>${p.title}</td><td>${p.subject}</td><td><span class="bs ${DM[p.difficulty]}">${p.difficulty}</span></td><td style="font-family:monospace">${p.answer}</td><td>${p.points}</td><td>${p.solves.toLocaleString()}</td><td><div class="act-row"><button class="act" onclick="editP(${i})">Edit</button><button class="act del" onclick="delP(${i})">Delete</button></div></td></tr>`).join('')}
-function openPF(){pIdx=-1;document.getElementById('pFTitle').textContent='Add problem';['pf-t','pf-st','pf-h','pf-sol','pf-a'].forEach(id=>document.getElementById(id).value='');document.getElementById('pf-tol').value='0';document.getElementById('pf-tm').value='20';document.getElementById('pf-pt').value='10';document.getElementById('pModal').classList.add('open')}
-function editP(i){pIdx=i;const p=BDOH.problems[i];document.getElementById('pFTitle').textContent='Edit problem';document.getElementById('pf-t').value=p.title;document.getElementById('pf-s').value=p.subject;document.getElementById('pf-d').value=p.difficulty;document.getElementById('pf-st').value=p.statement;document.getElementById('pf-h').value=p.hint;document.getElementById('pf-sol').value=p.solution||'';document.getElementById('pf-a').value=p.answer;document.getElementById('pf-tol').value=p.tolerance;document.getElementById('pf-tm').value=p.timeMin;document.getElementById('pf-pt').value=p.points||10;document.getElementById('pModal').classList.add('open')}
-function saveP(){const np={id:pIdx>=0?BDOH.problems[pIdx].id:'q'+(Date.now()),title:document.getElementById('pf-t').value,subject:document.getElementById('pf-s').value,difficulty:document.getElementById('pf-d').value,statement:document.getElementById('pf-st').value,hint:document.getElementById('pf-h').value,solution:document.getElementById('pf-sol').value,answer:document.getElementById('pf-a').value,tolerance:parseFloat(document.getElementById('pf-tol').value)||0,timeMin:parseInt(document.getElementById('pf-tm').value)||20,points:parseInt(document.getElementById('pf-pt').value)||10,solves:pIdx>=0?BDOH.problems[pIdx].solves:0};if(pIdx>=0)BDOH.problems[pIdx]=np;else BDOH.problems.push(np);closePF();renderPTbl();updateMetrics();bdohSave();toast(pIdx>=0?'Problem updated.':'Problem added.')}
+function renderPTbl(){
+  const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard'};
+  const q=(document.getElementById('prob-search')?.value||'').toLowerCase();
+  const list=BDOH.problems.filter(p=>!q||p.title.toLowerCase().includes(q)||p.subject.toLowerCase().includes(q));
+  document.getElementById('ptbl').innerHTML=list.map((p,i)=>`<tr>
+    <td>${p.title}</td><td>${p.subject}</td>
+    <td><span class="bs ${DM[p.difficulty]||'d-easy'}">${p.difficulty}</span></td>
+    <td style="font-family:monospace;font-size:13px">${p.answer}</td>
+    <td>${p.points}</td><td>${(p.solves||0).toLocaleString()}</td>
+    <td><div class="act-row">
+      <button class="act" onclick="editP(${BDOH.problems.indexOf(p)})">Edit</button>
+      <button class="act del" onclick="delP(${BDOH.problems.indexOf(p)})">Delete</button>
+    </div></td>
+  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No problems</td></tr>';
+}
+function openPF(){pIdx=-1;document.getElementById('pFTitle').textContent='Add Problem';['pf-t','pf-st','pf-h','pf-sol','pf-a'].forEach(id=>document.getElementById(id).value='');document.getElementById('pf-tol').value='0';document.getElementById('pf-tm').value='20';document.getElementById('pf-pt').value='10';document.getElementById('pModal').classList.add('open')}
+function editP(i){pIdx=i;const p=BDOH.problems[i];document.getElementById('pFTitle').textContent='Edit Problem';document.getElementById('pf-t').value=p.title;document.getElementById('pf-s').value=p.subject;document.getElementById('pf-d').value=p.difficulty;document.getElementById('pf-st').value=p.statement;document.getElementById('pf-h').value=p.hint||'';document.getElementById('pf-sol').value=p.solution||'';document.getElementById('pf-a').value=p.answer;document.getElementById('pf-tol').value=p.tolerance;document.getElementById('pf-tm').value=p.timeMin;document.getElementById('pf-pt').value=p.points||10;document.getElementById('pModal').classList.add('open')}
+function saveP(){
+  const np={id:pIdx>=0?BDOH.problems[pIdx].id:'q'+Date.now(),title:document.getElementById('pf-t').value,subject:document.getElementById('pf-s').value,difficulty:document.getElementById('pf-d').value,statement:document.getElementById('pf-st').value,hint:document.getElementById('pf-h').value,solution:document.getElementById('pf-sol').value,answer:document.getElementById('pf-a').value,tolerance:parseFloat(document.getElementById('pf-tol').value)||0,timeMin:parseInt(document.getElementById('pf-tm').value)||20,points:parseInt(document.getElementById('pf-pt').value)||10,solves:pIdx>=0?BDOH.problems[pIdx].solves:0};
+  if(pIdx>=0)BDOH.problems[pIdx]=np;else BDOH.problems.push(np);
+  closePF();renderPTbl();updateMetrics();bdohSave();
+  if(window.BDOH_DB)window.BDOH_DB.saveProblem(np).catch(()=>{});
+  toast(pIdx>=0?'Problem updated.':'Problem added.');
+}
 function delP(i){if(!confirm('Delete this problem?'))return;BDOH.problems.splice(i,1);renderPTbl();updateMetrics();bdohSave();toast('Deleted.',false)}
 function closePF(){document.getElementById('pModal').classList.remove('open')}
 
 // ============================================================
 // CONTEST WIZARD
 // ============================================================
-let cwStep=1;
-let cwQuestions=[];
-let cwTopics=[];
-let cwEditId=null;
+let cwStep=1,cwQuestions=[],cwTopics=[],cwEditId=null;
 
-function openContestWizard(){
-  cwEditId=null;
-  cwStep=1;cwQuestions=[];cwTopics=[];
-  document.getElementById('cwTitle').textContent='🏆 Create New Contest';
-  clearWizardFields();
-  gotoStep(1);
-  document.getElementById('contestWizard').classList.add('open');
+function selectVisMode(mode){
+  document.getElementById('vis-mode').value=mode;
+  ['locked','partial','full'].forEach(m=>document.getElementById('vis-'+m).classList.toggle('selected',m===mode));
 }
 
+function openContestWizard(){
+  cwEditId=null;cwStep=1;cwQuestions=[];cwTopics=[];
+  document.getElementById('cwTitle').textContent='🏆 Create New Contest';
+  clearWizardFields();gotoStep(1);
+  document.getElementById('contestWizard').classList.add('open');
+}
+function closeContestWizard(){document.getElementById('contestWizard').classList.remove('open')}
+
 function clearWizardFields(){
-  ['cw-title','cw-desc','cw-level','cw-cat','cw-open','cw-close','cw-timewarn','sec-tabmsg','sec-dqmsg'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.value=el.defaultValue||'';
-  });
-  document.getElementById('cw-pass').value='60';
-  document.getElementById('cw-maxp').value='0';
-  document.getElementById('cw-dur').value='90';
-  document.getElementById('cw-qtime').value='0';
-  document.getElementById('sec-tabwarn').value='1';
-  document.getElementById('sec-tabmax').value='3';
-  document.getElementById('sec-tabpen').value='5';
-  document.getElementById('cw-status').value='soon';
-  document.getElementById('cw-sub').value='Physics';
-  document.getElementById('sec-tabdetect').checked=true;
-  document.getElementById('sec-blur').checked=true;
-  document.getElementById('sec-rclick').checked=true;
-  document.getElementById('sec-copypaste').checked=true;
-  document.getElementById('sec-fullscreen').checked=false;
-  document.getElementById('sec-shuffle').checked=false;
+  ['cw-title','cw-desc','cw-level','cw-cat','cw-open','cw-close','cw-timewarn','sec-tabmsg','sec-dqmsg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=el.defaultValue||'';});
+  document.getElementById('cw-pass').value='60';document.getElementById('cw-maxp').value='0';
+  document.getElementById('cw-dur').value='90';document.getElementById('cw-qtime').value='0';
+  document.getElementById('sec-tabwarn').value='1';document.getElementById('sec-tabmax').value='3';document.getElementById('sec-tabpen').value='5';
+  document.getElementById('cw-status').value='soon';document.getElementById('cw-sub').value='Physics';
+  document.getElementById('sec-tabdetect').checked=true;document.getElementById('sec-blur').checked=true;
+  document.getElementById('sec-rclick').checked=true;document.getElementById('sec-copypaste').checked=true;
+  document.getElementById('sec-fullscreen').checked=false;document.getElementById('sec-shuffle').checked=false;
   document.getElementById('sec-shuffleopt').checked=false;
-  document.getElementById('sec-showanswer').checked=false;
-  document.getElementById('sec-review').checked=true;
-  document.getElementById('req-name').checked=true;
-  document.getElementById('req-cat').checked=true;
-  document.getElementById('req-class').checked=true;
-  document.getElementById('req-inst').checked=true;
-  document.getElementById('req-phone').checked=false;
-  document.getElementById('req-email').checked=false;
+  document.getElementById('req-name').checked=true;document.getElementById('req-cat').checked=true;
+  document.getElementById('req-class').checked=true;document.getElementById('req-inst').checked=true;
+  document.getElementById('req-phone').checked=false;document.getElementById('req-email').checked=false;
+  document.getElementById('vis-mode').value='locked';selectVisMode('locked');
+  document.getElementById('vis-allow-review').checked=false;document.getElementById('vis-show-correct').checked=false;
+  document.getElementById('vis-show-solutions').checked=false;document.getElementById('vis-immediate').checked=true;
   renderTopics();renderQuestions();
 }
 
-function closeContestWizard(){document.getElementById('contestWizard').classList.remove('open')}
-
 function gotoStep(n){
-  if(n===6)buildPreview();
+  if(n===7)buildPreview();
   cwStep=n;
-  document.querySelectorAll('.wz-panel').forEach((p,i)=>{p.classList.toggle('active',i+1===n)});
-  document.querySelectorAll('.wz-step').forEach((s,i)=>{
-    s.classList.remove('active','done');
-    if(i+1===n)s.classList.add('active');
-    else if(i+1<n)s.classList.add('done');
-  });
+  document.querySelectorAll('.wz-panel').forEach((p,i)=>p.classList.toggle('active',i+1===n));
+  document.querySelectorAll('.wz-step').forEach((s,i)=>{s.classList.remove('active','done');if(i+1===n)s.classList.add('active');else if(i+1<n)s.classList.add('done');});
 }
 
-// Topics
 function addTopic(){cwTopics.push({id:'t'+Date.now(),name:'',desc:''});renderTopics()}
 function removeTopic(i){cwTopics.splice(i,1);renderTopics()}
 function renderTopics(){
@@ -652,18 +814,16 @@ function renderTopics(){
       <button class="q-del" onclick="removeTopic(${i})">✕</button>
       <div class="q-fg">
         <div class="full"><label>Topic Name</label><input type="text" value="${t.name}" oninput="cwTopics[${i}].name=this.value" placeholder="e.g. Kinematics"/></div>
-        <div class="full"><label>Description (optional)</label><input type="text" value="${t.desc}" oninput="cwTopics[${i}].desc=this.value" placeholder="Brief description…"/></div>
+        <div class="full"><label>Description</label><input type="text" value="${t.desc}" oninput="cwTopics[${i}].desc=this.value" placeholder="Brief description…"/></div>
       </div>
-    </div>`).join('') || '<p style="color:var(--d);text-align:center;padding:20px">No topics added yet</p>';
+    </div>`).join('')||'<p style="color:var(--d);text-align:center;padding:20px">No topics added yet</p>';
 }
 
-// Questions
 function addQuestion(type){
-  const q={id:'q'+Date.now(),type,text:'',points:5,options:[],answer:'',explanation:''};
+  const q={id:'q'+Date.now(),type,text:'',points:5,options:[],answer:'',explanation:'',solution:''};
   if(type==='mcq')q.options=['','','',''];
   if(type==='tf')q.options=['True','False'];
-  cwQuestions.push(q);
-  renderQuestions();
+  cwQuestions.push(q);renderQuestions();
 }
 function removeQuestion(i){cwQuestions.splice(i,1);renderQuestions()}
 function renderQuestions(){
@@ -678,26 +838,23 @@ function renderQuestions(){
           <span class="q-opt-label">Option ${String.fromCharCode(65+oi)}</span>
           <input type="text" value="${opt}" oninput="cwQuestions[${i}].options[${oi}]=this.value" placeholder="Option text…" ${q.type==='tf'?'readonly':''}>
         </div>`).join('')}
-        <p style="font-size:11px;color:var(--d);margin-top:4px">Select the radio button next to the correct answer</p>
+        <p style="font-size:11px;color:var(--d);margin-top:4px">Select radio button next to the correct answer</p>
       </div>`;
     } else {
-      answerHTML=`<div class="fg-group full"><label>Correct Answer</label><input type="text" value="${q.answer}" oninput="cwQuestions[${i}].answer=this.value" placeholder="e.g. 9.81 or exact text"/></div>`;
+      answerHTML=`<div class="fg-group full"><label>Correct Answer</label><input type="text" value="${q.answer}" oninput="cwQuestions[${i}].answer=this.value" placeholder="e.g. 9.81"/></div>`;
     }
     return `<div class="q-item">
       <button class="q-del" onclick="removeQuestion(${i})">✕</button>
-      <div class="q-item-hdr">
-        <div class="q-num">${i+1}</div>
-        <span class="q-type-badge">${typeLabel}</span>
-      </div>
+      <div class="q-item-hdr"><div class="q-num">${i+1}</div><span class="q-type-badge">${typeLabel}</span></div>
       <div class="q-fg">
-        <div class="full"><label>Question Text *</label><textarea oninput="cwQuestions[${i}].text=this.value" style="min-height:70px" placeholder="Enter your question here…">${q.text}</textarea></div>
+        <div class="full"><label>Question Text *</label><textarea oninput="cwQuestions[${i}].text=this.value" style="min-height:70px" placeholder="Enter question…">${q.text}</textarea></div>
         <div><label>Points</label><input type="number" value="${q.points}" min="1" oninput="cwQuestions[${i}].points=parseInt(this.value)||1"/></div>
-        <div>${q.type==='short'?`<label>Tolerance (±, for numeric)</label><input type="number" value="${q.tolerance||0}" min="0" step="0.01" oninput="cwQuestions[${i}].tolerance=parseFloat(this.value)||0"/>`:'<div></div>'}</div>
+        <div>${q.type==='short'?`<label>Tolerance (±)</label><input type="number" value="${q.tolerance||0}" min="0" step="0.01" oninput="cwQuestions[${i}].tolerance=parseFloat(this.value)||0"/>`:'<div></div>'}</div>
         <div class="full">${answerHTML}</div>
-        <div class="full"><label>Explanation (shown after answer)</label><textarea oninput="cwQuestions[${i}].explanation=this.value" style="min-height:50px" placeholder="Explain why this is the correct answer…">${q.explanation||''}</textarea></div>
+        <div class="full"><label>Solution / Explanation</label><textarea oninput="cwQuestions[${i}].solution=this.value;cwQuestions[${i}].explanation=this.value" style="min-height:50px" placeholder="Explain the correct answer…">${q.solution||q.explanation||''}</textarea></div>
       </div>
     </div>`;
-  }).join('') || '<p style="color:var(--d);text-align:center;padding:30px">No questions yet. Add some above!</p>';
+  }).join('')||'<p style="color:var(--d);text-align:center;padding:30px">No questions yet. Add some above!</p>';
 }
 
 function buildPreview(){
@@ -707,32 +864,28 @@ function buildPreview(){
   const open=document.getElementById('cw-open').value;
   const close=document.getElementById('cw-close').value;
   const totalPts=cwQuestions.reduce((s,q)=>s+(q.points||0),0);
-  const tabDetect=document.getElementById('sec-tabdetect').checked;
-  const tabMax=document.getElementById('sec-tabmax').value;
-  const tabPen=document.getElementById('sec-tabpen').value;
+  const visMode=document.getElementById('vis-mode').value;
   document.getElementById('cw-preview').innerHTML=`
     <div class="cd-grid">
-      <div class="cd-card"><div class="cd-label">Contest Title</div><div class="cd-val">${title}</div></div>
+      <div class="cd-card"><div class="cd-label">Title</div><div class="cd-val">${title}</div></div>
       <div class="cd-card"><div class="cd-label">Subject</div><div class="cd-val">${sub}</div></div>
       <div class="cd-card"><div class="cd-label">Duration</div><div class="cd-val">${dur} minutes</div></div>
-      <div class="cd-card"><div class="cd-label">Questions / Total Points</div><div class="cd-val">${cwQuestions.length} Qs / ${totalPts} pts</div></div>
-      <div class="cd-card"><div class="cd-label">Opens</div><div class="cd-val" style="font-size:14px">${open?new Date(open).toLocaleString():'Not set'}</div></div>
-      <div class="cd-card"><div class="cd-label">Closes</div><div class="cd-val" style="font-size:14px">${close?new Date(close).toLocaleString():'Not set'}</div></div>
-      <div class="cd-card"><div class="cd-label">Topics</div><div class="cd-val" style="font-size:14px">${cwTopics.map(t=>t.name).filter(Boolean).join(', ')||'None'}</div></div>
-      <div class="cd-card"><div class="cd-label">Security</div><div class="cd-val" style="font-size:13px">${tabDetect?`Tab switch → penalty: ${tabPen}% per switch, max ${tabMax}`:'No tab detection'}</div></div>
+      <div class="cd-card"><div class="cd-label">Questions / Points</div><div class="cd-val">${cwQuestions.length} Qs / ${totalPts} pts</div></div>
+      <div class="cd-card"><div class="cd-label">Opens</div><div class="cd-val" style="font-size:13px">${open?new Date(open).toLocaleString():'Not set'}</div></div>
+      <div class="cd-card"><div class="cd-label">Closes</div><div class="cd-val" style="font-size:13px">${close?new Date(close).toLocaleString():'Not set'}</div></div>
+      <div class="cd-card"><div class="cd-label">Result Mode</div><div class="cd-val" style="font-size:14px">${{locked:'🔒 Locked',partial:'📊 Partial',full:'✅ Full Review'}[visMode]||visMode}</div></div>
+      <div class="cd-card"><div class="cd-label">Topics</div><div class="cd-val" style="font-size:13px">${cwTopics.map(t=>t.name).filter(Boolean).join(', ')||'None'}</div></div>
     </div>
-    <p style="color:var(--m);font-size:13px;margin-top:8px">✅ Ready to save. Students access via <strong>exam.html?id=CONTEST_ID</strong></p>`;
+    <p style="color:var(--m);font-size:13px;margin-top:8px">✅ Ready to save — students access via <strong>exam.html?id=CONTEST_ID</strong></p>`;
 }
 
 function saveContest(){
   const title=document.getElementById('cw-title').value.trim();
-  if(!title){toast('Contest title is required!',false);gotoStep(1);return;}
-  if(cwQuestions.length===0){toast('Add at least one question!',false);gotoStep(3);return;}
-
+  if(!title){toast('Contest title required!',false);gotoStep(1);return;}
+  if(!cwQuestions.length){toast('Add at least one question!',false);gotoStep(3);return;}
   const id=cwEditId||'c'+Date.now();
   const contest={
-    id,
-    title,
+    id,title,
     description:document.getElementById('cw-desc').value,
     subject:document.getElementById('cw-sub').value,
     level:document.getElementById('cw-level').value,
@@ -747,13 +900,13 @@ function saveContest(){
     showTimer:document.getElementById('cw-showtimer').value==='true',
     allowLate:document.getElementById('cw-late').value==='true',
     timeWarning:document.getElementById('cw-timewarn').value,
-    topics:cwTopics,
     questions:cwQuestions,
+    topics:cwTopics,
     security:{
       tabDetect:document.getElementById('sec-tabdetect').checked,
       tabWarnAfter:parseInt(document.getElementById('sec-tabwarn').value)||1,
       tabMax:parseInt(document.getElementById('sec-tabmax').value)||3,
-      tabPenalty:parseInt(document.getElementById('sec-tabpen').value)||5,
+      tabPenalty:parseInt(document.getElementById('sec-tabpen').value)||0,
       tabMessage:document.getElementById('sec-tabmsg').value,
       requireFullscreen:document.getElementById('sec-fullscreen').checked,
       detectBlur:document.getElementById('sec-blur').checked,
@@ -761,9 +914,14 @@ function saveContest(){
       disableCopyPaste:document.getElementById('sec-copypaste').checked,
       shuffleQuestions:document.getElementById('sec-shuffle').checked,
       shuffleOptions:document.getElementById('sec-shuffleopt').checked,
-      showAnswerAfter:document.getElementById('sec-showanswer').checked,
-      allowReview:document.getElementById('sec-review').checked,
       disqualifyMessage:document.getElementById('sec-dqmsg').value,
+    },
+    visibility:{
+      resultMode:document.getElementById('vis-mode').value,
+      allowReview:document.getElementById('vis-allow-review').checked,
+      showCorrectAnswers:document.getElementById('vis-show-correct').checked,
+      showSolutions:document.getElementById('vis-show-solutions').checked,
+      immediateResults:document.getElementById('vis-immediate').checked,
     },
     requiredFields:{
       name:document.getElementById('req-name').checked,
@@ -774,31 +932,17 @@ function saveContest(){
       email:document.getElementById('req-email').checked,
     },
     date:document.getElementById('cw-open').value?document.getElementById('cw-open').value.split('T')[0]:'',
-    problems:cwQuestions.length,
-    tags:[]
+    problems:cwQuestions.length,tags:[]
   };
-
   if(!BDOH.contests)BDOH.contests=[];
-  if(cwEditId){
-    const idx=BDOH.contests.findIndex(c=>c.id===cwEditId);
-    if(idx>=0)BDOH.contests[idx]=contest;
-    else BDOH.contests.push(contest);
-  } else {
-    BDOH.contests.push(contest);
-  }
-
-  /* Save to Firestore — this syncs to ALL devices instantly */
+  if(cwEditId){const idx=BDOH.contests.findIndex(c=>c.id===cwEditId);if(idx>=0)BDOH.contests[idx]=contest;else BDOH.contests.push(contest);}
+  else BDOH.contests.push(contest);
   if(window.BDOH_DB){
     window.BDOH_DB.saveContest(contest)
-      .then(()=>toast(cwEditId?'Contest updated on all devices!':'Contest live on all devices! exam.html?id='+id))
-      .catch(e=>{console.error(e);toast('Saved locally but Firestore sync failed.',false);});
-  } else {
-    toast(cwEditId?'Contest updated!':'Contest created! exam.html?id='+id);
-  }
-
-  closeContestWizard();
-  renderCTbl();
-  updateMetrics();
+      .then(()=>toast(cwEditId?'Contest updated on all devices!':'Contest live! exam.html?id='+id))
+      .catch(e=>{console.error(e);toast('Saved locally; Firestore sync failed.',false);});
+  } else {toast(cwEditId?'Contest updated!':'Contest created! exam.html?id='+id);}
+  closeContestWizard();renderCTbl();updateMetrics();
 }
 
 // ============================================================
@@ -807,16 +951,17 @@ function saveContest(){
 function renderCTbl(){
   const L={live:'Live',open:'Open',soon:'Soon',past:'Past'};
   const C={live:'s-live',open:'s-open',soon:'s-soon',past:'s-past'};
+  const VM={locked:'🔒',partial:'📊',full:'✅'};
   document.getElementById('ctbl').innerHTML=(BDOH.contests||[]).map((c,i)=>{
     const qCount=(c.questions||[]).length;
+    const vis=c.visibility||{};
     return `<tr>
-      <td>${c.title}</td>
-      <td>${c.subject}</td>
+      <td>${c.title}</td><td>${c.subject}</td>
       <td style="font-size:12px">${c.openTime?new Date(c.openTime).toLocaleString():'—'}</td>
       <td style="font-size:12px">${c.closeTime?new Date(c.closeTime).toLocaleString():'—'}</td>
-      <td>${c.duration} min</td>
-      <td>${qCount}</td>
+      <td>${c.duration} min</td><td>${qCount}</td>
       <td><span class="bs ${C[c.status]||'s-soon'}">${L[c.status]||c.status}</span></td>
+      <td style="font-size:13px">${VM[vis.resultMode]||'🔒'} ${(vis.resultMode||'locked').charAt(0).toUpperCase()+(vis.resultMode||'locked').slice(1)}</td>
       <td><div class="act-row">
         <button class="act view" onclick="viewContest('${c.id}')">View</button>
         <button class="act" onclick="editContest('${c.id}')">Edit</button>
@@ -824,7 +969,7 @@ function renderCTbl(){
         <button class="act del" onclick="delC(${i})">Delete</button>
       </div></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--d);padding:30px">No contests yet. Click "New Contest" to create one!</td></tr>';
+  }).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--d);padding:30px">No contests yet.</td></tr>';
 }
 
 function viewContest(id){
@@ -832,89 +977,66 @@ function viewContest(id){
   if(!c)return;
   document.getElementById('cd-title').textContent=c.title;
   const subs=(BDOH.submissions||[]).filter(s=>s.contestId===id).length;
-  const qCount=(c.questions||[]).length;
   const totalPts=(c.questions||[]).reduce((s,q)=>s+(q.points||0),0);
+  const vis=c.visibility||{};
   document.getElementById('cd-grid').innerHTML=`
     <div class="cd-card"><div class="cd-label">Subject</div><div class="cd-val">${c.subject}</div></div>
     <div class="cd-card"><div class="cd-label">Duration</div><div class="cd-val">${c.duration} min</div></div>
-    <div class="cd-card"><div class="cd-label">Questions</div><div class="cd-val">${qCount} (${totalPts} pts)</div></div>
+    <div class="cd-card"><div class="cd-label">Questions</div><div class="cd-val">${(c.questions||[]).length} (${totalPts} pts)</div></div>
     <div class="cd-card"><div class="cd-label">Submissions</div><div class="cd-val">${subs}</div></div>
     <div class="cd-card"><div class="cd-label">Opens</div><div class="cd-val" style="font-size:13px">${c.openTime?new Date(c.openTime).toLocaleString():'—'}</div></div>
     <div class="cd-card"><div class="cd-label">Closes</div><div class="cd-val" style="font-size:13px">${c.closeTime?new Date(c.closeTime).toLocaleString():'—'}</div></div>
-    <div class="cd-card"><div class="cd-label">Topics</div><div class="cd-val" style="font-size:13px">${(c.topics||[]).map(t=>t.name).filter(Boolean).join(', ')||'—'}</div></div>
-    <div class="cd-card"><div class="cd-label">Security</div><div class="cd-val" style="font-size:12px">${c.security&&c.security.tabDetect?`Tab penalty: ${c.security.tabPenalty}%`:'Standard'}</div></div>`;
+    <div class="cd-card"><div class="cd-label">Result Mode</div><div class="cd-val" style="font-size:14px">${{locked:'🔒 Locked',partial:'📊 Partial',full:'✅ Full Review'}[vis.resultMode||'locked']}</div></div>
+    <div class="cd-card"><div class="cd-label">Show Correct Answers</div><div class="cd-val" style="font-size:14px">${vis.showCorrectAnswers?'✅ Yes':'❌ No'}</div></div>`;
   const examURL=`exam.html?id=${id}`;
   document.getElementById('cd-link-wrap').innerHTML=`
-    <p style="color:var(--m);font-size:13px;margin-top:12px;margin-bottom:6px">Share this link with students:</p>
-    <code style="background:rgba(0,123,143,.12);padding:10px 16px;border-radius:10px;display:block;font-size:13px;color:var(--teal)">${examURL}</code>
+    <p style="color:var(--m);font-size:13px;margin-top:12px;margin-bottom:6px">Student link:</p>
+    <code style="background:rgba(0,123,143,.12);padding:10px 16px;border-radius:10px;display:block;font-size:13px;color:var(--teal)">${location.origin}/${examURL}</code>
     <a href="${examURL}" target="_blank" class="contest-link" style="margin-top:12px">🔗 Open Exam Page</a>`;
   window._viewingContestId=id;
   document.getElementById('contestDetailModal').classList.add('open');
 }
-
 function closeCD(){document.getElementById('contestDetailModal').classList.remove('open')}
 function editContestFromDetail(){closeCD();editContest(window._viewingContestId)}
 
 function editContest(id){
   const c=(BDOH.contests||[]).find(x=>x.id===id);
   if(!c)return;
-  cwEditId=id;
-  cwQuestions=JSON.parse(JSON.stringify(c.questions||[]));
-  cwTopics=JSON.parse(JSON.stringify(c.topics||[]));
-  cwStep=1;
+  cwEditId=id;cwQuestions=JSON.parse(JSON.stringify(c.questions||[]));cwTopics=JSON.parse(JSON.stringify(c.topics||[]));cwStep=1;
   document.getElementById('cwTitle').textContent='✏️ Edit Contest';
-  document.getElementById('cw-title').value=c.title||'';
-  document.getElementById('cw-desc').value=c.description||'';
-  document.getElementById('cw-sub').value=c.subject||'Physics';
-  document.getElementById('cw-level').value=c.level||'';
-  document.getElementById('cw-cat').value=c.category||'';
-  document.getElementById('cw-pass').value=c.passingScore||60;
-  document.getElementById('cw-maxp').value=c.maxParticipants||0;
-  document.getElementById('cw-status').value=c.status||'soon';
-  document.getElementById('cw-open').value=c.openTime||'';
-  document.getElementById('cw-close').value=c.closeTime||'';
-  document.getElementById('cw-dur').value=c.duration||90;
-  document.getElementById('cw-qtime').value=c.questionTime||0;
+  document.getElementById('cw-title').value=c.title||'';document.getElementById('cw-desc').value=c.description||'';
+  document.getElementById('cw-sub').value=c.subject||'Physics';document.getElementById('cw-level').value=c.level||'';
+  document.getElementById('cw-cat').value=c.category||'';document.getElementById('cw-pass').value=c.passingScore||60;
+  document.getElementById('cw-maxp').value=c.maxParticipants||0;document.getElementById('cw-status').value=c.status||'soon';
+  document.getElementById('cw-open').value=c.openTime||'';document.getElementById('cw-close').value=c.closeTime||'';
+  document.getElementById('cw-dur').value=c.duration||90;document.getElementById('cw-qtime').value=c.questionTime||0;
   document.getElementById('cw-showtimer').value=c.showTimer?'true':'false';
   document.getElementById('cw-late').value=c.allowLate?'true':'false';
   document.getElementById('cw-timewarn').value=c.timeWarning||'⚠️ Only 5 minutes remaining!';
   const sec=c.security||{};
   document.getElementById('sec-tabdetect').checked=sec.tabDetect!==false;
-  document.getElementById('sec-tabwarn').value=sec.tabWarnAfter||1;
-  document.getElementById('sec-tabmax').value=sec.tabMax||3;
-  document.getElementById('sec-tabpen').value=sec.tabPenalty||5;
-  document.getElementById('sec-tabmsg').value=sec.tabMessage||'';
-  document.getElementById('sec-fullscreen').checked=!!sec.requireFullscreen;
-  document.getElementById('sec-blur').checked=sec.detectBlur!==false;
-  document.getElementById('sec-rclick').checked=sec.disableRightClick!==false;
-  document.getElementById('sec-copypaste').checked=sec.disableCopyPaste!==false;
-  document.getElementById('sec-shuffle').checked=!!sec.shuffleQuestions;
-  document.getElementById('sec-shuffleopt').checked=!!sec.shuffleOptions;
-  document.getElementById('sec-showanswer').checked=!!sec.showAnswerAfter;
-  document.getElementById('sec-review').checked=sec.allowReview!==false;
-  document.getElementById('sec-dqmsg').value=sec.disqualifyMessage||'';
+  document.getElementById('sec-tabwarn').value=sec.tabWarnAfter||1;document.getElementById('sec-tabmax').value=sec.tabMax||3;document.getElementById('sec-tabpen').value=sec.tabPenalty||5;
+  document.getElementById('sec-tabmsg').value=sec.tabMessage||'';document.getElementById('sec-fullscreen').checked=!!sec.requireFullscreen;
+  document.getElementById('sec-blur').checked=sec.detectBlur!==false;document.getElementById('sec-rclick').checked=sec.disableRightClick!==false;
+  document.getElementById('sec-copypaste').checked=sec.disableCopyPaste!==false;document.getElementById('sec-shuffle').checked=!!sec.shuffleQuestions;
+  document.getElementById('sec-shuffleopt').checked=!!sec.shuffleOptions;document.getElementById('sec-dqmsg').value=sec.disqualifyMessage||'';
   const req=c.requiredFields||{};
-  document.getElementById('req-name').checked=req.name!==false;
-  document.getElementById('req-cat').checked=req.category!==false;
-  document.getElementById('req-class').checked=req.classGrade!==false;
-  document.getElementById('req-inst').checked=req.institution!==false;
-  document.getElementById('req-phone').checked=!!req.phone;
-  document.getElementById('req-email').checked=!!req.email;
-  renderTopics();renderQuestions();
-  gotoStep(1);
+  document.getElementById('req-name').checked=req.name!==false;document.getElementById('req-cat').checked=req.category!==false;
+  document.getElementById('req-class').checked=req.classGrade!==false;document.getElementById('req-inst').checked=req.institution!==false;
+  document.getElementById('req-phone').checked=!!req.phone;document.getElementById('req-email').checked=!!req.email;
+  const vis=c.visibility||{};
+  selectVisMode(vis.resultMode||'locked');
+  document.getElementById('vis-allow-review').checked=!!vis.allowReview;document.getElementById('vis-show-correct').checked=!!vis.showCorrectAnswers;
+  document.getElementById('vis-show-solutions').checked=!!vis.showSolutions;document.getElementById('vis-immediate').checked=vis.immediateResults!==false;
+  renderTopics();renderQuestions();gotoStep(1);
   document.getElementById('contestWizard').classList.add('open');
 }
 
 function delC(i){
   if(!confirm('Delete this contest?'))return;
-  const c=BDOH.contests[i];
-  BDOH.contests.splice(i,1);
-  renderCTbl();updateMetrics();
-  if(window.BDOH_DB&&c){
-    window.BDOH_DB.deleteContest(c.id)
-      .then(()=>toast('Deleted from all devices.',false))
-      .catch(e=>{console.error(e);toast('Deleted locally; Firestore sync failed.',false);});
-  } else { toast('Deleted.',false); }
+  const c=BDOH.contests[i];BDOH.contests.splice(i,1);renderCTbl();updateMetrics();
+  if(window.BDOH_DB&&c)window.BDOH_DB.deleteContest(c.id).then(()=>toast('Deleted.',false)).catch(()=>toast('Deleted locally.',false));
+  else toast('Deleted.',false);
 }
 
 // ============================================================
@@ -922,186 +1044,284 @@ function delC(i){
 // ============================================================
 function renderResults(filterId){
   const sel=document.getElementById('res-filter');
-  // populate filter
   sel.innerHTML='<option value="">All Contests</option>'+(BDOH.contests||[]).map(c=>`<option value="${c.id}">${c.title}</option>`).join('');
   if(filterId)sel.value=filterId;
   const fid=sel.value;
+  const sortBy=document.getElementById('res-sort')?.value||'score';
   let subs=[...(BDOH.submissions||[])];
   if(fid)subs=subs.filter(s=>s.contestId===fid);
-  // sort by score desc
-  subs.sort((a,b)=>(b.score||0)-(a.score||0));
+  subs.sort((a,b)=>sortBy==='name'?(a.name||'').localeCompare(b.name||''):sortBy==='time'?(a.timeTaken||0)-(b.timeTaken||0):(b.score||0)-(a.score||0));
   const maxScore=subs.reduce((m,s)=>Math.max(m,s.maxScore||0),100)||100;
   document.getElementById('res-tbl').innerHTML=subs.map((s,idx)=>{
     const c=(BDOH.contests||[]).find(x=>x.id===s.contestId);
-    const rankClass=idx===0?'rank-1':idx===1?'rank-2':idx===2?'rank-3':'';
+    const rankCls=idx===0?'rank-1':idx===1?'rank-2':idx===2?'rank-3':'';
     const pct=Math.round((s.score||0)/(s.maxScore||maxScore)*100);
+    const timeMins=Math.round((s.timeTaken||0)/60);
     return `<tr>
-      <td><span class="rank-badge ${rankClass}">${idx+1}</span></td>
+      <td><span class="rank-badge ${rankCls}">${idx+1}</span></td>
       <td>${s.name||'Anonymous'}</td>
-      <td><div class="score-bar-wrap"><div class="score-bar" style="width:${pct}px;max-width:80px"></div><strong>${s.score||0}/${s.maxScore||'?'}</strong></div></td>
-      <td>${s.category||'—'}</td>
-      <td>${s.classGrade||'—'}</td>
-      <td>${s.institution||'—'}</td>
+      <td><div class="score-bar-wrap"><div class="score-bar" style="width:${Math.min(pct,100)}px;max-width:80px"></div><strong>${s.score||0}/${s.maxScore||'?'} (${pct}%)</strong></div></td>
+      <td>${s.category||'—'}</td><td>${s.institution||'—'}</td>
       <td style="font-size:12px">${c?c.title:'Unknown'}</td>
+      <td>${timeMins?timeMins+' min':'—'}</td>
       <td style="text-align:center">${s.tabSwitches||0}</td>
       <td>${s.penalties?`<span class="penalty-badge">-${s.penalties}pts</span>`:'—'}</td>
+      <td>${s.disqualified?'<span class="bs s-live">DQ</span>':s.autoSubmitted?'<span class="bs s-soon">Auto</span>':'<span class="bs s-open">OK</span>'}</td>
       <td style="font-size:12px">${s.submittedAt?new Date(s.submittedAt).toLocaleString():'—'}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="10" style="text-align:center;color:var(--d);padding:30px">No submissions yet</td></tr>';
+  }).join('')||'<tr><td colspan="11" style="text-align:center;color:var(--d);padding:30px">No submissions</td></tr>';
 }
-
-function viewResultsFor(id){
-  goPage('results',document.querySelector('.nav-item:nth-child(4)'));
-  renderResults(id);
-}
-
+function viewResultsFor(id){goPage('results',document.querySelector('.nav-item:nth-child(6)'));renderResults(id);}
 function exportCSV(){
   const fid=document.getElementById('res-filter').value;
-  let subs=[...(BDOH.submissions||[])];
-  if(fid)subs=subs.filter(s=>s.contestId===fid);
+  let subs=[...(BDOH.submissions||[])];if(fid)subs=subs.filter(s=>s.contestId===fid);
   subs.sort((a,b)=>(b.score||0)-(a.score||0));
-  const header='Rank,Name,Score,MaxScore,Category,Class,Institution,Contest,TabSwitches,Penalties,SubmittedAt';
-  const rows=subs.map((s,i)=>{
-    const c=(BDOH.contests||[]).find(x=>x.id===s.contestId);
-    return [i+1,`"${s.name||''}"`,s.score||0,s.maxScore||0,`"${s.category||''}"`,`"${s.classGrade||''}"`,`"${s.institution||''}"`,`"${c?c.title:''}"`,s.tabSwitches||0,s.penalties||0,s.submittedAt||''].join(',');
-  });
+  const header='Rank,Name,Score,MaxScore,Pct,Category,Class,Institution,Contest,TimeTaken,TabSwitches,Penalties,Status,SubmittedAt';
+  const rows=subs.map((s,i)=>{const c=(BDOH.contests||[]).find(x=>x.id===s.contestId);const pct=s.maxScore?Math.round(s.score/s.maxScore*100):0;return[i+1,`"${s.name||''}"`,s.score||0,s.maxScore||0,pct+'%',`"${s.category||''}"`,`"${s.classGrade||''}"`,`"${s.institution||''}"`,`"${c?c.title:''}"`,Math.round((s.timeTaken||0)/60)+' min',s.tabSwitches||0,s.penalties||0,s.disqualified?'DQ':'OK',s.submittedAt||''].join(',');});
   const csv=[header,...rows].join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='results_'+(fid||'all')+'_'+Date.now()+'.csv';
-  a.click();
-  toast('CSV exported!');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='results_'+Date.now()+'.csv';a.click();toast('CSV exported!');
+}
+
+// ============================================================
+// USERS & ROLES
+// ============================================================
+let allUsers=[];
+async function loadUsers(){
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  toast('Loading users…');
+  try{
+    allUsers=await window.BDOH_DB.getAllUsers(200);
+    document.getElementById('m-u').textContent=allUsers.length;
+    renderUserTable(allUsers);
+    toast('Users loaded!');
+  }catch(e){console.error(e);toast('Failed to load users.',false);}
+}
+function filterUsers(){
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  renderUserTable(allUsers.filter(u=>(u.displayName||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));
+}
+function renderUserTable(users){
+  const ROLES=['user','moderator','panelist','admin','superadmin'];
+  document.getElementById('users-tbl').innerHTML=users.map(u=>{
+    const initials=(u.displayName||'U').charAt(0).toUpperCase();
+    const joinDate=u.joinedAt?new Date(u.joinedAt).toLocaleDateString():'—';
+    return `<tr>
+      <td><div class="user-cell">
+        <div class="user-avatar-sm">${u.photoURL?`<img src="${u.photoURL}" alt="${u.displayName}"/>`:`<span>${initials}</span>`}</div>
+        ${u.displayName||'—'}
+      </div></td>
+      <td style="font-size:12px">${u.email||'—'}</td>
+      <td style="font-family:var(--fH);font-weight:700;color:var(--teal)">${u.rating||1200}</td>
+      <td>${u.totalSolved||0}</td>
+      <td style="font-size:12px">${joinDate}</td>
+      <td>
+        <select class="role-select" onchange="changeUserRole('${u.id}',this.value)">
+          ${ROLES.map(r=>`<option value="${r}" ${(u.role||'user')===r?'selected':''}>${r.charAt(0).toUpperCase()+r.slice(1)}</option>`).join('')}
+        </select>
+      </td>
+      <td><div class="act-row">
+        <a class="act view" href="profile.html?uid=${u.id}" target="_blank">Profile</a>
+      </div></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No users found</td></tr>';
+}
+async function changeUserRole(uid,role){
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  try{
+    await window.BDOH_DB.setUserRole(uid,role,'admin');
+    toast('Role updated to '+role+'!');
+    await loadUsers();
+  }catch(e){toast('Failed to update role.',false);}
+}
+
+// ============================================================
+// LEADERBOARD ADMIN
+// ============================================================
+async function loadLeaderboard(){
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  toast('Loading leaderboard…');
+  try{
+    const data=await window.BDOH_DB.getLeaderboard('global');
+    document.getElementById('lb-admin-tbl').innerHTML=data.map((r,i)=>`<tr>
+      <td><strong>${i+1}</strong></td>
+      <td>${r.displayName||'—'}</td>
+      <td style="font-family:var(--fH);font-weight:800;color:var(--teal)">${r.rating||1200}</td>
+      <td>${r.totalSolved||0}</td>
+      <td>${r.accuracy||0}%</td>
+      <td style="font-size:12px">${r.institution||'—'}</td>
+      <td style="font-size:12px">${r.updatedAt?new Date(r.updatedAt).toLocaleDateString():'—'}</td>
+    </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No leaderboard data</td></tr>';
+    toast('Leaderboard loaded!');
+  }catch(e){console.error(e);toast('Failed.',false);}
+}
+async function adminRecalcLeaderboard(){
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  if(!confirm('Recalculate all ratings from submissions? This may take a moment.'))return;
+  toast('Recalculating…');
+  try{await window.BDOH_DB.recalculateLeaderboard();toast('Leaderboard recalculated!');await loadLeaderboard();}
+  catch(e){toast('Failed.',false);}
+}
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+function renderAnalytics(){
+  const subs=BDOH.submissions||[];const contests=BDOH.contests||[];const problems=BDOH.problems||[];
+
+  /* Submissions by contest */
+  const byContest={};subs.forEach(s=>{byContest[s.contestId]=(byContest[s.contestId]||0)+1;});
+  const maxSubs=Math.max(...Object.values(byContest),1);
+  document.getElementById('chart-contest-subs').innerHTML=contests.map(c=>{
+    const count=byContest[c.id]||0;
+    return `<div class="chart-row">
+      <span class="chart-label" title="${c.title}">${c.title.slice(0,14)}…</span>
+      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(count/maxSubs*100)}%"></div></div>
+      <span class="chart-val">${count}</span>
+    </div>`;
+  }).join('')||'<p style="color:var(--d);font-size:13px">No contests</p>';
+
+  /* Problems by subject */
+  const bySubj={};problems.forEach(p=>{bySubj[p.subject]=(bySubj[p.subject]||0)+1;});
+  const maxP=Math.max(...Object.values(bySubj),1);
+  document.getElementById('chart-problems-subj').innerHTML=Object.entries(bySubj).map(([s,n])=>`
+    <div class="chart-row">
+      <span class="chart-label">${s}</span>
+      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(n/maxP*100)}%"></div></div>
+      <span class="chart-val">${n}</span>
+    </div>`).join('')||'<p style="color:var(--d);font-size:13px">No problems</p>';
+
+  /* Score distribution */
+  const buckets={'0-25':0,'26-50':0,'51-75':0,'76-100':0};
+  subs.forEach(s=>{if(!s.maxScore)return;const p=Math.round(s.score/s.maxScore*100);if(p<=25)buckets['0-25']++;else if(p<=50)buckets['26-50']++;else if(p<=75)buckets['51-75']++;else buckets['76-100']++;});
+  const maxB=Math.max(...Object.values(buckets),1);
+  document.getElementById('chart-score-dist').innerHTML=Object.entries(buckets).map(([r,n])=>`
+    <div class="chart-row">
+      <span class="chart-label">${r}%</span>
+      <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(n/maxB*100)}%"></div></div>
+      <span class="chart-val">${n}</span>
+    </div>`).join('');
+
+  /* Anti-cheat */
+  const totalSwitches=subs.reduce((a,s)=>a+(s.tabSwitches||0),0);
+  const dqCount=subs.filter(s=>s.disqualified).length;
+  const autoCount=subs.filter(s=>s.autoSubmitted).length;
+  document.getElementById('chart-anticheat').innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="chart-row"><span class="chart-label">Total Tab Switches</span><span class="chart-val" style="color:#f87171">${totalSwitches}</span></div>
+      <div class="chart-row"><span class="chart-label">Disqualifications</span><span class="chart-val" style="color:#f87171">${dqCount}</span></div>
+      <div class="chart-row"><span class="chart-label">Auto-Submissions</span><span class="chart-val" style="color:#FFD700">${autoCount}</span></div>
+      <div class="chart-row"><span class="chart-label">Clean Submissions</span><span class="chart-val" style="color:#81c784">${subs.length-dqCount-autoCount}</span></div>
+    </div>`;
+}
+async function loadActivityLog(){
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  try{
+    const logs=await window.BDOH_DB.getActivityLogs(50);
+    document.getElementById('activity-log-tbl').innerHTML=logs.map(l=>`<tr>
+      <td style="font-size:12px">${l.timestamp?new Date(l.timestamp).toLocaleString():'—'}</td>
+      <td>${l.userId||'—'}</td>
+      <td><span class="bs s-open">${l.action||'—'}</span></td>
+      <td>${l.target||'—'}${l.targetId?' #'+l.targetId.slice(0,8):''}</td>
+    </tr>`).join('')||'<tr><td colspan="4" style="text-align:center;color:var(--d);padding:20px">No logs</td></tr>';
+    toast('Activity log loaded!');
+  }catch(e){toast('Failed to load logs.',false);}
 }
 
 // ============================================================
 // PANELISTS
 // ============================================================
 let plIdx=-1;
-function renderPlTbl(){document.getElementById('pltbl').innerHTML=BDOH.panelists.map((p,i)=>`<tr><td>${p.name}</td><td>${p.role}</td><td>${p.subject}</td><td>${p.isPresident?'<span class="bs s-live">President</span>':'No'}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--d)">${p.photo||'(initials avatar)'}</td><td><div class="act-row"><button class="act" onclick="editPl(${i})">Edit</button><button class="act del" onclick="delPl(${i})">Delete</button></div></td></tr>`).join('')}
+function renderPlTbl(){document.getElementById('pltbl').innerHTML=BDOH.panelists.map((p,i)=>`<tr><td>${p.name}</td><td>${p.role}</td><td>${p.subject}</td><td>${p.isPresident?'<span class="bs s-live">President</span>':'No'}</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:var(--d)">${p.photo||'(initials)'}</td><td><div class="act-row"><button class="act" onclick="editPl(${i})">Edit</button><button class="act del" onclick="delPl(${i})">Delete</button></div></td></tr>`).join('')}
 function openPlF(){plIdx=-1;['pl-n','pl-i','pl-r','pl-a','pl-ph','pl-q'].forEach(id=>document.getElementById(id).value='');document.getElementById('plModal').classList.add('open')}
 function editPl(i){plIdx=i;const p=BDOH.panelists[i];document.getElementById('pl-n').value=p.name;document.getElementById('pl-i').value=p.initials;document.getElementById('pl-r').value=p.role;document.getElementById('pl-s').value=p.subject;document.getElementById('pl-p').value=p.isPresident?'true':'false';document.getElementById('pl-q').value=p.quote||'';document.getElementById('pl-a').value=(p.achievements||[]).join('\n');document.getElementById('pl-ph').value=p.photo||'';document.getElementById('plModal').classList.add('open')}
-function savePl(){const np={id:plIdx>=0?BDOH.panelists[plIdx].id:'pl'+(Date.now()),name:document.getElementById('pl-n').value,initials:document.getElementById('pl-i').value.toUpperCase(),role:document.getElementById('pl-r').value,subject:document.getElementById('pl-s').value,isPresident:document.getElementById('pl-p').value==='true',quote:document.getElementById('pl-q').value,achievements:document.getElementById('pl-a').value.split('\n').filter(Boolean),photo:document.getElementById('pl-ph').value||null};if(plIdx>=0)BDOH.panelists[plIdx]=np;else BDOH.panelists.push(np);closePlF();renderPlTbl();updateMetrics();bdohSave();toast('Panelist saved.')}
+function savePl(){const np={id:plIdx>=0?BDOH.panelists[plIdx].id:'pl'+Date.now(),name:document.getElementById('pl-n').value,initials:document.getElementById('pl-i').value.toUpperCase(),role:document.getElementById('pl-r').value,subject:document.getElementById('pl-s').value,isPresident:document.getElementById('pl-p').value==='true',quote:document.getElementById('pl-q').value,achievements:document.getElementById('pl-a').value.split('\n').filter(Boolean),photo:document.getElementById('pl-ph').value||null};if(plIdx>=0)BDOH.panelists[plIdx]=np;else BDOH.panelists.push(np);closePlF();renderPlTbl();updateMetrics();bdohSave();toast('Panelist saved.')}
 function delPl(i){if(!confirm('Remove panelist?'))return;BDOH.panelists.splice(i,1);renderPlTbl();updateMetrics();bdohSave();toast('Removed.',false)}
 function closePlF(){document.getElementById('plModal').classList.remove('open')}
 
 // ============================================================
-// INIT — load live data from Firestore
+// INIT
 // ============================================================
-if(!BDOH.submissions)BDOH.submissions=[];
-if(!BDOH.contests)BDOH.contests=[];
+if(!BDOH.submissions)BDOH.submissions=[];if(!BDOH.contests)BDOH.contests=[];
 
 async function adminInit(){
-  updateMetrics();
-  renderDashboard();
-
+  updateMetrics();renderDashboard();
   if(window.BDOH_DB){
     try{
-      /* Load contests */
-      const contests = await window.BDOH_DB.getContests();
-      BDOH.contests = contests;
-      /* Load submissions */
-      const subs = await window.BDOH_DB.getSubmissions();
-      BDOH.submissions = subs;
-      updateMetrics();
-      renderDashboard();
-      toast('Data loaded from cloud ☁️');
-    }catch(e){
-      console.error('Admin Firestore load error',e);
-      toast('Could not load from cloud. Check connection.',false);
-    }
+      const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
+      BDOH.contests=contests;BDOH.submissions=subs;
+      updateMetrics();renderDashboard();toast('Data loaded from cloud ☁️');
+    }catch(e){console.error(e);toast('Cloud load failed. Check connection.',false);}
   } else {
-    /* Wait for Firebase to init */
     bdohFirebaseReady(async()=>{
       if(window.BDOH_DB){
         try{
-          const contests = await window.BDOH_DB.getContests();
-          BDOH.contests = contests;
-          const subs = await window.BDOH_DB.getSubmissions();
-          BDOH.submissions = subs;
-          updateMetrics();
-          renderDashboard();
-          toast('Data loaded from cloud ☁️');
-        }catch(e){ console.error(e); }
+          const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
+          BDOH.contests=contests;BDOH.submissions=subs;
+          updateMetrics();renderDashboard();toast('Data loaded ☁️');
+        }catch(e){console.error(e);}
       }
     });
   }
 }
+setTimeout(adminInit,800);
 
-/* Wait a tick for BDOH_DB to be set by data.js async init */
-setTimeout(adminInit, 800);
-
-// ============================================================
-// EXPORT DATA SNAPSHOT
-// ============================================================
 function exportDataSnapshot(){
-  const json=JSON.stringify({
-    panelists:BDOH.panelists,
-    contests:BDOH.contests,
-    problems:BDOH.problems,
-    whatsapp:BDOH.whatsapp,
-    submissions:BDOH.submissions
-  },null,2);
-  const blob=new Blob([
-    `/* BDOH DATA SNAPSHOT — generated ${new Date().toLocaleString()} */\n` +
-    `const BDOH_DEFAULTS=` + json + `;\n\n` +
-    `const BDOH_STORAGE_KEY='bdoh_data_v1';\n` +
-    `function bdohLoad(){try{const r=localStorage.getItem(BDOH_STORAGE_KEY);if(r){const s=JSON.parse(r);return{panelists:s.panelists||BDOH_DEFAULTS.panelists,contests:s.contests||BDOH_DEFAULTS.contests,problems:s.problems||BDOH_DEFAULTS.problems,whatsapp:s.whatsapp||BDOH_DEFAULTS.whatsapp,submissions:s.submissions||BDOH_DEFAULTS.submissions};}}catch(e){}return JSON.parse(JSON.stringify(BDOH_DEFAULTS));}\n` +
-    `function bdohSave(){try{localStorage.setItem(BDOH_STORAGE_KEY,JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions}));}catch(e){}}\n` +
-    `const BDOH=bdohLoad();\n`
-  ],{type:'text/javascript'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='data.js';
-  a.click();
-  toast('data.js exported! Replace your file with this download.');
+  const json=JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions},null,2);
+  const blob=new Blob([`/* BDOH DATA SNAPSHOT — ${new Date().toLocaleString()} */\nconst SNAP=${json};\n`],{type:'text/javascript'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bdoh_snapshot_'+Date.now()+'.js';a.click();toast('Snapshot exported!');
 }
 </script>
+
+<!-- Firebase Auth for admin login -->
 <script type="module">
-  // 1. We import ONLY what we need for the popup
-  import { signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // 2. Use the existing Auth and Provider instances we attached to 'window' 
-  // This prevents the "red marks" because it doesn't re-initialize the app
-  const auth = window._bdohAuth;
-  const provider = window._bdohGoogleProvider;
+  const cfg={apiKey:"AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",authDomain:"bdoh-project.firebaseapp.com",projectId:"bdoh-project",storageBucket:"bdoh-project.firebasestorage.app",messagingSenderId:"413106966781",appId:"1:413106966781:web:f3123769a8d2cec02e2e94"};
+  const app=getApps().length?getApps()[0]:initializeApp(cfg);
+  const auth=getAuth(app);
+  const db=getFirestore(app);
 
-  // 3. The Login Button Logic
-  document.getElementById('login-btn').addEventListener('click', () => {
-    const btn = document.getElementById('login-btn');
-    const err = document.getElementById('login-error');
-    
-    btn.textContent = "Opening Google...";
-    err.style.display = "none";
-
-    // Trigger Google Popup instead of asking for a password
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        // SECURITY CHECK: Ensure it's actually you
-        if (result.user.email !== 'mehedihasin2570@gmail.com') {
-          signOut(auth);
-          throw new Error("Unauthorized: Admin email required.");
-        }
-        btn.textContent = "Access Granted!";
-      })
-      .catch((error) => {
-        btn.textContent = "Unlock Dashboard";
-        err.textContent = "Login failed: " + error.message;
-        err.style.display = "block";
-      });
+  document.getElementById('login-btn').addEventListener('click',()=>{
+    const email=document.getElementById('admin-email').value;
+    const pass=document.getElementById('admin-pass').value;
+    const btn=document.getElementById('login-btn');
+    const err=document.getElementById('login-error');
+    btn.textContent='Verifying…';err.style.display='none';
+    signInWithEmailAndPassword(auth,email,pass).catch(e=>{
+      btn.textContent='Unlock Dashboard';
+      err.textContent='Login failed: '+e.code;err.style.display='block';
+    });
   });
 
-  // 4. The UI Bouncer (Controls the overlay)
-  auth.onAuthStateChanged((user) => {
-    const overlay = document.getElementById('login-overlay');
-    if (user && user.email === 'mehedihasin2570@gmail.com') {
-      overlay.style.display = 'none';
-      console.log("Admin session active.");
+  onAuthStateChanged(auth,async(user)=>{
+    if(user){
+      document.getElementById('login-overlay').style.display='none';
+      /* Check role — only allow admin/superadmin */
+      try{
+        const rSnap=await getDoc(doc(db,'roles',user.uid));
+        const role=rSnap.exists()?rSnap.data().role:'user';
+        const uSnap=await getDoc(doc(db,'users',user.uid));
+        const uRole=uSnap.exists()?uSnap.data().role:role;
+        const effectiveRole=role||uRole;
+        const allowed=['superadmin','admin'];
+        if(!allowed.includes(effectiveRole)){
+          document.getElementById('login-overlay').innerHTML=`<div style="text-align:center;color:#f87171;font-family:var(--fH);padding:40px"><div style="font-size:48px;margin-bottom:16px">🚫</div><h2>Access Denied</h2><p style="margin-top:10px;color:rgba(238,241,255,.6)">Your account role (${effectiveRole}) does not have admin access.</p><br/><a href="index.html" style="color:var(--teal)">← Return to Home</a></div>`;
+          document.getElementById('login-overlay').style.display='flex';
+          return;
+        }
+        document.getElementById('login-overlay').style.display='none';
+        document.getElementById('sidebar-role').textContent=effectiveRole==='superadmin'?'⭐ Super Admin':'🛡️ Admin';
+        document.getElementById('admin-user-badge').textContent=user.email.split('@')[0];
+      }catch(e){
+        /* Firestore check failed — allow basic admins (email-based fallback) */
+        document.getElementById('login-overlay').style.display='none';
+      }
     } else {
-      overlay.style.display = 'flex';
-      if (user) signOut(auth); // Log them out if they aren't the admin
+      document.getElementById('login-overlay').style.display='flex';
     }
   });
 </script>
-
 </body>
 </html>

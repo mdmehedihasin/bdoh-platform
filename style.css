@@ -2021,4 +2021,127 @@ body::before {
   .profile-layout { flex-direction: column; }
   .profile-card { width: 100%; }
 }
+/* ── PROFILE NAV BUTTON (pill shown in navbar when signed in) ── */
+.profile-nav-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 22px;
+  border: 1px solid var(--bd);
+  background: var(--sf);
+  color: var(--txt);
+  font-family: var(--fH);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .25s var(--ease), box-shadow .25s var(--ease), transform .25s var(--spring);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.profile-nav-btn:hover {
+  border-color: var(--bd-a);
+  background: var(--sf-hov);
+  box-shadow: 0 4px 18px var(--teal-glow);
+  transform: translateY(-1px);
+}
+.profile-nav-btn.visible {
+  display: flex;
+}
+
+.profile-nav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gb);
+  color: #fff;
+  font-family: var(--fH);
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 0 10px var(--teal-glow);
+}
+.profile-nav-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Hide profile pill on very small screens — avatar alone shows in mob-menu */
+@media (max-width: 480px) {
+  .profile-nav-btn { display: none !important; }
+}
+
+/* ── MOB-MENU PROFILE LINK ───────────────────────────────────── */
+.mob-profile-link {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 18px;
+  border-radius: 12px;
+  background: var(--sf);
+  border: 1px solid var(--bd);
+  color: var(--txt);
+  font-family: var(--fH);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .22s, background .22s;
+  margin-bottom: 8px;
+}
+.mob-profile-link:hover {
+  border-color: var(--bd-a);
+  background: var(--sf-hov);
+}
+.mob-profile-link.visible {
+  display: flex;
+}
+
+.mob-profile-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gb);
+  color: #fff;
+  font-family: var(--fH);
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 0 12px var(--teal-glow);
+}
+.mob-profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.mob-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.mob-profile-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--txt);
+}
+.mob-profile-sub {
+  font-size: 11px;
+  color: var(--txt-d);
+  font-family: var(--fH);
+}
+
 /* 🔧 SURGERY END */
