@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>My Profile — BDOH</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--teal:#007B8F;--teal-lt:#00b4cc;--green:#4CAF50;--gold:#FFD700;
+  --bg:#06091A;--bg2:#090d22;--bg3:#0e1330;--sf:rgba(255,255,255,.045);
+  --bd:rgba(255,255,255,.08);--ba:rgba(0,123,143,.3);
+  --txt:#eef1ff;--m:rgba(238,241,255,.58);--d:rgba(238,241,255,.3);
+  --fH:'Plus Jakarta Sans',sans-serif;--fB:'DM Sans',sans-serif;--r:14px;
+  --gb:linear-gradient(90deg,#007B8F,#4CAF50);--g:linear-gradient(120deg,#007B8F,#4CAF50,#FFD700)}
+[data-theme=light]{--bg:#f0f5f9;--bg2:#e3ecf4;--bg3:#d6e4ef;--sf:rgba(0,0,0,.04);
+  --bd:rgba(0,0,0,.09);--txt:#080d24;--m:rgba(8,13,36,.6);--d:rgba(8,13,36,.3)}
+*,::before,::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--txt);font-family:var(--fB);min-height:100vh;padding-top:80px}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--fB);cursor:pointer;border:none;background:none}
+
+/* NAVBAR */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;
+  justify-content:space-between;padding:14px clamp(20px,4vw,56px);
+  background:rgba(6,9,26,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd)}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-logo{width:40px;height:40px;border-radius:50%;background:var(--gb);display:flex;align-items:center;
+  justify-content:center;font-family:var(--fH);font-weight:800;color:#fff;font-size:14px}
+.nav-title{font-family:var(--fH);font-weight:800;font-size:15px;color:var(--txt)}
+.nav-back{display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:20px;
+  background:var(--sf);border:1px solid var(--bd);color:var(--m);font-family:var(--fH);
+  font-size:13px;font-weight:600;transition:all .22s;cursor:pointer}
+.nav-back:hover{border-color:var(--ba);color:var(--txt)}
+
+/* CONTAINER */
+.container{max-width:1100px;margin:0 auto;padding:40px clamp(16px,4vw,48px)}
+
+/* PROFILE HEADER */
+.profile-header{background:var(--bg3);border:1px solid var(--bd);border-radius:20px;
+  padding:36px;margin-bottom:28px;position:relative;overflow:hidden}
+.profile-header::before{content:'';position:absolute;top:-60px;right:-60px;
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,123,143,.15),transparent 70%);pointer-events:none}
+.ph-top{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.ph-avatar-wrap{position:relative;flex-shrink:0}
+.ph-avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid var(--ba);
+  background:var(--gb);display:flex;align-items:center;justify-content:center;
+  font-family:var(--fH);font-weight:800;font-size:28px;color:#fff}
+.ph-online{position:absolute;bottom:4px;right:4px;width:16px;height:16px;border-radius:50%;
+  background:#4CAF50;border:2px solid var(--bg3)}
+.ph-info{flex:1;min-width:200px}
+.ph-name{font-family:var(--fH);font-size:26px;font-weight:800;color:var(--txt);margin-bottom:4px}
+.ph-meta{font-size:13px;color:var(--m);margin-bottom:12px;line-height:1.6}
+.ph-badges{display:flex;gap:8px;flex-wrap:wrap}
+.ph-badge{padding:4px 14px;border-radius:20px;font-family:var(--fH);font-size:11px;font-weight:700}
+.role-badge{background:rgba(0,123,143,.2);border:1px solid var(--ba);color:#5bcfdf}
+.joined-badge{background:rgba(255,215,0,.12);border:1px solid rgba(255,215,0,.25);color:#FFD700}
+.ph-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn-edit{padding:10px 22px;border-radius:22px;background:var(--gb);color:#fff;
+  font-family:var(--fH);font-size:13px;font-weight:700;
+  box-shadow:0 4px 16px rgba(0,123,143,.3);transition:all .22s}
+.btn-edit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,123,143,.45)}
+.btn-settings{padding:10px 22px;border-radius:22px;background:var(--sf);border:1px solid var(--bd);
+  color:var(--m);font-family:var(--fH);font-size:13px;font-weight:700;transition:all .22s}
+.btn-settings:hover{border-color:var(--ba);color:var(--txt)}
+
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;padding:22px 20px;
+  text-align:center;transition:border-color .22s}
+.stat-card:hover{border-color:var(--ba)}
+.stat-val{font-family:var(--fH);font-size:34px;font-weight:800;line-height:1;margin-bottom:6px;
+  background:var(--gb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-val.gold-val{background:linear-gradient(90deg,#FFD700,#ff9f00);
+  -webkit-background-clip:text;background-clip:text}
+.stat-lbl{font-size:12px;color:var(--m);font-family:var(--fH);font-weight:600}
+.stat-sub{font-size:11px;color:var(--d);margin-top:3px}
+
+/* TWO COLUMN LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 380px;gap:22px;margin-bottom:28px;align-items:start}
+
+/* SECTION CARD */
+.s-card{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;overflow:hidden}
+.s-card-hdr{padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;
+  align-items:center;justify-content:space-between}
+.s-card-hdr h3{font-family:var(--fH);font-size:17px;font-weight:800;color:var(--txt)}
+.s-card-body{padding:24px}
+
+/* ACTIVITY GRAPH */
+.activity-graph{display:flex;flex-direction:column;gap:6px}
+.ag-row{display:flex;align-items:center;gap:6px}
+.ag-label{font-size:10px;color:var(--d);width:22px;font-family:var(--fH);font-weight:600;text-align:right;flex-shrink:0}
+.ag-cells{display:flex;gap:3px;flex:1}
+.ag-cell{width:12px;height:12px;border-radius:3px;background:rgba(255,255,255,.05);
+  transition:all .15s;cursor:default;flex-shrink:0}
+.ag-cell:hover{transform:scale(1.3);z-index:2}
+.ag-cell.l1{background:rgba(0,123,143,.25)}
+.ag-cell.l2{background:rgba(0,123,143,.5)}
+.ag-cell.l3{background:rgba(0,123,143,.75)}
+.ag-cell.l4{background:#007B8F}
+.ag-months{display:flex;gap:3px;padding-left:28px;margin-bottom:4px}
+.ag-month{font-size:10px;color:var(--d);font-family:var(--fH)}
+.ag-legend{display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end}
+.ag-legend span{font-size:10px;color:var(--d)}
+.ag-cell-sm{width:10px;height:10px;border-radius:2px}
+
+/* TOPIC BREAKDOWN */
+.topic-list{display:flex;flex-direction:column;gap:14px}
+.topic-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.topic-name{font-family:var(--fH);font-size:13px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px}
+.topic-emoji{font-size:16px}
+.topic-count{font-size:12px;color:var(--m)}
+.topic-bar-wrap{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.topic-bar{height:100%;border-radius:3px;background:var(--gb);transition:width .6s ease}
+
+/* RECENT SUBMISSIONS */
+.sub-list{display:flex;flex-direction:column;gap:1px}
+.sub-item{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:14px}
+.sub-item:last-child{border-bottom:none}
+.sub-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sub-status.pass{background:#4CAF50}
+.sub-status.fail{background:#f87171}
+.sub-status.dq{background:#FFD700}
+.sub-info{flex:1;min-width:0}
+.sub-title{font-family:var(--fH);font-size:13px;font-weight:700;color:var(--txt);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-meta{font-size:11px;color:var(--m);margin-top:2px}
+.sub-score{font-family:var(--fH);font-size:14px;font-weight:800;color:var(--teal-lt);flex-shrink:0}
+
+/* RATING HISTORY CHART */
+.rating-chart{height:120px;position:relative;margin-top:4px}
+.rating-svg{width:100%;height:100%}
+.rating-axis{font-family:var(--fH);font-size:10px;fill:rgba(238,241,255,.3)}
+
+/* EDIT PROFILE MODAL */
+.edit-modal-bg{position:fixed;inset:0;background:rgba(6,9,26,.9);backdrop-filter:blur(16px);
+  z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.edit-modal-bg.open{display:flex}
+.edit-modal-box{background:var(--bg3);border:1px solid var(--ba);border-radius:20px;
+  padding:36px;width:100%;max-width:520px;
+  animation:mIn .3s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes mIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:none}}
+.edit-modal-box h3{font-family:var(--fH);font-size:22px;font-weight:800;margin-bottom:24px}
+.ef{margin-bottom:16px}
+.ef label{display:block;font-family:var(--fH);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.2px;color:var(--m);margin-bottom:6px}
+.ef input,.ef textarea{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--bd);
+  border-radius:10px;padding:12px 16px;font-family:var(--fB);font-size:14px;color:var(--txt);
+  outline:none;transition:border-color .22s}
+.ef input:focus,.ef textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,123,143,.2)}
+.ef textarea{resize:vertical;min-height:80px}
+.ef-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ef-btns{display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+.btn-cancel-sm{padding:10px 22px;border-radius:20px;background:var(--sf);border:1px solid var(--bd);
+  color:var(--m);font-family:var(--fH);font-size:13px;font-weight:700;transition:all .2s}
+.btn-cancel-sm:hover{border-color:rgba(239,68,68,.3);color:#f87171}
+
+/* LOADING STATE */
+.skeleton{background:rgba(255,255,255,.06);border-radius:8px;animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;z-index:2000;padding:13px 22px;border-radius:12px;
+  font-family:var(--fH);font-size:13px;font-weight:700;
+  transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:none;opacity:1}
+.t-ok{background:rgba(76,175,80,.2);border:1px solid rgba(76,175,80,.4);color:#81c784}
+.t-err{background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.35);color:#f87171}
+
+/* NOT SIGNED IN */
+.not-signed-in{text-align:center;padding:80px 20px}
+.nsi-icon{font-size:64px;margin-bottom:20px}
+.nsi-title{font-family:var(--fH);font-size:28px;font-weight:800;margin-bottom:12px}
+.nsi-sub{color:var(--m);margin-bottom:28px;font-size:16px;line-height:1.6}
+.nsi-btn{padding:14px 36px;background:var(--gb);color:#fff;border:none;border-radius:14px;
+  font-family:var(--fH);font-size:15px;font-weight:800;cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,123,143,.35);transition:all .22s}
+.nsi-btn:hover{transform:translateY(-2px)}
+
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.stats-grid{grid-template-columns:repeat(2,1fr)}.ph-top{flex-direction:column;align-items:flex-start}.ph-avatar{width:72px;height:72px;font-size:22px}}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">BD</div>
+    <div class="nav-title">BDOH Profile</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <a href="index.html" class="nav-back">← Home</a>
+    <div id="navAuthWrap"></div>
+  </div>
+</nav>
+
+<div class="container" id="mainContent">
+  <!-- Filled by JS -->
+  <div style="display:flex;flex-direction:column;gap:20px;padding-top:20px">
+    <div class="skeleton" style="height:160px;border-radius:20px"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div class="skeleton" style="height:100px;border-radius:16px"></div>
+      <div class="skeleton" style="height:100px;border-radius:16px"></div>
+      <div class="skeleton" style="height:100px;border-radius:16px"></div>
+      <div class="skeleton" style="height:100px;border-radius:16px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="edit-modal-bg" id="editModal">
+  <div class="edit-modal-box">
+    <h3>✏️ Edit Profile</h3>
+    <div class="ef-row">
+      <div class="ef"><label>Display Name</label><input id="ep-name" type="text" placeholder="Your name"/></div>
+      <div class="ef"><label>Class / Grade</label><input id="ep-class" type="text" placeholder="e.g. Grade 11"/></div>
+    </div>
+    <div class="ef"><label>Institution</label><input id="ep-inst" type="text" placeholder="School or University name"/></div>
+    <div class="ef"><label>Bio (optional)</label><textarea id="ep-bio" placeholder="Tell the community about yourself…"></textarea></div>
+    <div class="ef-btns">
+      <button class="btn-cancel-sm" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-edit" onclick="saveProfile()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+const TOPIC_EMOJI = { Physics:'⚛️', Mathematics:'∞', Chemistry:'🧪', Biology:'🌿', Astronomy:'🪐', Informatics:'💻', Mixed:'🏆' };
+
+let currentProfile = null;
+let currentSubs = [];
+
+/* Wait for auth */
+window.addEventListener('bdoh:authReady', async (e)=>{
+  if(!e.detail.user){
+    renderNotSignedIn();
+    return;
+  }
+  try {
+    const uid = e.detail.user.uid;
+    /* Check if viewing another profile via ?uid=... */
+    const params = new URLSearchParams(location.search);
+    const viewUid = params.get('uid') || uid;
+    const isSelf = viewUid === uid;
+
+    bdohFirebaseReady(async ()=>{
+      if(!window.BDOH_DB) { renderError(); return; }
+      const [profile, subs] = await Promise.all([
+        window.BDOH_DB.getProfile(viewUid),
+        window.BDOH_DB.getUserSubmissions(viewUid)
+      ]);
+      if(!profile){ renderError('Profile not found.'); return; }
+      currentProfile = profile;
+      currentSubs = subs;
+      renderProfile(profile, subs, isSelf);
+    });
+  } catch(err){ console.error(err); renderError(); }
+});
+
+function renderProfile(p, subs, isSelf){
+  const joinDate = p.joinedAt ? new Date(p.joinedAt).toLocaleDateString('en-US',{month:'long',year:'numeric'}) : 'Unknown';
+  const initials = (p.displayName||'U').charAt(0).toUpperCase();
+  const ratingColor = p.rating >= 2000 ? '#FFD700' : p.rating >= 1600 ? '#4CAF50' : '#007B8F';
+
+  document.getElementById('mainContent').innerHTML = `
+
+    <!-- HEADER -->
+    <div class="profile-header">
+      <div class="ph-top">
+        <div class="ph-avatar-wrap">
+          ${p.photoURL
+            ? `<img src="${p.photoURL}" class="ph-avatar" alt="${p.displayName}"/>`
+            : `<div class="ph-avatar">${initials}</div>`}
+          <div class="ph-online"></div>
+        </div>
+        <div class="ph-info">
+          <div class="ph-name">${p.displayName || 'Olympian'}</div>
+          <div class="ph-meta">
+            ${p.institution ? `🏫 ${p.institution}` : ''}
+            ${p.classGrade ? ` &nbsp;·&nbsp; ${p.classGrade}` : ''}
+            ${p.bio ? `<br/><span style="margin-top:6px;display:block">${p.bio}</span>` : ''}
+          </div>
+          <div class="ph-badges">
+            <span class="ph-badge role-badge">${capitalize(p.role||'user')}</span>
+            <span class="ph-badge joined-badge">Joined ${joinDate}</span>
+            ${p.rating >= 2000 ? `<span class="ph-badge" style="background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.3);color:#FFD700">⭐ Expert</span>` : ''}
+          </div>
+        </div>
+      </div>
+      ${isSelf ? `
+      <div class="ph-actions">
+        <button class="btn-edit" onclick="openEditModal()">✏️ Edit Profile</button>
+        <button class="btn-settings" onclick="location.href='index.html#practice'">📚 Practice Problems</button>
+      </div>` : ''}
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val">${p.rating||1200}</div>
+        <div class="stat-lbl">Rating</div>
+        <div class="stat-sub" style="color:${ratingColor}">${getRatingTitle(p.rating)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${p.totalSolved||0}</div>
+        <div class="stat-lbl">Problems Solved</div>
+        <div class="stat-sub">${subs.length} total attempts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${p.accuracy||0}%</div>
+        <div class="stat-lbl">Accuracy</div>
+        <div class="stat-sub">${p.accuracy >= 70 ? '🔥 Great accuracy' : 'Keep practicing!'}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val gold-val">${subs.filter(s=>!s.disqualified && s.score >= (s.maxScore||1)*.6).length}</div>
+        <div class="stat-lbl">Contests Passed</div>
+        <div class="stat-sub">${subs.filter(s=>s.disqualified).length} disqualifications</div>
+      </div>
+    </div>
+
+    <!-- TWO COLUMN -->
+    <div class="two-col">
+      <!-- LEFT: activity + recent submissions -->
+      <div style="display:flex;flex-direction:column;gap:22px">
+
+        <!-- ACTIVITY GRAPH -->
+        <div class="s-card">
+          <div class="s-card-hdr">
+            <h3>📅 Activity</h3>
+            <span style="font-size:12px;color:var(--m)">${subs.length} submissions</span>
+          </div>
+          <div class="s-card-body">
+            ${buildActivityGraph(subs)}
+          </div>
+        </div>
+
+        <!-- RECENT SUBMISSIONS -->
+        <div class="s-card" id="submissions">
+          <div class="s-card-hdr">
+            <h3>📋 Recent Submissions</h3>
+            <span style="font-size:12px;color:var(--m)">Last 15</span>
+          </div>
+          <div class="s-card-body" style="padding:8px 24px">
+            ${buildSubmissionsList(subs)}
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: topic breakdown + rating -->
+      <div style="display:flex;flex-direction:column;gap:22px">
+
+        <!-- TOPIC BREAKDOWN -->
+        <div class="s-card">
+          <div class="s-card-hdr"><h3>📊 Topic Breakdown</h3></div>
+          <div class="s-card-body">
+            ${buildTopicBreakdown(p.topicStats||{}, subs)}
+          </div>
+        </div>
+
+        <!-- PERFORMANCE SUMMARY -->
+        <div class="s-card">
+          <div class="s-card-hdr"><h3>⚡ Performance</h3></div>
+          <div class="s-card-body">
+            ${buildPerformanceSummary(subs)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildActivityGraph(subs){
+  /* 16 weeks × 7 days grid */
+  const weeks = 16, days = 7;
+  const now = new Date();
+  const cells = [];
+  const subDates = {};
+  subs.forEach(s=>{
+    if(s.submittedAt){
+      const d = new Date(s.submittedAt).toDateString();
+      subDates[d] = (subDates[d]||0) + 1;
+    }
+  });
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthLabels = [];
+  let lastMonth = -1;
+
+  for(let w=weeks-1;w>=0;w--){
+    const weekCells = [];
+    for(let d=days-1;d>=0;d--){
+      const date = new Date(now);
+      date.setDate(date.getDate() - (w*7+d));
+      const count = subDates[date.toDateString()]||0;
+      const level = count===0?0:count===1?1:count<=3?2:count<=5?3:4;
+      const dateStr = date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      weekCells.push(`<div class="ag-cell l${level}" title="${dateStr}: ${count} submission${count!==1?'s':''}"></div>`);
+      if(d===0){
+        const m = date.getMonth();
+        if(m!==lastMonth){ monthLabels.push({idx:weeks-1-w, month:months[m]}); lastMonth=m; }
+      }
+    }
+    cells.push(`<div style="display:flex;flex-direction:column;gap:3px">${weekCells.join('')}</div>`);
+  }
+
+  return `<div class="ag-months">${monthLabels.map(ml=>`<span class="ag-month" style="margin-left:${ml.idx*15}px">${ml.month}</span>`).join('')}</div>
+    <div style="display:flex;gap:3px">${cells.join('')}</div>
+    <div class="ag-legend">
+      <span>Less</span>
+      <div class="ag-cell ag-cell-sm" style="background:rgba(255,255,255,.05)"></div>
+      <div class="ag-cell ag-cell-sm l1"></div>
+      <div class="ag-cell ag-cell-sm l2"></div>
+      <div class="ag-cell ag-cell-sm l3"></div>
+      <div class="ag-cell ag-cell-sm l4"></div>
+      <span>More</span>
+    </div>`;
+}
+
+function buildSubmissionsList(subs){
+  if(!subs.length) return `<p style="text-align:center;color:var(--d);padding:20px 0;font-family:var(--fH)">No submissions yet. Start practicing!</p>`;
+  return subs.slice(0,15).map(s=>{
+    const pass = !s.disqualified && s.score >= (s.maxScore||1)*.5;
+    const pct = s.maxScore ? Math.round(s.score/s.maxScore*100) : 0;
+    const contest = BDOH.contests.find(c=>c.id===s.contestId);
+    const date = s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+    return `<div class="sub-item">
+      <div class="sub-status ${s.disqualified?'dq':pass?'pass':'fail'}"></div>
+      <div class="sub-info">
+        <div class="sub-title">${contest?.title||s.contestId||'Practice'}</div>
+        <div class="sub-meta">${date} · ${s.tabSwitches||0} tab switches${s.penalties?' · -'+s.penalties+' pts penalty':''}</div>
+      </div>
+      <div class="sub-score">${s.score}/${s.maxScore} <span style="font-size:11px;color:var(--m)">(${pct}%)</span></div>
+    </div>`;
+  }).join('');
+}
+
+function buildTopicBreakdown(topicStats, subs){
+  const topics = ['Physics','Mathematics','Chemistry','Biology','Astronomy','Informatics'];
+  const data = {};
+  /* Build from topicStats + subs */
+  topics.forEach(t=>{
+    const ts = topicStats[t] || {solved:0,attempted:0};
+    data[t] = ts;
+  });
+  const maxSolved = Math.max(...Object.values(data).map(d=>d.solved), 1);
+
+  return `<div class="topic-list">${topics.map(t=>{
+    const d = data[t];
+    if(!d.attempted) return '';
+    const pct = Math.round((d.solved/Math.max(d.attempted,1))*100);
+    const barW = Math.round((d.solved/maxSolved)*100);
+    return `<div class="topic-item">
+      <div class="topic-row">
+        <div class="topic-name"><span class="topic-emoji">${TOPIC_EMOJI[t]||'📚'}</span>${t}</div>
+        <div class="topic-count">${d.solved}/${d.attempted} (${pct}%)</div>
+      </div>
+      <div class="topic-bar-wrap"><div class="topic-bar" style="width:${barW}%"></div></div>
+    </div>`;
+  }).filter(Boolean).join('') || `<p style="color:var(--d);font-size:14px;text-align:center;padding:10px 0">No topic data yet.</p>`}</div>`;
+}
+
+function buildPerformanceSummary(subs){
+  const total = subs.length;
+  if(!total) return `<p style="color:var(--d);font-size:14px;text-align:center">No submissions yet.</p>`;
+  const avgScore = total ? Math.round(subs.reduce((a,s)=>a+(s.maxScore?s.score/s.maxScore*100:0),0)/total) : 0;
+  const avgTime = total ? Math.round(subs.reduce((a,s)=>a+(s.timeTaken||0),0)/total/60) : 0;
+  const dqCount = subs.filter(s=>s.disqualified).length;
+  const bestScore = subs.reduce((best,s)=>s.maxScore?Math.max(best,Math.round(s.score/s.maxScore*100)):best,0);
+
+  const rows = [
+    ['Total Contests', total],
+    ['Average Score', avgScore+'%'],
+    ['Best Score', bestScore+'%'],
+    ['Avg Time Used', avgTime ? avgTime+' min' : '—'],
+    ['Disqualifications', dqCount],
+    ['Tab Switches', subs.reduce((a,s)=>a+(s.tabSwitches||0),0)]
+  ];
+  return `<table style="width:100%;border-collapse:collapse">${rows.map(r=>`
+    <tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+      <td style="padding:10px 0;font-size:13px;color:var(--m);font-family:var(--fH)">${r[0]}</td>
+      <td style="padding:10px 0;font-size:13px;font-weight:700;color:var(--txt);text-align:right;font-family:var(--fH)">${r[1]}</td>
+    </tr>`).join('')}</table>`;
+}
+
+function getRatingTitle(r=1200){
+  if(r>=2400) return 'Grandmaster';
+  if(r>=2200) return 'International Master';
+  if(r>=2000) return 'Master';
+  if(r>=1800) return 'Expert';
+  if(r>=1600) return 'Advanced';
+  if(r>=1400) return 'Intermediate';
+  if(r>=1200) return 'Beginner';
+  return 'Novice';
+}
+
+function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function renderNotSignedIn(){
+  document.getElementById('mainContent').innerHTML = `
+    <div class="not-signed-in">
+      <div class="nsi-icon">🔐</div>
+      <div class="nsi-title">Sign In to View Your Profile</div>
+      <p class="nsi-sub">Track your progress, see your rating, and view your submission history.</p>
+      <button class="nsi-btn" onclick="BDOH_AUTH.openModal()">Sign In / Create Account</button>
+    </div>`;
+}
+
+function renderError(msg='Could not load profile.'){
+  document.getElementById('mainContent').innerHTML = `
+    <div class="not-signed-in">
+      <div class="nsi-icon">⚠️</div>
+      <div class="nsi-title">${msg}</div>
+      <button class="nsi-btn" onclick="location.href='index.html'">← Back to Home</button>
+    </div>`;
+}
+
+/* EDIT MODAL */
+function openEditModal(){
+  if(!currentProfile) return;
+  document.getElementById('ep-name').value = currentProfile.displayName||'';
+  document.getElementById('ep-class').value = currentProfile.classGrade||'';
+  document.getElementById('ep-inst').value = currentProfile.institution||'';
+  document.getElementById('ep-bio').value = currentProfile.bio||'';
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal(){ document.getElementById('editModal').classList.remove('open'); }
+
+async function saveProfile(){
+  if(!BDOH.currentUser || !window.BDOH_DB) return;
+  const data = {
+    displayName: document.getElementById('ep-name').value.trim(),
+    classGrade: document.getElementById('ep-class').value.trim(),
+    institution: document.getElementById('ep-inst').value.trim(),
+    bio: document.getElementById('ep-bio').value.trim()
+  };
+  try {
+    await window.BDOH_DB.updateProfile(BDOH.currentUser.uid, data);
+    Object.assign(currentProfile, data);
+    closeEditModal();
+    toast('Profile updated!');
+    renderProfile(currentProfile, currentSubs, true);
+  } catch(e){ toast('Failed to save.', false); }
+}
+
+function toast(msg, ok=true){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast '+(ok?'t-ok':'t-err')+' show';
+  setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+/* Update nav user button */
+window.addEventListener('bdoh:authReady', (e)=>{
+  const wrap = document.getElementById('navAuthWrap');
+  if(!wrap) return;
+  if(e.detail.user){
+    wrap.innerHTML = `<button class="nav-back" onclick="BDOH_AUTH && BDOH_AUTH.logout ? BDOH_AUTH.logout() : null">Sign Out</button>`;
+  } else {
+    wrap.innerHTML = `<button class="nav-back" onclick="BDOH_AUTH.openModal()">Sign In</button>`;
+  }
+});
+</script>
+</body>
+</html>

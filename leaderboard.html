@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Leaderboard — BDOH</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--teal:#007B8F;--teal-lt:#00b4cc;--green:#4CAF50;--gold:#FFD700;
+  --bg:#06091A;--bg2:#090d22;--bg3:#0e1330;--sf:rgba(255,255,255,.045);
+  --bd:rgba(255,255,255,.08);--ba:rgba(0,123,143,.3);
+  --txt:#eef1ff;--m:rgba(238,241,255,.58);--d:rgba(238,241,255,.3);
+  --fH:'Plus Jakarta Sans',sans-serif;--fB:'DM Sans',sans-serif;
+  --gb:linear-gradient(90deg,#007B8F,#4CAF50);--g:linear-gradient(120deg,#007B8F,#4CAF50,#FFD700)}
+[data-theme=light]{--bg:#f0f5f9;--bg2:#e3ecf4;--bg3:#d6e4ef;--sf:rgba(0,0,0,.04);
+  --bd:rgba(0,0,0,.09);--txt:#080d24;--m:rgba(8,13,36,.6);--d:rgba(8,13,36,.3)}
+*,::before,::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--txt);font-family:var(--fB);min-height:100vh;padding-top:80px}
+a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer;border:none;background:none}
+
+.navbar{position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;
+  justify-content:space-between;padding:14px clamp(20px,4vw,56px);
+  background:rgba(6,9,26,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd)}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-logo{width:40px;height:40px;border-radius:50%;background:var(--gb);display:flex;align-items:center;
+  justify-content:center;font-family:var(--fH);font-weight:800;color:#fff;font-size:14px}
+.nav-title{font-family:var(--fH);font-weight:800;font-size:15px;color:var(--txt)}
+.nav-back{display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:20px;
+  background:var(--sf);border:1px solid var(--bd);color:var(--m);font-family:var(--fH);
+  font-size:13px;font-weight:600;transition:all .22s}
+.nav-back:hover{border-color:var(--ba);color:var(--txt)}
+
+.container{max-width:1000px;margin:0 auto;padding:40px clamp(16px,4vw,40px)}
+
+/* PAGE HEADER */
+.page-header{text-align:center;margin-bottom:40px}
+.page-tag{display:inline-block;font-family:var(--fH);font-size:11px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.page-title{font-family:var(--fH);font-size:clamp(28px,4vw,48px);font-weight:800;
+  background:var(--g);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:10px}
+.page-sub{color:var(--m);font-size:16px}
+
+/* TOP 3 PODIUM */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-bottom:40px}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+.podium-place{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:2px;color:var(--m)}
+.podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--fH);font-weight:800;color:#fff;border:3px solid;
+  background:linear-gradient(135deg,#007B8F,#4CAF50);overflow:hidden;flex-shrink:0}
+.podium-avatar img{width:100%;height:100%;object-fit:cover}
+.podium-1 .podium-avatar{width:80px;height:80px;font-size:24px;border-color:#FFD700;
+  box-shadow:0 0 30px rgba(255,215,0,.35)}
+.podium-2 .podium-avatar{width:68px;height:68px;font-size:20px;border-color:#c0c0c0}
+.podium-3 .podium-avatar{width:60px;height:60px;font-size:18px;border-color:#cd7f32}
+.podium-name{font-family:var(--fH);font-size:13px;font-weight:700;color:var(--txt);text-align:center;max-width:100px}
+.podium-rating{font-family:var(--fH);font-size:12px;font-weight:700}
+.podium-crown{font-size:22px;text-align:center}
+.podium-block{border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--fH);font-size:28px;font-weight:800;color:rgba(255,255,255,.5)}
+.podium-1 .podium-block{width:100px;height:72px;background:linear-gradient(180deg,rgba(255,215,0,.25),rgba(255,215,0,.08));border:1px solid rgba(255,215,0,.25)}
+.podium-2 .podium-block{width:90px;height:54px;background:rgba(192,192,192,.12);border:1px solid rgba(192,192,192,.2)}
+.podium-3 .podium-block{width:84px;height:40px;background:rgba(205,127,50,.12);border:1px solid rgba(205,127,50,.2)}
+
+/* CONTROLS */
+.lb-controls{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center}
+.lb-tabs{display:flex;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:4px}
+.lb-tab{padding:9px 18px;border-radius:9px;font-family:var(--fH);font-size:13px;font-weight:700;
+  color:var(--m);transition:all .2s;cursor:pointer}
+.lb-tab.active{background:rgba(0,123,143,.25);color:var(--txt)}
+.lb-search{flex:1;min-width:200px;background:var(--sf);border:1px solid var(--bd);border-radius:12px;
+  padding:10px 16px;font-family:var(--fB);font-size:14px;color:var(--txt);outline:none;
+  transition:border-color .22s}
+.lb-search:focus{border-color:var(--teal)}
+.lb-search::placeholder{color:var(--d)}
+.lb-topic-filter{background:var(--sf);border:1px solid var(--bd);border-radius:12px;
+  padding:10px 16px;font-family:var(--fB);font-size:14px;color:var(--txt);outline:none}
+.lb-topic-filter option{background:var(--bg2)}
+
+/* TABLE */
+.lb-card{background:var(--bg3);border:1px solid var(--bd);border-radius:16px;overflow:hidden}
+.lb-table-wrap{overflow-x:auto}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table thead th{text-align:left;padding:14px 20px;font-family:var(--fH);font-size:11px;
+  font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--m);
+  background:rgba(0,0,0,.1);border-bottom:1px solid var(--bd);
+  position:sticky;top:0;z-index:1}
+.lb-table tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s;cursor:pointer}
+.lb-table tbody tr:hover{background:rgba(0,123,143,.06)}
+.lb-table tbody tr.me{background:rgba(0,123,143,.12);border-left:3px solid var(--teal)}
+.lb-table tbody td{padding:14px 20px;font-size:14px;color:var(--m)}
+
+.rank-cell{font-family:var(--fH);font-size:13px;font-weight:800;width:48px}
+.rank-1{color:#FFD700}.rank-2{color:#c0c0c0}.rank-3{color:#cd7f32}
+.rank-num{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;
+  justify-content:center;font-size:12px}
+.rank-num.g{background:rgba(255,215,0,.2)}
+.rank-num.s{background:rgba(192,192,192,.15)}
+.rank-num.b{background:rgba(205,127,50,.15)}
+
+.user-cell{display:flex;align-items:center;gap:12px}
+.user-av{width:36px;height:36px;border-radius:50%;background:var(--gb);display:flex;
+  align-items:center;justify-content:center;font-family:var(--fH);font-weight:800;
+  color:#fff;font-size:13px;flex-shrink:0;overflow:hidden}
+.user-av img{width:100%;height:100%;object-fit:cover}
+.user-name{font-family:var(--fH);font-size:14px;font-weight:700;color:var(--txt)}
+.user-inst{font-size:11px;color:var(--m)}
+
+.rating-cell{font-family:var(--fH);font-weight:800;color:var(--teal-lt)}
+.acc-cell{font-family:var(--fH);font-weight:700}
+.acc-bar{display:flex;align-items:center;gap:8px}
+.acc-bar-inner{width:60px;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.acc-bar-fill{height:100%;background:var(--gb);border-radius:3px}
+
+.me-badge{font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(0,123,143,.2);
+  border:1px solid var(--ba);color:var(--teal-lt);font-family:var(--fH);font-weight:700;margin-left:6px}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--d);font-family:var(--fH)}
+
+/* Skeleton */
+.skeleton{background:rgba(255,255,255,.06);border-radius:8px;animation:sk 1.4s ease-in-out infinite}
+@keyframes sk{0%,100%{opacity:.5}50%{opacity:1}}
+
+@media(max-width:600px){
+  .podium{gap:8px}
+  .lb-controls{flex-direction:column;align-items:stretch}
+  .lb-tabs{justify-content:center}
+  .lb-table thead th:nth-child(4),.lb-table tbody td:nth-child(4),
+  .lb-table thead th:nth-child(5),.lb-table tbody td:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo">BD</div>
+    <div class="nav-title">Leaderboard</div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <a href="profile.html" class="nav-back">👤 Profile</a>
+    <a href="index.html" class="nav-back">← Home</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-tag">Rankings</div>
+    <div class="page-title">🏆 Leaderboard</div>
+    <p class="page-sub">Compete, improve, and rise through the ranks.</p>
+  </div>
+
+  <!-- PODIUM -->
+  <div class="podium" id="podiumArea">
+    <div class="skeleton" style="width:200px;height:160px;border-radius:12px"></div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="lb-controls">
+    <div class="lb-tabs">
+      <button class="lb-tab active" onclick="switchTab('global',this)">🌐 Global</button>
+      <button class="lb-tab" onclick="switchTab('contest',this)">🏆 Contest</button>
+      <button class="lb-tab" onclick="switchTab('solvers',this)">📚 Top Solvers</button>
+    </div>
+    <input class="lb-search" id="lbSearch" type="text" placeholder="🔍 Search by name…" oninput="filterTable()"/>
+    <select class="lb-topic-filter" id="topicFilter" onchange="filterTable()">
+      <option value="">All Topics</option>
+      <option>Physics</option><option>Mathematics</option><option>Chemistry</option>
+      <option>Biology</option><option>Astronomy</option><option>Informatics</option>
+    </select>
+  </div>
+
+  <!-- TABLE -->
+  <div class="lb-card">
+    <div class="lb-table-wrap">
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th style="width:48px">Rank</th>
+            <th>Player</th>
+            <th>Rating</th>
+            <th>Solved</th>
+            <th>Accuracy</th>
+            <th>Institution</th>
+          </tr>
+        </thead>
+        <tbody id="lbTbody">
+          <tr><td colspan="6" style="padding:40px;text-align:center">
+            <div class="skeleton" style="height:40px;border-radius:8px;margin-bottom:10px"></div>
+            <div class="skeleton" style="height:40px;border-radius:8px;margin-bottom:10px"></div>
+            <div class="skeleton" style="height:40px;border-radius:8px"></div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+let allRows = [];
+let currentTab = 'global';
+let currentUserUid = null;
+
+const RATING_COLORS = { 2400:'#f87171', 2200:'#FFD700', 2000:'#81c784', 1800:'#5bcfdf', 1200:'#007B8F' };
+function getRatingColor(r){ return r>=2400?'#f87171':r>=2200?'#FFD700':r>=2000?'#81c784':r>=1800?'#5bcfdf':'#007B8F'; }
+
+window.addEventListener('bdoh:authReady', (e)=>{ currentUserUid = e.detail.user?.uid || null; });
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  bdohFirebaseReady(async()=>{
+    if(!window.BDOH_DB){ renderEmpty('Could not connect to database.'); return; }
+    await loadTab('global');
+  });
+});
+
+async function switchTab(tab, el){
+  document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentTab = tab;
+  document.getElementById('topicFilter').style.display = tab==='solvers' ? 'block' : 'none';
+  await loadTab(tab);
+}
+
+async function loadTab(tab){
+  setLoading();
+  try {
+    let data = [];
+    if(tab==='global' || tab==='solvers'){
+      data = await window.BDOH_DB.getLeaderboard(tab);
+    } else {
+      /* Contest tab: use latest contest */
+      const contests = await window.BDOH_DB.getContests();
+      const past = contests.filter(c=>c.status==='past'||c.status==='live');
+      if(!past.length){ renderEmpty('No contest results yet.'); return; }
+      const latest = past[0];
+      data = await window.BDOH_DB.getContestLeaderboard(latest.id);
+    }
+    allRows = data;
+    renderTable(data);
+    renderPodium(data.slice(0,3));
+  } catch(e){ console.error(e); renderEmpty('Failed to load leaderboard.'); }
+}
+
+function renderPodium(top3){
+  if(!top3.length){ document.getElementById('podiumArea').innerHTML = ''; return; }
+  const order = [top3[1], top3[0], top3[2]].filter(Boolean);
+  const podiumOrder = top3[1] ? [1,0,2] : [0]; // indices in top3
+  const positions = [[1, top3[0]], top3[1]?[2,top3[1]]:null, top3[2]?[3,top3[2]]:null].filter(Boolean);
+  const heights = {1:72,2:54,3:40};
+  const sizes = {1:80,2:68,3:60};
+
+  /* Display: 2nd, 1st, 3rd */
+  const display = [];
+  if(top3[1]) display.push({rank:2, data:top3[1]});
+  display.push({rank:1, data:top3[0]});
+  if(top3[2]) display.push({rank:3, data:top3[2]});
+
+  document.getElementById('podiumArea').innerHTML = display.map(({rank, data:u})=>{
+    const name = u.displayName||u.name||'—';
+    const initials = name.charAt(0).toUpperCase();
+    const medals = {1:'🥇',2:'🥈',3:'🥉'};
+    const rColors = {1:'#FFD700',2:'#c0c0c0',3:'#cd7f32'};
+    return `<div class="podium-item podium-${rank}">
+      ${rank===1?'<div class="podium-crown">👑</div>':'<div style="height:28px"></div>'}
+      <div class="podium-avatar" style="width:${sizes[rank]}px;height:${sizes[rank]}px;font-size:${sizes[rank]/3.2}px;border-color:${rColors[rank]}">
+        ${u.photoURL?`<img src="${u.photoURL}" alt="${name}"/>`:`<span>${initials}</span>`}
+      </div>
+      <div class="podium-name">${name.split(' ').slice(0,2).join(' ')}</div>
+      <div class="podium-rating" style="color:${rColors[rank]}">${medals[rank]} ${u.rating||u.score||'—'}</div>
+      <div class="podium-block" style="width:${sizes[rank]+20}px;height:${heights[rank]}px">${rank}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable(rows){
+  if(!rows.length){ renderEmpty(); return; }
+  const topic = document.getElementById('topicFilter')?.value || '';
+  let filtered = rows;
+  if(topic) filtered = rows.filter(r=>r.topicStats && r.topicStats[topic]);
+
+  document.getElementById('lbTbody').innerHTML = filtered.map((r, i)=>{
+    const rank = r.rank || (i+1);
+    const name = r.displayName||r.name||'Unknown';
+    const initials = name.charAt(0).toUpperCase();
+    const isMe = r.userId === currentUserUid || r.id === currentUserUid;
+    const rankClass = rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':'';
+    const rankBg = rank===1?'g':rank===2?'s':rank===3?'b':'';
+    const rating = r.rating||r.score||1200;
+    const solved = r.totalSolved||r.solved||0;
+    const acc = r.accuracy||0;
+    const profileLink = r.userId||r.id ? `profile.html?uid=${r.userId||r.id}` : '#';
+
+    return `<tr class="${isMe?'me':''}" onclick="location.href='${profileLink}'">
+      <td class="rank-cell ${rankClass}">
+        ${rank<=3
+          ? `<span class="rank-num ${rankBg}">${rank===1?'🥇':rank===2?'🥈':'🥉'}</span>`
+          : `<span style="color:var(--m)">${rank}</span>`}
+      </td>
+      <td>
+        <div class="user-cell">
+          <div class="user-av">${r.photoURL?`<img src="${r.photoURL}" alt="${name}"/>`:`<span>${initials}</span>`}</div>
+          <div>
+            <div class="user-name">${name}${isMe?`<span class="me-badge">YOU</span>`:''}</div>
+            <div class="user-inst">${r.institution||r.classGrade||'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td class="rating-cell" style="color:${getRatingColor(rating)}">${rating}</td>
+      <td style="font-family:var(--fH);font-weight:700;color:var(--txt)">${solved}</td>
+      <td>
+        <div class="acc-bar">
+          <div class="acc-bar-inner"><div class="acc-bar-fill" style="width:${acc}%"></div></div>
+          <span style="font-family:var(--fH);font-weight:700;font-size:13px">${acc}%</span>
+        </div>
+      </td>
+      <td style="font-size:12px;color:var(--m)">${r.institution||'—'}</td>
+    </tr>`;
+  }).join('') || renderEmpty('No results match your filter.');
+}
+
+function filterTable(){
+  const q = document.getElementById('lbSearch').value.toLowerCase();
+  const filtered = allRows.filter(r=>{
+    const name = (r.displayName||r.name||'').toLowerCase();
+    return name.includes(q);
+  });
+  renderTable(filtered);
+}
+
+function renderEmpty(msg='No data available yet.'){
+  document.getElementById('lbTbody').innerHTML = `<tr><td colspan="6" class="empty-state">${msg}</td></tr>`;
+}
+
+function setLoading(){
+  document.getElementById('lbTbody').innerHTML = Array(5).fill(0).map(()=>`
+    <tr><td colspan="6" style="padding:8px 20px">
+      <div class="skeleton" style="height:40px;border-radius:8px"></div>
+    </td></tr>`).join('');
+}
+</script>
+</body>
+</html>

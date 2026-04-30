@@ -1057,44 +1057,51 @@ function exportDataSnapshot(){
 }
 </script>
 <script type="module">
-  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  // 1. We import ONLY what we need for the popup
+  import { signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",
-    authDomain: "bdoh-project.firebaseapp.com",
-    projectId: "bdoh-project",
-    storageBucket: "bdoh-project.firebasestorage.app",
-    messagingSenderId: "413106966781",
-    appId: "1:413106966781:web:f3123769a8d2cec02e2e94"
-  };
+  // 2. Use the existing Auth and Provider instances we attached to 'window' 
+  // This prevents the "red marks" because it doesn't re-initialize the app
+  const auth = window._bdohAuth;
+  const provider = window._bdohGoogleProvider;
 
-  /* Reuse the app initialised by data.js if already exists */
-  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
+  // 3. The Login Button Logic
   document.getElementById('login-btn').addEventListener('click', () => {
-    const email = document.getElementById('admin-email').value;
-    const pass  = document.getElementById('admin-pass').value;
-    const btn   = document.getElementById('login-btn');
-    const err   = document.getElementById('login-error');
-    btn.textContent = "Verifying...";
+    const btn = document.getElementById('login-btn');
+    const err = document.getElementById('login-error');
+    
+    btn.textContent = "Opening Google...";
     err.style.display = "none";
-    signInWithEmailAndPassword(auth, email, pass)
+
+    // Trigger Google Popup instead of asking for a password
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // SECURITY CHECK: Ensure it's actually you
+        if (result.user.email !== 'mehedihasin2570@gmail.com') {
+          signOut(auth);
+          throw new Error("Unauthorized: Admin email required.");
+        }
+        btn.textContent = "Access Granted!";
+      })
       .catch((error) => {
         btn.textContent = "Unlock Dashboard";
-        err.textContent = "Login failed: " + error.code;
+        err.textContent = "Login failed: " + error.message;
         err.style.display = "block";
       });
   });
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById('login-overlay').style.display = 'none';
+  // 4. The UI Bouncer (Controls the overlay)
+  auth.onAuthStateChanged((user) => {
+    const overlay = document.getElementById('login-overlay');
+    if (user && user.email === 'mehedihasin2570@gmail.com') {
+      overlay.style.display = 'none';
+      console.log("Admin session active.");
     } else {
-      document.getElementById('login-overlay').style.display = 'flex';
+      overlay.style.display = 'flex';
+      if (user) signOut(auth); // Log them out if they aren't the admin
     }
   });
 </script>
+
 </body>
 </html>

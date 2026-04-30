@@ -39,7 +39,10 @@
     <a href="#news"       class="mob-link">News</a>
         
         <!-- 🔧 SURGERY START: Mobile profile link -->
-    <a class="mob-link" href="#profile" id="mobProfileLink" style="display:none">👤 Profile</a>
+    <!-- Change href="#profile" to href="profile.html" -->
+    <a href="leaderboard.html" class="mob-link">🏆 Leaderboard</a>
+    <a class="mob-link" href="profile.html" id="mobProfileLink" style="display:none">👤 Profile</a>
+
         <!-- 🔧 SURGERY END -->
         
   </nav>
@@ -66,10 +69,12 @@
     <li><a href="#news"       class="nl">News</a></li>
     
     <!-- 🔧 SURGERY START: Profile nav link -->
-    <li><a class="nl" href="#profile" id="profileNavLink" style="display:none">Profile</a></li>
+    <!-- Change href="#profile" to href="profile.html" -->
+    <li><a href="leaderboard.html" class="nl">Leaderboard</a></li>
+    <li><a class="nl" href="profile.html" id="profileNavLink" style="display:none">Profile</a></li>
     <!-- 🔧 SURGERY END -->
 
-</ul>
+  </ul>
 
   <div class="nav-actions">
     <!-- 🔧 SURGERY START: Auth Nav Button -->
@@ -337,53 +342,6 @@
   </div>
 </section>
 
-<!-- 🔧 SURGERY START: Profile Section -->
-<section class="section" id="profile" style="display:none">
-  <div class="container">
-    <div class="s-tag">My Account</div>
-    <h2 class="s-title">Your <span class="grad-text">Profile</span></h2>
-
-    <div class="profile-layout">
-      <!-- Left: identity card -->
-      <div class="profile-card reveal">
-        <div class="profile-avatar-wrap">
-          <img id="profileAvatar" src="" alt="Avatar" class="profile-avatar"/>
-          <div class="profile-avatar-placeholder" id="profileAvatarPlaceholder">?</div>
-        </div>
-        <div class="profile-name" id="profileName">—</div>
-        <div class="profile-email" id="profileEmail">—</div>
-        <div class="profile-rating-row">
-          <div class="profile-stat">
-            <span class="profile-stat-val grad-text" id="profileRating">1200</span>
-            <span class="profile-stat-lbl">Rating</span>
-          </div>
-          <div class="profile-stat-div"></div>
-          <div class="profile-stat">
-            <span class="profile-stat-val grad-text" id="profileSolved">0</span>
-            <span class="profile-stat-lbl">Solved</span>
-          </div>
-          <div class="profile-stat-div"></div>
-          <div class="profile-stat">
-            <span class="profile-stat-val grad-text" id="profileAccuracy">—%</span>
-            <span class="profile-stat-lbl">Accuracy</span>
-          </div>
-        </div>
-        <button class="btn-primary btn-sm" onclick="bdohSignOut()" style="margin-top:20px;width:100%;justify-content:center">
-          Sign Out
-        </button>
-      </div>
-
-      <!-- Right: recent submissions -->
-      <div class="reveal rd1" style="flex:1;min-width:0">
-        <div class="profile-sec-title">Recent Submissions</div>
-        <div id="profileSubmissions" class="profile-subs-list">
-          <p style="color:var(--txt-d);font-size:14px;padding:20px 0">No submissions yet. Start solving problems!</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-<!-- 🔧 SURGERY END -->
 
 <!-- ════════════════════════════════════
      CONTESTS
