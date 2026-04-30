@@ -1069,8 +1069,19 @@ body {
   <button class="nav-signout-btn" id="signOutBtn" onclick="bdohProfileSignOut()" style="display:none">Sign Out</button>
 </nav>
 
+<!-- ═══════════════ AUTH LOADING OVERLAY ═══════════════ -->
+<!-- Shown while Firebase resolves auth state; hidden once we know if user is signed in or not -->
+<div id="authLoading" style="
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  background:var(--bg);
+">
+  <span class="spinner" style="width:36px;height:36px;border-width:3px;"></span>
+  <span style="font-family:var(--fH);font-size:14px;color:var(--txt-d);letter-spacing:.5px;">Loading your profile…</span>
+</div>
+
 <!-- ═══════════════ AUTH GATE ═══════════════ -->
-<div id="authGate">
+<div id="authGate" style="display:none">
   <div class="auth-gate-icon">🏆</div>
   <h1 class="auth-gate-title">Your Olympiad<br/><span>Profile</span></h1>
   <p class="auth-gate-sub">Sign in with your Google account to access your personal dashboard, track your progress, and compete on the leaderboard.</p>
@@ -1436,7 +1447,7 @@ const auth = getAuth(app);
 const db   = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-/* ── Expose to window for inline handlers ── */
+/* ── Google Sign-In (only used from the auth gate when not logged in) ── */
 window.bdohProfileGoogleSignIn = async () => {
   const errEl = document.getElementById('authGateError');
   errEl.style.display = 'none';
@@ -1445,6 +1456,7 @@ window.bdohProfileGoogleSignIn = async () => {
   btn.innerHTML = `<span class="spinner"></span> Signing in…`;
   try {
     await signInWithPopup(auth, provider);
+    /* onAuthStateChanged fires automatically after this — no manual redirect needed */
   } catch(e) {
     errEl.textContent = 'Sign-in failed: ' + (e.message || 'unknown error');
     errEl.style.display = 'block';
@@ -1459,12 +1471,17 @@ window.bdohProfileSignOut = async () => {
 
 /* ── Auth state ── */
 onAuthStateChanged(auth, async user => {
+  /* Always hide the loading overlay first */
+  const loadingEl = document.getElementById('authLoading');
+  if (loadingEl) loadingEl.style.display = 'none';
+
   if (user) {
     document.getElementById('authGate').style.display = 'none';
     document.getElementById('profileContent').style.display = 'block';
     document.getElementById('signOutBtn').style.display = '';
-    await ensureUserDoc(user);
-    await renderProfile(user);
+    /* ensureUserDoc now returns the snap so renderProfile reuses it — one fewer Firestore read */
+    const snap = await ensureUserDoc(user);
+    await renderProfile(user, snap);
     initReveal();
   } else {
     document.getElementById('authGate').style.display = 'flex';
@@ -1473,17 +1490,21 @@ onAuthStateChanged(auth, async user => {
   }
 });
 
-/* ── Ensure user doc ── */
+/* ── Ensure user doc ──
+   IMPORTANT: Never overwrites role, isVerified, isBanned, or any
+   admin-managed field once the document exists.
+   Returns the Firestore DocumentSnapshot so callers can reuse it. ── */
 async function ensureUserDoc(user) {
   const ref  = doc(db, 'users', user.uid);
   const snap = await getDoc(ref);
   if (!snap.exists()) {
+    /* Brand-new user — create doc with safe defaults */
     await setDoc(ref, {
       uid:          user.uid,
       displayName:  user.displayName || 'Olympiadian',
       email:        user.email || '',
       photoURL:     user.photoURL || '',
-      role:         'user',
+      role:         'user',          /* default; admins upgrade via admin panel */
       institution:  '', district: '', division: '',
       subjects:     [],
       bio:          '',
@@ -1493,16 +1514,28 @@ async function ensureUserDoc(user) {
       isVerified:   false, isBanned: false, banReason: '',
       createdAt:    serverTimestamp(), lastActive: serverTimestamp()
     });
+    /* Return a fresh snap so renderProfile has data */
+    return await getDoc(ref);
   } else {
-    await updateDoc(ref, { lastActive: serverTimestamp() });
+    /* Existing user — only update lastActive + sync Google photoURL/displayName
+       NEVER touch role, isVerified, isBanned, or any admin-set field */
+    const updates = { lastActive: serverTimestamp() };
+    const data = snap.data();
+    if (user.photoURL && user.photoURL !== data.photoURL) updates.photoURL = user.photoURL;
+    if (user.displayName && !data.displayName) updates.displayName = user.displayName;
+    await updateDoc(ref, updates);
+    return snap; /* reuse the snap we already fetched */
   }
 }
 
-/* ── Render profile ── */
-async function renderProfile(user) {
-  const ref  = doc(db, 'users', user.uid);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
+/* ── Render profile ──
+   Accepts the snap already fetched by ensureUserDoc to avoid a redundant read. ── */
+async function renderProfile(user, snap) {
+  if (!snap || !snap.exists()) {
+    /* Fallback: fetch if somehow not passed */
+    snap = await getDoc(doc(db, 'users', user.uid));
+    if (!snap.exists()) return;
+  }
   const d = snap.data();
 
   /* Avatar */
@@ -1715,7 +1748,7 @@ async function renderSubmissions(uid) {
   }
 }
 
-/* Save profile */
+/* Save profile — only updates user-editable fields; never touches role/isVerified/isBanned */
 window.saveProfile = async () => {
   const uid = window._profileUid;
   if (!uid) return;
@@ -1731,6 +1764,7 @@ window.saveProfile = async () => {
       division:     document.getElementById('efDivision')?.value || '',
       subjects:     subjs,
       lastActive:   serverTimestamp()
+      /* role, isVerified, isBanned, rating etc. are intentionally excluded */
     });
     showToast('✓ Profile saved!');
     /* Refresh displayed info */
