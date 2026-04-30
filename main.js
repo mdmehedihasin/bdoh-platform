@@ -857,3 +857,357 @@ document.addEventListener('DOMContentLoaded',()=>{
    11. MOBILE MENU — handled by section 4 above
 ════════════════════════════════════════════════════════════════ */
 /* Section 11 removed — mobile menu is fully managed by initMob() in section 4. */
+
+/* ================================================================
+   🔧 SURGERY — main.js
+
+   PLACEMENT: Append this ENTIRE block at the very END of main.js,
+   after the closing of Section 11 comment block.
+
+   It uses Firebase v10 Modular SDK loaded via ESM <script type="module">
+   in index.html — see NOTE below for the required script tag.
+================================================================ */
+
+// ════════════════════════════════════════════════════════════════
+// 🔧 SURGERY START
+// SECTION 12 — AUTH + PROFILE + PRACTICE (Firebase v10 Modular)
+// ════════════════════════════════════════════════════════════════
+
+/* ── NOTE: Add this <script type="module"> just before </body> ──
+   (AFTER the auth modal HTML added in index.html surgery)
+
+<script type="module">
+  // Re-use the app already initialised by data.js if it exists.
+  // data.js uses BDOH_FIREBASE_CONFIG and window.BDOH_APP_INSTANCE.
+  import { initializeApp, getApps, getApp }
+    from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, collection,
+           addDoc, query, where, orderBy, limit, getDocs, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",
+    authDomain:        "bdoh-project.firebaseapp.com",
+    projectId:         "bdoh-project",
+    storageBucket:     "bdoh-project.firebasestorage.app",
+    messagingSenderId: "413106966781",
+    appId:             "1:413106966781:web:f3123769a8d2cec02e2e94"
+  };
+
+  const app  = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // ── Expose to window so vanilla functions below can call them ──
+  window._bdohAuth = auth;
+  window._bdohDb   = db;
+  window._bdohGoogleProvider = new GoogleAuthProvider();
+
+  // ── Firebase functions exposed globally ──
+  window._fbSignInWithPopup   = signInWithPopup;
+  window._fbSignOut           = signOut;
+  window._fbDoc               = doc;
+  window._fbGetDoc            = getDoc;
+  window._fbSetDoc            = setDoc;
+  window._fbCollection        = collection;
+  window._fbAddDoc            = addDoc;
+  window._fbQuery             = query;
+  window._fbWhere             = where;
+  window._fbOrderBy           = orderBy;
+  window._fbLimit             = limit;
+  window._fbGetDocs           = getDocs;
+  window._fbServerTimestamp   = serverTimestamp;
+
+  // ── Auth state listener ──
+  onAuthStateChanged(auth, user => {
+    window._bdohCurrentUser = user || null;
+    if (user) {
+      bdohOnSignedIn(user);
+    } else {
+      bdohOnSignedOut();
+    }
+  });
+</script>
+──────────────────────────────────────────────────────────────── */
+
+/* ════════════════════════════════════════════════════════════════
+   12a. AUTH — Modal helpers
+════════════════════════════════════════════════════════════════ */
+
+window.bdohOpenAuthModal = function () {
+  document.getElementById('authModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authLoading').style.display = 'none';
+};
+
+window.bdohCloseAuthModal = function () {
+  document.getElementById('authModal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// Close on backdrop click
+document.getElementById('authModal')?.addEventListener('click', function (e) {
+  if (e.target === this) window.bdohCloseAuthModal();
+});
+
+/* ── Google sign-in ── */
+window.bdohGoogleSignIn = async function () {
+  const errEl  = document.getElementById('authError');
+  const loadEl = document.getElementById('authLoading');
+  const btn    = document.getElementById('googleSignInBtn');
+
+  errEl.style.display  = 'none';
+  loadEl.style.display = 'flex';
+  btn.disabled = true;
+
+  try {
+    const result = await window._fbSignInWithPopup(
+      window._bdohAuth,
+      window._bdohGoogleProvider
+    );
+    // onAuthStateChanged will fire → bdohOnSignedIn()
+    window.bdohCloseAuthModal();
+  } catch (err) {
+    loadEl.style.display = 'none';
+    btn.disabled = false;
+    errEl.textContent = 'Sign-in failed: ' + (err.message || err.code);
+    errEl.style.display = 'block';
+  }
+};
+
+/* ── Sign out ── */
+window.bdohSignOut = async function () {
+  try {
+    await window._fbSignOut(window._bdohAuth);
+  } catch (_) {}
+};
+
+/* ════════════════════════════════════════════════════════════════
+   12b. AUTH — State handlers
+════════════════════════════════════════════════════════════════ */
+
+window.bdohOnSignedIn = async function (user) {
+  // Update nav button
+  const btn   = document.getElementById('authNavBtn');
+  const label = document.getElementById('authNavLabel');
+  if (btn && label) {
+    label.textContent = user.displayName?.split(' ')[0] || 'Me';
+    btn.onclick = () => {
+      document.getElementById('profile')?.scrollIntoView({ behavior: 'smooth' });
+    };
+  }
+
+  // Show profile nav links
+  document.getElementById('profileNavLink')?.style.setProperty('display', 'inline-block');
+  document.getElementById('mobProfileLink')?.style.setProperty('display', 'block');
+
+  // Show profile section
+  const profileSection = document.getElementById('profile');
+  if (profileSection) profileSection.style.display = '';
+
+  // Ensure Firestore user doc exists
+  await bdohEnsureUserDoc(user);
+
+  // Fetch & render profile
+  await bdohRenderProfile(user);
+};
+
+window.bdohOnSignedOut = function () {
+  // Reset nav button
+  const btn   = document.getElementById('authNavBtn');
+  const label = document.getElementById('authNavLabel');
+  if (btn && label) {
+    label.textContent = 'Sign In';
+    btn.onclick = () => window.bdohOpenAuthModal();
+  }
+
+  // Hide profile nav links
+  document.getElementById('profileNavLink')?.style.setProperty('display', 'none');
+  document.getElementById('mobProfileLink')?.style.setProperty('display', 'none');
+
+  // Hide profile section
+  const profileSection = document.getElementById('profile');
+  if (profileSection) profileSection.style.display = 'none';
+};
+
+/* ════════════════════════════════════════════════════════════════
+   12c. FIRESTORE — User document
+════════════════════════════════════════════════════════════════ */
+
+async function bdohEnsureUserDoc(user) {
+  if (!window._bdohDb) return;
+  const db  = window._bdohDb;
+  const ref = window._fbDoc(db, 'users', user.uid);
+  const snap = await window._fbGetDoc(ref);
+
+  if (!snap.exists()) {
+    // Create new user document
+    await window._fbSetDoc(ref, {
+      uid:         user.uid,
+      name:        user.displayName || 'Olympiadian',
+      email:       user.email || '',
+      avatar:      user.photoURL || '',
+      rating:      1200,
+      solved_count: 0,
+      total_attempts: 0,
+      createdAt:   window._fbServerTimestamp()
+    });
+  }
+}
+
+async function bdohGetUserDoc(uid) {
+  if (!window._bdohDb) return null;
+  const ref  = window._fbDoc(window._bdohDb, 'users', uid);
+  const snap = await window._fbGetDoc(ref);
+  return snap.exists() ? snap.data() : null;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   12d. PROFILE — Render
+════════════════════════════════════════════════════════════════ */
+
+async function bdohRenderProfile(user) {
+  const data = await bdohGetUserDoc(user.uid);
+  if (!data) return;
+
+  // Avatar
+  const avatarEl = document.getElementById('profileAvatar');
+  const avatarPh = document.getElementById('profileAvatarPlaceholder');
+  if (avatarEl && data.avatar) {
+    avatarEl.src = data.avatar;
+    avatarEl.onload = () => avatarEl.classList.add('loaded');
+    if (avatarPh) avatarPh.style.display = 'none';
+  } else if (avatarPh) {
+    avatarPh.textContent = (data.name || '?')[0].toUpperCase();
+  }
+
+  // Text fields
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('profileName',    data.name  || '—');
+  set('profileEmail',   data.email || '—');
+  set('profileRating',  data.rating ?? 1200);
+  set('profileSolved',  data.solved_count ?? 0);
+
+  // Accuracy
+  const attempts = data.total_attempts ?? 0;
+  const solved   = data.solved_count   ?? 0;
+  const acc = attempts > 0 ? Math.round((solved / attempts) * 100) + '%' : '—%';
+  set('profileAccuracy', acc);
+
+  // Recent submissions
+  await bdohRenderRecentSubmissions(user.uid);
+}
+
+async function bdohRenderRecentSubmissions(uid) {
+  const box = document.getElementById('profileSubmissions');
+  if (!box || !window._bdohDb) return;
+
+  try {
+    const db  = window._bdohDb;
+    const q   = window._fbQuery(
+      window._fbCollection(db, 'submissions'),
+      window._fbWhere('user_id', '==', uid),
+      window._fbOrderBy('timestamp', 'desc'),
+      window._fbLimit(5)
+    );
+    const snap = await window._fbGetDocs(q);
+
+    if (snap.empty) {
+      box.innerHTML = '<p style="color:var(--txt-d);font-size:14px;padding:20px 0">No submissions yet. Start solving problems!</p>';
+      return;
+    }
+
+    box.innerHTML = snap.docs.map(d => {
+      const s = d.data();
+      const ts = s.timestamp?.toDate
+        ? s.timestamp.toDate().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+        : '—';
+      const badgeCls = s.status === 'correct' ? 'psb-correct' : 'psb-wrong';
+      const badgeTxt = s.status === 'correct' ? '✓ Correct' : '✗ Wrong';
+      return `
+        <div class="profile-sub-item">
+          <div>
+            <div class="profile-sub-title">${s.problem_title || s.problem_id || 'Problem'}</div>
+            <div class="profile-sub-meta">${ts}</div>
+          </div>
+          <span class="profile-sub-badge ${badgeCls}">${badgeTxt}</span>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.warn('BDOH: could not load submissions', err);
+    box.innerHTML = '<p style="color:var(--txt-d);font-size:14px;padding:20px 0">Could not load submissions.</p>';
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   12e. PRACTICE — Firestore submission on answer
+   Hooks into the EXISTING submitAnswer() in Section 9.
+   Wraps the original function to also save to Firestore.
+════════════════════════════════════════════════════════════════ */
+
+(function patchSubmitAnswer() {
+  const _orig = window.submitAnswer;
+  window.submitAnswer = async function () {
+    // Run original logic first
+    if (_orig) _orig.call(this);
+
+    // Then, if user is signed in and an exam is open, save to Firestore
+    const user = window._bdohCurrentUser;
+    if (!user || !window._bdohDb || !window._examId) return;
+
+    // Wait one tick so _answered is set by original fn
+    await new Promise(r => setTimeout(r, 150));
+
+    const p = (window.BDOH?.problems || []).find(x => x.id === window._examId);
+    if (!p) return;
+
+    const raw    = document.getElementById('examInput')?.value?.trim() || '';
+    const val    = parseFloat(raw);
+    const exp    = parseFloat(p.answer);
+    const isOk   = p.tolerance === 0
+      ? (raw === p.answer || (!isNaN(val) && val === exp))
+      : (!isNaN(val) && Math.abs(val - exp) <= p.tolerance);
+
+    const status = isOk ? 'correct' : 'wrong';
+    const db     = window._bdohDb;
+
+    try {
+      // Save submission
+      await window._fbAddDoc(window._fbCollection(db, 'submissions'), {
+        user_id:       user.uid,
+        user_name:     user.displayName || '',
+        problem_id:    p.id,
+        problem_title: p.title || p.id,
+        answer:        raw,
+        status:        status,
+        timestamp:     window._fbServerTimestamp()
+      });
+
+      // Update user stats
+      const uRef  = window._fbDoc(db, 'users', user.uid);
+      const uSnap = await window._fbGetDoc(uRef);
+      if (uSnap.exists()) {
+        const ud = uSnap.data();
+        const updates = {
+          total_attempts: (ud.total_attempts || 0) + 1
+        };
+        if (isOk) updates.solved_count = (ud.solved_count || 0) + 1;
+        await window._fbSetDoc(uRef, updates, { merge: true });
+      }
+
+      // Refresh profile if visible
+      if (document.getElementById('profile')?.style.display !== 'none') {
+        await bdohRenderProfile(user);
+      }
+    } catch (err) {
+      console.warn('BDOH: submission save error', err);
+    }
+  };
+})();
+
+// ════════════════════════════════════════════════════════════════
+// 🔧 SURGERY END
+// ════════════════════════════════════════════════════════════════

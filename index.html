@@ -35,10 +35,15 @@
     <a href="#contests"  class="mob-link">Contests</a>
     <a href="#president" class="mob-link">President</a>
     <a href="#community" class="mob-link">Community</a>
-    <a href="#social"    class="mob-link">Connect</a>
-    <a href="#news"      class="mob-link">News</a>
+    <a href="#social"     class="mob-link">Connect</a>
+    <a href="#news"       class="mob-link">News</a>
+        
+        <!-- 🔧 SURGERY START: Mobile profile link -->
+    <a class="mob-link" href="#profile" id="mobProfileLink" style="display:none">👤 Profile</a>
+        <!-- 🔧 SURGERY END -->
+        
   </nav>
-  <a href="#community" class="btn-primary mob-cta mob-link">Join Community</a>
+    <a href="#community" class="btn-primary mob-cta mob-link">Join Community</a>
 </div>
 
 <!-- ════════════════════════════════════
@@ -51,17 +56,28 @@
   </a>
 
   <ul class="nav-links" role="list">
-    <li><a href="#home"      class="nl active">Home</a></li>
-    <li><a href="#about"     class="nl">About</a></li>
-    <li><a href="#practice"  class="nl">Practice</a></li>
-    <li><a href="#contests"  class="nl">Contests</a></li>
-    <li><a href="#president" class="nl">President</a></li>
-    <li><a href="#community" class="nl">Community</a></li>
-    <li><a href="#social"    class="nl">Connect</a></li>
-    <li><a href="#news"      class="nl">News</a></li>
-  </ul>
+    <li><a href="#home"       class="nl active">Home</a></li>
+    <li><a href="#about"      class="nl">About</a></li>
+    <li><a href="#practice"   class="nl">Practice</a></li>
+    <li><a href="#contests"   class="nl">Contests</a></li>
+    <li><a href="#president"  class="nl">President</a></li>
+    <li><a href="#community"  class="nl">Community</a></li>
+    <li><a href="#social"     class="nl">Connect</a></li>
+    <li><a href="#news"       class="nl">News</a></li>
+    
+    <!-- 🔧 SURGERY START: Profile nav link -->
+    <li><a class="nl" href="#profile" id="profileNavLink" style="display:none">Profile</a></li>
+    <!-- 🔧 SURGERY END -->
+
+</ul>
 
   <div class="nav-actions">
+    <!-- 🔧 SURGERY START: Auth Nav Button -->
+<button class="btn-auth-nav" id="authNavBtn" onclick="bdohOpenAuthModal()" aria-label="Sign in">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  <span id="authNavLabel">Sign In</span>
+</button>
+<!-- 🔧 SURGERY END -->
     <button class="btn-theme" id="themeBtn" aria-label="Toggle colour theme">
       <svg id="themeIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/>
@@ -320,6 +336,54 @@
     <div class="prob-grid" id="probBox" role="list"></div>
   </div>
 </section>
+
+<!-- 🔧 SURGERY START: Profile Section -->
+<section class="section" id="profile" style="display:none">
+  <div class="container">
+    <div class="s-tag">My Account</div>
+    <h2 class="s-title">Your <span class="grad-text">Profile</span></h2>
+
+    <div class="profile-layout">
+      <!-- Left: identity card -->
+      <div class="profile-card reveal">
+        <div class="profile-avatar-wrap">
+          <img id="profileAvatar" src="" alt="Avatar" class="profile-avatar"/>
+          <div class="profile-avatar-placeholder" id="profileAvatarPlaceholder">?</div>
+        </div>
+        <div class="profile-name" id="profileName">—</div>
+        <div class="profile-email" id="profileEmail">—</div>
+        <div class="profile-rating-row">
+          <div class="profile-stat">
+            <span class="profile-stat-val grad-text" id="profileRating">1200</span>
+            <span class="profile-stat-lbl">Rating</span>
+          </div>
+          <div class="profile-stat-div"></div>
+          <div class="profile-stat">
+            <span class="profile-stat-val grad-text" id="profileSolved">0</span>
+            <span class="profile-stat-lbl">Solved</span>
+          </div>
+          <div class="profile-stat-div"></div>
+          <div class="profile-stat">
+            <span class="profile-stat-val grad-text" id="profileAccuracy">—%</span>
+            <span class="profile-stat-lbl">Accuracy</span>
+          </div>
+        </div>
+        <button class="btn-primary btn-sm" onclick="bdohSignOut()" style="margin-top:20px;width:100%;justify-content:center">
+          Sign Out
+        </button>
+      </div>
+
+      <!-- Right: recent submissions -->
+      <div class="reveal rd1" style="flex:1;min-width:0">
+        <div class="profile-sec-title">Recent Submissions</div>
+        <div id="profileSubmissions" class="profile-subs-list">
+          <p style="color:var(--txt-d);font-size:14px;padding:20px 0">No submissions yet. Start solving problems!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- 🔧 SURGERY END -->
 
 <!-- ════════════════════════════════════
      CONTESTS
@@ -613,5 +677,101 @@
 
 <script src="data.js"></script>
 <script src="main.js"></script>
+<!-- 🔧 SURGERY START: Auth Modal -->
+<div class="auth-modal-bg" id="authModal" role="dialog" aria-modal="true" aria-label="Sign in to BDOH">
+  <div class="auth-modal-box">
+    <button class="auth-modal-close" onclick="bdohCloseAuthModal()" aria-label="Close">&times;</button>
+    <div class="auth-modal-logo">
+      <div class="auth-modal-logo-icon">B</div>
+      <div>
+        <div class="auth-modal-logo-name">BDOH</div>
+        <div class="auth-modal-logo-sub">Bangladesh Olympiadians Hub</div>
+      </div>
+    </div>
+    <h3 class="auth-modal-title">Welcome Back</h3>
+    <p class="auth-modal-sub">Sign in to track your progress, solve problems, and compete.</p>
+
+    <button class="btn-google-signin" id="googleSignInBtn" onclick="bdohGoogleSignIn()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <div class="auth-field">
+      <label for="authEmail">Email (coming soon)</label>
+      <input type="email" id="authEmail" placeholder="you@example.com" disabled style="opacity:.5;cursor:not-allowed"/>
+    </div>
+    <div class="auth-field">
+      <label for="authPass">Password (coming soon)</label>
+      <input type="password" id="authPass" placeholder="••••••••" disabled style="opacity:.5;cursor:not-allowed"/>
+    </div>
+
+    <div class="auth-error" id="authError" style="display:none"></div>
+    <div class="auth-loading" id="authLoading" style="display:none">
+      <div class="auth-spinner"></div> Signing in…
+    </div>
+  </div>
+</div>
+<!-- 🔧 SURGERY END -->
+ <script type="module">
+  // Re-use the app already initialised by data.js if it exists.
+  // data.js uses BDOH_FIREBASE_CONFIG and window.BDOH_APP_INSTANCE.
+  import { initializeApp, getApps, getApp }
+    from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+    from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, collection,
+           addDoc, query, where, orderBy, limit, getDocs, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+  const FIREBASE_CONFIG = {
+    apiKey:            "AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",
+    authDomain:        "bdoh-project.firebaseapp.com",
+    projectId:         "bdoh-project",
+    storageBucket:     "bdoh-project.firebasestorage.app",
+    messagingSenderId: "413106966781",
+    appId:             "1:413106966781:web:f3123769a8d2cec02e2e94"
+  };
+
+  const app  = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  // ── Expose to window so vanilla functions below can call them ──
+  window._bdohAuth = auth;
+  window._bdohDb   = db;
+  window._bdohGoogleProvider = new GoogleAuthProvider();
+
+  // ── Firebase functions exposed globally ──
+  window._fbSignInWithPopup   = signInWithPopup;
+  window._fbSignOut           = signOut;
+  window._fbDoc               = doc;
+  window._fbGetDoc            = getDoc;
+  window._fbSetDoc            = setDoc;
+  window._fbCollection        = collection;
+  window._fbAddDoc            = addDoc;
+  window._fbQuery             = query;
+  window._fbWhere             = where;
+  window._fbOrderBy           = orderBy;
+  window._fbLimit             = limit;
+  window._fbGetDocs           = getDocs;
+  window._fbServerTimestamp   = serverTimestamp;
+
+  // ── Auth state listener ──
+  onAuthStateChanged(auth, user => {
+    window._bdohCurrentUser = user || null;
+    if (user) {
+      bdohOnSignedIn(user);
+    } else {
+      bdohOnSignedOut();
+    }
+  });
+</script>
+──────────────────────────────────────────────────────────────── */
+
+/* ════════════════════════════════════════════════════════════════
+   12a. AUTH — Modal helpers
+════════════════════════════════════════════════════════════════ */
 </body>
 </html>
