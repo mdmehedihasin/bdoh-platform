@@ -820,25 +820,22 @@ ul{list-style:none;padding:0;margin:0}
 .exam-overlay{
   position:fixed;inset:0;z-index:900;
   background:rgba(6,9,26,.92);backdrop-filter:blur(20px);
-  display:none;align-items:flex-start;justify-content:center;
+  display:none;align-items:center;justify-content:center;
   padding:20px;overflow-y:auto;
 }
 .exam-overlay.open{display:flex}
 .exam-panel{
   background:var(--bg3);border:1px solid var(--bd-a);
-  border-radius:var(--rl);width:100%;max-width:1020px;
-  /* Desktop: fixed max height with internal scroll */
-  max-height:92vh;
+  border-radius:var(--rl);width:100%;max-width:1180px;
+  height:min(90vh,820px);
   display:flex;flex-direction:column;overflow:hidden;
   animation:examIn .4s var(--spring) both;
   box-shadow:0 40px 100px rgba(0,0,0,.5),0 0 0 1px rgba(0,123,143,.2);
-  /* ensure panel is never taller than viewport on desktop */
-  align-self:center;
 }
-@keyframes examIn{from{opacity:0;transform:scale(.9) translateY(30px)}to{opacity:1;transform:none}}
+@keyframes examIn{from{opacity:0;transform:scale(.93) translateY(24px)}to{opacity:1;transform:none}}
 .exam-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:20px 28px;border-bottom:1px solid var(--bd);flex-shrink:0;
+  padding:20px 32px;border-bottom:1px solid var(--bd);flex-shrink:0;
   background:rgba(0,0,0,.2);
 }
 .exam-header-left{flex:1;min-width:0}
@@ -846,57 +843,68 @@ ul{list-style:none;padding:0;margin:0}
   display:inline-block;font-family:var(--fH);font-size:10px;font-weight:700;
   letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:6px;
 }
-.exam-title{font-family:var(--fH);font-size:clamp(16px,2vw,20px);font-weight:800;color:var(--txt);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exam-title{font-family:var(--fH);font-size:clamp(17px,2vw,22px);font-weight:800;color:var(--txt);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .exam-header-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .exam-timer{
   display:flex;align-items:center;gap:7px;
   background:rgba(0,0,0,.3);border:1px solid var(--bd);
-  padding:8px 16px;border-radius:20px;
-  font-family:var(--fH);font-size:14px;font-weight:700;color:var(--txt-m);
+  padding:8px 18px;border-radius:20px;
+  font-family:var(--fH);font-size:15px;font-weight:700;color:var(--txt-m);
 }
 .exam-timer.urgent{color:#f87171;border-color:rgba(239,68,68,.35)}
 .exam-pts{
   font-family:var(--fH);font-size:13px;font-weight:700;color:var(--gold);
   background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);
-  padding:7px 14px;border-radius:18px;
+  padding:7px 16px;border-radius:18px;
 }
 .exam-close{
-  width:36px;height:36px;border-radius:50%;
+  width:38px;height:38px;border-radius:50%;
   background:var(--sf);border:1px solid var(--bd);
-  color:var(--txt-m);font-size:17px;display:flex;align-items:center;
+  color:var(--txt-m);font-size:18px;display:flex;align-items:center;
   justify-content:center;transition:all .22s;cursor:pointer;
 }
 .exam-close:hover{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.3);color:#f87171}
 
+/* Body: 60% problem / 40% answer — both scroll independently */
 .exam-body{
-  display:grid;grid-template-columns:1fr 1fr;
+  display:grid;grid-template-columns:3fr 2fr;
   flex:1;min-height:0;overflow:hidden;
 }
-.exam-left{padding:28px;overflow-y:auto;border-right:1px solid var(--bd)}
-.exam-right{padding:28px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;min-height:0}
-.exam-section-label{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--txt-d);margin-bottom:12px}
-.exam-stmt{font-size:clamp(14px,1.5vw,16px);color:var(--txt-m);line-height:1.78}
-.exam-diff-row{display:flex;align-items:center;gap:12px;margin:18px 0}
+.exam-left{
+  padding:32px;overflow-y:auto;border-right:1px solid var(--bd);
+  scroll-behavior:smooth;
+}
+.exam-right{
+  padding:28px 32px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:18px;
+  background:rgba(0,0,0,.12);
+}
+.exam-section-label{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--txt-d);margin-bottom:14px}
+.exam-stmt{
+  font-size:clamp(15px,1.6vw,17px);color:var(--txt-m);line-height:1.82;
+  white-space:pre-wrap;
+}
+.exam-diff-row{display:flex;align-items:center;gap:12px;margin:20px 0}
 .exam-diff-badge{font-size:11px;padding:4px 13px;border-radius:10px;font-family:var(--fH);font-weight:700}
 .exam-meta{font-size:12px;color:var(--txt-d);font-family:var(--fH)}
 .hint-toggle{
   display:inline-flex;align-items:center;gap:8px;
   background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);
-  color:var(--gold);padding:9px 18px;border-radius:11px;
+  color:var(--gold);padding:10px 20px;border-radius:11px;
   font-family:var(--fH);font-size:13px;font-weight:700;transition:all .22s;cursor:pointer;
 }
 .hint-toggle:hover{background:rgba(255,215,0,.2)}
 .hint-box{
   background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.18);
-  border-radius:11px;padding:16px;font-size:14px;color:var(--txt-m);
-  line-height:1.72;display:none;margin-top:8px;
+  border-radius:11px;padding:18px;font-size:14.5px;color:var(--txt-m);
+  line-height:1.76;display:none;margin-top:10px;
 }
 .hint-box.open{display:block}
 
 .exam-input{
   width:100%;background:var(--sf);border:1px solid var(--bd);
-  border-radius:12px;padding:14px 18px;font-family:var(--fB);
-  font-size:16px;color:var(--txt);outline:none;
+  border-radius:13px;padding:16px 20px;font-family:var(--fB);
+  font-size:17px;color:var(--txt);outline:none;
   transition:border-color .22s,box-shadow .22s;
 }
 .exam-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow)}
@@ -904,8 +912,8 @@ ul{list-style:none;padding:0;margin:0}
 .btn-submit{
   display:flex;align-items:center;justify-content:center;gap:9px;
   background:var(--gb);color:#fff;border:none;width:100%;
-  padding:14px 24px;border-radius:12px;
-  font-family:var(--fH);font-size:15px;font-weight:700;
+  padding:16px 24px;border-radius:13px;
+  font-family:var(--fH);font-size:16px;font-weight:800;
   transition:all .28s var(--spring);cursor:pointer;
   box-shadow:0 5px 22px var(--teal-glow);
 }
@@ -916,56 +924,50 @@ ul{list-style:none;padding:0;margin:0}
 .exam-feedback{
   font-family:var(--fH);font-size:15px;font-weight:700;
   padding:14px 18px;border-radius:11px;text-align:center;
-  display:none;animation:examIn .3s var(--spring);
+  display:none;
 }
 .fb-ok{background:rgba(76,175,80,.18);border:1px solid rgba(76,175,80,.35);color:#81c784;display:block}
 .fb-no{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#f87171;display:block}
 .exam-divider{height:1px;background:var(--bd);flex-shrink:0}
 
-/* Solution box: must NOT use flex:1 — that lets it collapse and causes overlap */
 .solution-box{
   background:rgba(0,0,0,.2);
   border:1px solid var(--bd);
   border-radius:12px;
-  padding:18px;
-  /* Let height grow with content, never collapse */
+  padding:20px;
   width:100%;
   box-sizing:border-box;
   overflow:hidden;
   word-break:break-word;
   overflow-wrap:break-word;
 }
-.solution-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:100px;text-align:center}
+.solution-locked{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:90px;text-align:center}
 .solution-locked p{font-size:13.5px;color:var(--txt-d);font-family:var(--fH)}
 .solution-content{
-  font-size:14px;
+  font-size:14.5px;
   color:var(--txt);
-  line-height:1.74;
+  line-height:1.76;
   width:100%;
   box-sizing:border-box;
   word-break:break-word;
   overflow-wrap:break-word;
-  /* white-space handled per-element inline */
 }
 
-/* Nav buttons: NOT margin-top:auto — that pulls them up over the solution */
 .exam-nav-btns{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  /* Use normal flow margin, not auto */
   margin-top:8px;
   padding-top:16px;
   border-top:1px solid var(--bd);
   flex-shrink:0;
-  /* Stick to bottom of scrollable area naturally */
   position:sticky;
   bottom:0;
-  background:var(--bg2);
+  background:var(--bg3);
   z-index:2;
   padding-bottom:4px;
 }
-.exam-progress{font-family:var(--fH);font-size:12px;font-weight:600;color:var(--txt-d)}
+.exam-progress{font-family:var(--fH);font-size:13px;font-weight:600;color:var(--txt-d)}
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
 @media(max-width:1200px){
@@ -981,9 +983,8 @@ ul{list-style:none;padding:0;margin:0}
   .footer-top{grid-template-columns:1fr 1fr}
   /* On tablet: stack exam body vertically, each side scrolls independently */
   .exam-body{grid-template-columns:1fr;overflow-y:auto;overflow-x:hidden}
-  .exam-left{border-right:none;border-bottom:1px solid var(--bd);max-height:45vh;overflow-y:auto}
-  /* exam-right: allow scroll so solution is never clipped */
-  .exam-right{overflow-y:auto;min-height:200px;max-height:none}
+  .exam-left{border-right:none;border-bottom:1px solid var(--bd);max-height:50vh;overflow-y:auto}
+  .exam-right{overflow-y:auto;min-height:220px;max-height:none}
 }
 @media(max-width:768px){
   .navbar{padding:14px 20px}.navbar.scrolled{padding:10px 20px}
@@ -1998,23 +1999,7 @@ body::before {
 }
 
 /* ── EXAM FEEDBACK COLORS (reused by practice) ───────────────── */
-.exam-feedback {
-  font-family: var(--fH); font-size: 14px; font-weight: 600;
-  padding: 12px 16px; border-radius: 11px;
-  display: none;
-  margin-top: 8px;
-}
-.exam-feedback.visible { display: block; }
-.fb-ok {
-  background: rgba(76,175,80,.15);
-  border: 1px solid rgba(76,175,80,.35);
-  color: #81c784;
-}
-.fb-no {
-  background: rgba(239,68,68,.12);
-  border: 1px solid rgba(239,68,68,.28);
-  color: #f87171;
-}
+/* exam-feedback duplicate removed — canonical definition is above at line ~916 */
 
 /* ── RESPONSIVE: Profile ─────────────────────────────────────── */
 @media (max-width: 768px) {

@@ -28,7 +28,7 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
   font-family:var(--fH);font-size:14px;font-weight:600;border-left:3px solid transparent;
   cursor:pointer;transition:all .22s;border:none;background:none;width:100%;text-align:left}
 .nav-item:hover,.nav-item.on{color:var(--txt);background:rgba(0,123,143,.1);border-left-color:var(--teal)}
-.nav-icon{font-size:18px;width:24px;text-align:center}
+.nav-icon{font-size:18px;width:24px;text-align:center;display:flex;align-items:center;justify-content:center}.nav-icon-svg{font-size:0}
 .nav-sep{height:1px;background:var(--bd);margin:12px 0}
 .nav-role-badge{margin:0 22px 12px;padding:7px 14px;background:rgba(0,123,143,.12);
   border:1px solid var(--ba);border-radius:10px;font-family:var(--fH);font-size:11px;
@@ -250,17 +250,17 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
     <div class="sb-logo-text">BDOH Admin<span>Control Panel v4.0</span></div>
   </div>
   <div class="nav-role-badge" id="sidebar-role">Super Admin</div>
-  <button class="nav-item on" onclick="goPage('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</button>
-  <button class="nav-item" onclick="goPage('problems',this)"><span class="nav-icon">📚</span>Problems</button>
-  <button class="nav-item" onclick="goPage('contests',this)"><span class="nav-icon">🏆</span>Contests</button>
-  <button class="nav-item" onclick="goPage('results',this)"><span class="nav-icon">📈</span>Results & Scores</button>
-  <button class="nav-item" onclick="goPage('users',this)"><span class="nav-icon">👥</span>Users & Roles</button>
-  <button class="nav-item" onclick="goPage('leaderboard',this)"><span class="nav-icon">🥇</span>Leaderboard</button>
-  <button class="nav-item" onclick="goPage('analytics',this)"><span class="nav-icon">🔬</span>Analytics</button>
-  <button class="nav-item" onclick="goPage('panelists',this)"><span class="nav-icon">🎓</span>Panelists</button>
+  <button class="nav-item on" onclick="goPage('dashboard',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg></span>Dashboard</button>
+  <button class="nav-item" onclick="goPage('problems',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.396 0 2.757.3 4 .804V4.804zM14.5 4c-1.255 0-2.443.29-3.5.804v10A7.97 7.97 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4z"/></svg></span>Problems</button>
+  <button class="nav-item" onclick="goPage('contests',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M5 4H3a1 1 0 000 2h1.278A9.015 9.015 0 009 13.126V15H6a1 1 0 000 2h8a1 1 0 000-2h-3v-1.874A9.015 9.015 0 0015.722 6H17a1 1 0 000-2h-2a1 1 0 00-1 1v.25A7 7 0 016 5.25V5a1 1 0 00-1-1z"/></svg></span>Contests</button>
+  <button class="nav-item" onclick="goPage('results',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"/></svg></span>Results & Scores</button>
+  <button class="nav-item" onclick="goPage('users',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zm8 0a3 3 0 11-6 0 3 3 0 016 0zM1.978 14.087A7.97 7.97 0 01.5 11.5C.5 9.01 2.01 6.877 4.131 5.797A5 5 0 011.978 14.087zm14.044 0A5 5 0 0015.869 5.797C17.99 6.877 19.5 9.01 19.5 11.5a7.97 7.97 0 01-1.478 2.587zM5 11.5A5 5 0 0110 6.5a5 5 0 015 5 5 5 0 01-10 0z"/></svg></span>Users & Roles</button>
+  <button class="nav-item" onclick="goPage('leaderboard',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></span>Leaderboard</button>
+  <button class="nav-item" onclick="goPage('analytics',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M7 2a1 1 0 00-.707 1.707L7 4.414v3.758a1 1 0 01-.293.707l-4 4C.817 14.769 2.156 18 4.828 18h10.344c2.672 0 4.011-3.231 2.122-5.121l-4-4A1 1 0 0113 8.172V4.414l.707-.707A1 1 0 0013 2H7zm2 6.172V4h2v4.172a3 3 0 00.879 2.12l1.027 1.028a4 4 0 00-2.171.102l-.47.156a4 4 0 01-2.53 0l-.563-.187a1.993 1.993 0 00-.114-.035l1.063-1.063A3 3 0 009 8.172z" clip-rule="evenodd"/></svg></span>Analytics</button>
+  <button class="nav-item" onclick="goPage('panelists',this)"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838l-2.727 1.17 1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zm5.99 7.176A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/></svg></span>Panelists</button>
   <div class="nav-sep"></div>
-  <button class="nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon">🌐</span>View Live Site</button>
-  <button class="nav-item" onclick="window.open('leaderboard.html','_blank')"><span class="nav-icon">🏆</span>Public Leaderboard</button>
+  <button class="nav-item" onclick="window.open('index.html','_blank')"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16A8 8 0 0010 2zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.559-.499-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.559.499.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clip-rule="evenodd"/></svg></span>View Live Site</button>
+  <button class="nav-item" onclick="window.open('leaderboard.html','_blank')"><span class="nav-icon nav-icon-svg"><svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M5 4H3a1 1 0 000 2h1.278A9.015 9.015 0 009 13.126V15H6a1 1 0 000 2h8a1 1 0 000-2h-3v-1.874A9.015 9.015 0 0015.722 6H17a1 1 0 000-2h-2a1 1 0 00-1 1v.25A7 7 0 016 5.25V5a1 1 0 00-1-1z"/></svg></span>Public Leaderboard</button>
 </aside>
 
 <main class="main-area">
@@ -271,7 +271,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
         <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8.5 1a.5.5 0 000-1h-7A1.5 1.5 0 000 1.5v13A1.5 1.5 0 001.5 16h13A1.5 1.5 0 0016 14.5v-7a.5.5 0 00-1 0v7a.5.5 0 01-.5.5h-13a.5.5 0 01-.5-.5v-13a.5.5 0 01.5-.5h7z"/><path d="M16 .5a.5.5 0 00-.5-.5h-5a.5.5 0 000 1h3.793L6.146 9.146a.5.5 0 10.708.708L15 1.707V5.5a.5.5 0 001 0v-5z"/></svg>
         Preview Site
       </a>
-      <button class="btn-secondary" onclick="exportDataSnapshot()">⬇ Export Data</button>
+      <button class="btn-secondary" onclick="exportDataSnapshot()">Export Data</button>
       <button class="btn-secondary" style="border-color:rgba(239,68,68,.3);color:#f87171" onclick="if(confirm('Reset contests cache?')){localStorage.removeItem('bdoh_contests_cache');location.reload()}">🗑 Reset Cache</button>
       <button class="btn-theme-sm" onclick="toggleT()" title="Toggle theme">☀️</button>
       <div class="admin-badge" id="admin-user-badge">Admin Panel</div>
@@ -329,7 +329,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   <div class="pg" id="pg-results">
     <div class="tbl-sec">
       <div class="tbl-hdr">
-        <h3>Submissions & Results</h3>
+        <h3>Submissions &amp; Results</h3>
         <div class="tbl-hdr-btns">
           <select id="res-filter" onchange="renderResults()" style="width:auto;padding:8px 14px"><option value="">All Contests</option></select>
           <select id="res-sort" onchange="renderResults()" style="width:auto;padding:8px 14px">
@@ -337,7 +337,8 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
             <option value="time">Sort: Time</option>
             <option value="name">Sort: Name</option>
           </select>
-          <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="export-btn" onclick="refreshResults()" style="background:rgba(0,123,143,.15);border-color:rgba(0,123,143,.4);color:#5bcfdf">Refresh</button>
+          <button class="export-btn" onclick="exportCSV()">Export CSV</button>
         </div>
       </div>
       <table><thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Category</th><th>Institution</th><th>Contest</th><th>Time Used</th><th>Tab Switches</th><th>Penalties</th><th>Status</th><th>Submitted</th></tr></thead>
@@ -362,15 +363,15 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
     </div>
     <!-- RBAC INFO -->
     <div class="tbl-sec">
-      <div class="tbl-hdr"><h3>📋 Role Permissions Matrix</h3></div>
+      <div class="tbl-hdr"><h3>Role Permissions Matrix</h3></div>
       <table>
         <thead><tr><th>Role</th><th>Manage Contests</th><th>Manage Problems</th><th>View Users</th><th>Change Roles</th><th>View Analytics</th><th>Submissions</th></tr></thead>
         <tbody>
-          <tr><td><span class="bs s-live">Super Admin</span></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-          <tr><td><span class="bs s-open">Admin</span></td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>✅</td><td>✅</td></tr>
-          <tr><td><span class="bs s-soon">Panelist</span></td><td>❌</td><td>✅ (own)</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
-          <tr><td><span class="bs s-past">Moderator</span></td><td>❌</td><td>❌</td><td>✅</td><td>❌</td><td>❌</td><td>✅</td></tr>
-          <tr><td>User</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          <tr><td><span class="bs s-live">Super Admin</span></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+          <tr><td><span class="bs s-open">Admin</span></td><td><span class="bs s-open">Yes</span></td><td><span class="bs s-open">Yes</span></td><td><span class="bs s-open">Yes</span></td><td><span style="color:var(--d)">No</span></td><td><span class="bs s-open">Yes</span></td><td><span class="bs s-open">Yes</span></td></tr>
+          <tr><td><span class="bs s-soon">Panelist</span></td><td><span style="color:var(--d)">No</span></td><td><span class="bs s-soon">Own</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td></tr>
+          <tr><td><span class="bs s-past">Moderator</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span class="bs s-open">Yes</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span class="bs s-open">Yes</span></td></tr>
+          <tr><td>User</td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td><td><span style="color:var(--d)">No</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -383,7 +384,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
         <h3>Global Leaderboard</h3>
         <div class="tbl-hdr-btns">
           <button class="btn-secondary" onclick="adminRecalcLeaderboard()">🔄 Recalculate Ratings</button>
-          <button class="btn-add" onclick="loadLeaderboard()">📊 Load Data</button>
+          <button class="btn-add" onclick="loadLeaderboard()">Load Data</button>
         </div>
       </div>
       <table>
@@ -397,7 +398,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   <div class="pg" id="pg-analytics">
     <div class="analytics-grid">
       <div class="analytics-card">
-        <h4>📊 Submissions by Contest</h4>
+        <h4>Submissions by Contest</h4>
         <div class="chart-bar-wrap" id="chart-contest-subs"></div>
       </div>
       <div class="analytics-card">
@@ -409,7 +410,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
         <div class="chart-bar-wrap" id="chart-score-dist"></div>
       </div>
       <div class="analytics-card">
-        <h4>⚠️ Anti-Cheat Summary</h4>
+        <h4>Anti-Cheat Summary</h4>
         <div id="chart-anticheat"></div>
       </div>
     </div>
@@ -435,7 +436,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
 <!-- ============================================================ -->
 <div class="mf-bg" id="contestWizard">
   <div class="mf-box" style="max-width:920px">
-    <h3 id="cwTitle">🏆 Create New Contest</h3>
+    <h3 id="cwTitle">Create New Contest</h3>
     <div class="wizard-steps">
       <div class="wz-step active" id="ws1" onclick="gotoStep(1)">1. Basic Info</div>
       <div class="wz-step" id="ws2" onclick="gotoStep(2)">2. Topics</div>
@@ -484,7 +485,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
       <div class="add-q-btns">
         <button class="add-q-btn" onclick="addQuestion('mcq')">📝 Add MCQ</button>
         <button class="add-q-btn" onclick="addQuestion('short')">🔢 Short Answer</button>
-        <button class="add-q-btn" onclick="addQuestion('tf')">✅ True/False</button>
+        <button class="add-q-btn" onclick="addQuestion('tf')">True / False</button>
       </div>
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(2)">← Back</button>
@@ -503,7 +504,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
           <select id="cw-showtimer"><option value="true">Yes — show countdown</option><option value="false">No — hide timer</option></select></div>
         <div class="fg-group"><label>Allow Late Submission</label>
           <select id="cw-late"><option value="false">No — reject after close</option><option value="true">Yes — accept but mark late</option></select></div>
-        <div class="fg-group full"><label>Time Warning Message</label><input id="cw-timewarn" type="text" value="⚠️ Only 5 minutes remaining! Submit your answers."/></div>
+        <div class="fg-group full"><label>Time Warning Message</label><input id="cw-timewarn" type="text" value="Only 5 minutes remaining! Submit your answers."/></div>
       </div>
       <div class="f-btns">
         <button class="btn-cancel" onclick="gotoStep(3)">← Back</button>
@@ -521,7 +522,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
           <div class="fg-group" style="margin-top:8px"><label>Warning after (switches)</label><input id="sec-tabwarn" type="number" value="1" min="0"/></div>
           <div class="fg-group"><label>Max switches before auto-submit</label><input id="sec-tabmax" type="number" value="3" min="1"/></div>
           <div class="fg-group"><label>Score penalty per switch (%)</label><input id="sec-tabpen" type="number" value="5" min="0" max="50"/></div>
-          <div class="fg-group full" style="margin-top:8px"><label>Warning message</label><textarea id="sec-tabmsg" style="min-height:60px">⚠️ WARNING: Tab switch detected! This is recorded.</textarea></div>
+          <div class="fg-group full" style="margin-top:8px"><label>Warning message</label><textarea id="sec-tabmsg" style="min-height:60px">WARNING: Tab switch detected! This is recorded.</textarea></div>
         </div>
         <div class="sec-card">
           <h4>🖥️ Fullscreen & Window</h4>
@@ -531,7 +532,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
           <div class="toggle-row"><span class="toggle-lbl">Disable copy/paste</span><label class="toggle-switch"><input type="checkbox" id="sec-copypaste" checked><span class="toggle-slider"></span></label></div>
         </div>
         <div class="sec-card">
-          <h4>📋 Required Fields</h4>
+          <h4>Required Fields</h4>
           <div class="toggle-row"><span class="toggle-lbl">Full Name</span><label class="toggle-switch"><input type="checkbox" id="req-name" checked><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><span class="toggle-lbl">Category</span><label class="toggle-switch"><input type="checkbox" id="req-cat" checked><span class="toggle-slider"></span></label></div>
           <div class="toggle-row"><span class="toggle-lbl">Class / Grade</span><label class="toggle-switch"><input type="checkbox" id="req-class" checked><span class="toggle-slider"></span></label></div>
@@ -563,11 +564,11 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
           <p>No results shown. Score and rank hidden until you unlock.</p>
         </div>
         <div class="vis-card" id="vis-partial" onclick="selectVisMode('partial')">
-          <h5>📊 Partial</h5>
+          <h5>Partial</h5>
           <p>Show score and rank only. No answer breakdown.</p>
         </div>
         <div class="vis-card" id="vis-full" onclick="selectVisMode('full')">
-          <h5>✅ Full Review</h5>
+          <h5>Full Review</h5>
           <p>Show score, rank, per-question breakdown, and correct answers.</p>
         </div>
       </div>
@@ -774,7 +775,7 @@ function selectVisMode(mode){
 
 function openContestWizard(){
   cwEditId=null;cwStep=1;cwQuestions=[];cwTopics=[];
-  document.getElementById('cwTitle').textContent='🏆 Create New Contest';
+  document.getElementById('cwTitle').textContent='Create New Contest';
   clearWizardFields();gotoStep(1);
   document.getElementById('contestWizard').classList.add('open');
 }
@@ -873,7 +874,7 @@ function buildPreview(){
       <div class="cd-card"><div class="cd-label">Questions / Points</div><div class="cd-val">${cwQuestions.length} Qs / ${totalPts} pts</div></div>
       <div class="cd-card"><div class="cd-label">Opens</div><div class="cd-val" style="font-size:13px">${open?new Date(open).toLocaleString():'Not set'}</div></div>
       <div class="cd-card"><div class="cd-label">Closes</div><div class="cd-val" style="font-size:13px">${close?new Date(close).toLocaleString():'Not set'}</div></div>
-      <div class="cd-card"><div class="cd-label">Result Mode</div><div class="cd-val" style="font-size:14px">${{locked:'🔒 Locked',partial:'📊 Partial',full:'✅ Full Review'}[visMode]||visMode}</div></div>
+      <div class="cd-card"><div class="cd-label">Result Mode</div><div class="cd-val" style="font-size:14px">${{locked:'Locked',partial:'Partial',full:'Full Review'}[visMode]||visMode}</div></div>
       <div class="cd-card"><div class="cd-label">Topics</div><div class="cd-val" style="font-size:13px">${cwTopics.map(t=>t.name).filter(Boolean).join(', ')||'None'}</div></div>
     </div>
     <p style="color:var(--m);font-size:13px;margin-top:8px">✅ Ready to save — students access via <strong>exam.html?id=CONTEST_ID</strong></p>`;
@@ -986,7 +987,7 @@ function viewContest(id){
     <div class="cd-card"><div class="cd-label">Submissions</div><div class="cd-val">${subs}</div></div>
     <div class="cd-card"><div class="cd-label">Opens</div><div class="cd-val" style="font-size:13px">${c.openTime?new Date(c.openTime).toLocaleString():'—'}</div></div>
     <div class="cd-card"><div class="cd-label">Closes</div><div class="cd-val" style="font-size:13px">${c.closeTime?new Date(c.closeTime).toLocaleString():'—'}</div></div>
-    <div class="cd-card"><div class="cd-label">Result Mode</div><div class="cd-val" style="font-size:14px">${{locked:'🔒 Locked',partial:'📊 Partial',full:'✅ Full Review'}[vis.resultMode||'locked']}</div></div>
+    <div class="cd-card"><div class="cd-label">Result Mode</div><div class="cd-val" style="font-size:14px">${{locked:'Locked',partial:'Partial',full:'Full Review'}[vis.resultMode||'locked']}</div></div>
     <div class="cd-card"><div class="cd-label">Show Correct Answers</div><div class="cd-val" style="font-size:14px">${vis.showCorrectAnswers?'✅ Yes':'❌ No'}</div></div>`;
   const examURL=`exam.html?id=${id}`;
   document.getElementById('cd-link-wrap').innerHTML=`
@@ -1072,6 +1073,20 @@ function renderResults(filterId){
   }).join('')||'<tr><td colspan="11" style="text-align:center;color:var(--d);padding:30px">No submissions</td></tr>';
 }
 function viewResultsFor(id){goPage('results',document.querySelector('.nav-item:nth-child(6)'));renderResults(id);}
+async function refreshResults(){
+  toast('Refreshing submissions...');
+  if(window.BDOH_DB){
+    try{
+      const subs=await window.BDOH_DB.getSubmissions();
+      BDOH.submissions=subs;
+      renderResults();
+      updateMetrics();
+      toast('Results refreshed — '+subs.length+' submissions loaded.');
+    }catch(e){toast('Refresh failed: '+e.message,false);}
+  } else {
+    toast('Firebase not ready yet.',false);
+  }
+}
 function exportCSV(){
   const fid=document.getElementById('res-filter').value;
   let subs=[...(BDOH.submissions||[])];if(fid)subs=subs.filter(s=>s.contestId===fid);
@@ -1243,27 +1258,58 @@ function closePlF(){document.getElementById('plModal').classList.remove('open')}
 // ============================================================
 if(!BDOH.submissions)BDOH.submissions=[];if(!BDOH.contests)BDOH.contests=[];
 
-async function adminInit(){
-  updateMetrics();renderDashboard();
-  if(window.BDOH_DB){
-    try{
-      const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
-      BDOH.contests=contests;BDOH.submissions=subs;
-      updateMetrics();renderDashboard();toast('Data loaded from cloud ☁️');
-    }catch(e){console.error(e);toast('Cloud load failed. Check connection.',false);}
-  } else {
-    bdohFirebaseReady(async()=>{
-      if(window.BDOH_DB){
-        try{
-          const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
-          BDOH.contests=contests;BDOH.submissions=subs;
-          updateMetrics();renderDashboard();toast('Data loaded ☁️');
-        }catch(e){console.error(e);}
-      }
-    });
+async function _adminLoadCloud(){
+  if(!window.BDOH_DB) return false;
+  try {
+    const [contests, subs] = await Promise.all([
+      window.BDOH_DB.getContests(),
+      window.BDOH_DB.getSubmissions()
+    ]);
+    BDOH.contests = contests;
+    BDOH.submissions = subs;
+    updateMetrics();
+    renderDashboard();
+    /* If results page is active, refresh it */
+    if(document.getElementById('pg-results')?.classList.contains('on')) renderResults();
+    /* Populate contest filter dropdown */
+    const sel = document.getElementById('res-filter');
+    if(sel){
+      sel.innerHTML = '<option value="">All Contests</option>' +
+        contests.map(c=>`<option value="${c.id}">${c.title}</option>`).join('');
+    }
+    return true;
+  } catch(e) {
+    console.error('Admin cloud load error:', e);
+    return false;
   }
 }
-setTimeout(adminInit,800);
+
+async function adminInit(){
+  updateMetrics(); renderDashboard();
+  if(window.BDOH_DB){
+    const ok = await _adminLoadCloud();
+    if(ok) toast('Data loaded from cloud');
+    else toast('Cloud load failed — check connection.', false);
+  } else {
+    /* Firebase not yet ready — wait for it */
+    bdohFirebaseReady(async () => {
+      const ok = await _adminLoadCloud();
+      if(ok) toast('Data loaded from cloud');
+    });
+  }
+  /* Also set up real-time contest listener so dashboard updates live */
+  bdohFirebaseReady(() => {
+    if(window.BDOH_DB?.onContestsChange){
+      window.BDOH_DB.onContestsChange(contests => {
+        BDOH.contests = contests;
+        updateMetrics();
+        if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
+        if(document.getElementById('pg-contests')?.classList.contains('on')) renderCTbl();
+      });
+    }
+  });
+}
+setTimeout(adminInit, 400);
 
 function exportDataSnapshot(){
   const json=JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions},null,2);

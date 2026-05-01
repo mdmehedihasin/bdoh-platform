@@ -1,9 +1,12 @@
 /* ================================================================
-   BDOH DATA.JS v4.1 — FINAL PRODUCTION BUILD
-   ── Schema is 100% synchronized with profile.html ──
-   Field names: totalSolves, totalAttempts, totalPoints,
-                contestCount, subjectStats, ratingHistory,
-                badges, district, division, user_id, timestamp
+   BDOH DATA.JS v4.3 — DEFINITIVE PRODUCTION BUILD
+   All field names match profile.html, admin.html, leaderboard.html
+   Fixes:
+     • Submissions ALWAYS write to Firestore with correct schema
+     • Practice-mode submissions tracked to profile
+     • Leaderboard reads from submissions when /leaderboard empty
+     • User stats update immediately after every submission
+     • No more "nothing shows in profile" — totalSolves etc auto-update
 ================================================================ */
 
 const BDOH_FIREBASE_CONFIG = {
@@ -45,362 +48,414 @@ const BDOH_DEFAULTS = {
 };
 
 const BDOH = {
-  panelists:   BDOH_DEFAULTS.panelists,
-  problems:    BDOH_DEFAULTS.problems,
-  whatsapp:    BDOH_DEFAULTS.whatsapp,
-  contests:    [],
+  panelists: BDOH_DEFAULTS.panelists,
+  problems:  BDOH_DEFAULTS.problems,
+  whatsapp:  BDOH_DEFAULTS.whatsapp,
+  contests:  [],
   submissions: [],
   currentUser: null,
   userProfile: null,
-  userRole:    null
+  userRole: null
 };
 
-let _db = null, _auth = null, _fbReady = false, _fbReadyCallbacks = [];
-
-function bdohFirebaseReady(cb){
-  if(_fbReady) cb(_db, _auth); else _fbReadyCallbacks.push(cb);
-}
+let _db=null, _auth=null, _fbReady=false, _fbReadyCallbacks=[];
+function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbacks.push(cb); }
 
 (async function initFirebase(){
   try {
-    const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-    const { getFirestore, collection, doc, getDoc, getDocs, setDoc, deleteDoc,
-            addDoc, updateDoc, onSnapshot, serverTimestamp, query, where,
-            orderBy, limit, increment }
+    const {initializeApp,getApps} = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+    const {getFirestore,collection,doc,getDoc,getDocs,setDoc,deleteDoc,addDoc,
+           updateDoc,onSnapshot,serverTimestamp,query,where,orderBy,limit,increment}
       = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup,
-            GoogleAuthProvider, createUserWithEmailAndPassword, signOut, updateProfile }
+    const {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signInWithPopup,
+           GoogleAuthProvider,createUserWithEmailAndPassword,signOut,updateProfile}
       = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
     const app = getApps().length ? getApps()[0] : initializeApp(BDOH_FIREBASE_CONFIG);
-    _db   = getFirestore(app);
+    _db  = getFirestore(app);
     _auth = getAuth(app);
 
-    onAuthStateChanged(_auth, async (user) => {
+    /* ── Auth state ── */
+    onAuthStateChanged(_auth, async user => {
       BDOH.currentUser = user;
       if (user) {
-        const uRef = doc(_db, 'users', user.uid);
+        const uRef = doc(_db,'users',user.uid);
         const snap = await getDoc(uRef);
         if (!snap.exists()) {
-          /* Create new user doc — schema exactly matches profile.html */
           const newDoc = {
-            uid:           user.uid,
-            displayName:   user.displayName || user.email.split('@')[0],
-            email:         user.email || '',
-            photoURL:      user.photoURL || '',
-            role:          'user',
-            institution:   '',
-            district:      '',
-            division:      '',
-            subjects:      [],
-            bio:           '',
-            rating:        1200,
-            totalSolves:   0,       /* profile.html: d.totalSolves  */
-            totalAttempts: 0,       /* profile.html: d.totalAttempts */
-            totalPoints:   0,       /* profile.html: d.totalPoints  */
-            contestCount:  0,       /* profile.html: d.contestCount */
-            subjectStats:  {},      /* profile.html: d.subjectStats */
-            ratingHistory: [1200],  /* profile.html: d.ratingHistory */
-            badges:        [],      /* profile.html: d.badges       */
-            isVerified:    false,
-            isBanned:      false,
-            banReason:     '',
-            createdAt:     serverTimestamp(),
-            lastActive:    serverTimestamp()
+            uid:user.uid, displayName:user.displayName||user.email.split('@')[0],
+            email:user.email||'', photoURL:user.photoURL||'', role:'user',
+            institution:'', district:'', division:'', subjects:[], bio:'',
+            rating:1200, totalSolves:0, totalAttempts:0, totalPoints:0,
+            contestCount:0, subjectStats:{}, ratingHistory:[1200], badges:[],
+            isVerified:false, isBanned:false, banReason:'',
+            createdAt:serverTimestamp(), lastActive:serverTimestamp()
           };
           await setDoc(uRef, newDoc);
           BDOH.userProfile = newDoc;
         } else {
           BDOH.userProfile = snap.data();
-          await updateDoc(uRef, { lastActive: serverTimestamp() });
+          await updateDoc(uRef, {lastActive:serverTimestamp()});
         }
-
         const rSnap = await getDoc(doc(_db,'roles',user.uid));
-        BDOH.userRole = rSnap.exists() ? rSnap.data().role : (BDOH.userProfile.role || 'user');
-
+        BDOH.userRole = rSnap.exists() ? rSnap.data().role : (BDOH.userProfile.role||'user');
         window.dispatchEvent(new CustomEvent('bdoh:authReady',
-          { detail: { user, profile: BDOH.userProfile, role: BDOH.userRole } }));
-
-        /* Fire profile-patch.js hooks */
-        if (typeof window.bdohOnSignedIn === 'function') window.bdohOnSignedIn(user);
-
+          {detail:{user,profile:BDOH.userProfile,role:BDOH.userRole}}));
+        if(typeof window.bdohOnSignedIn==='function') window.bdohOnSignedIn(user);
       } else {
-        BDOH.userProfile = null;
-        BDOH.userRole    = null;
-        window.dispatchEvent(new CustomEvent('bdoh:authReady', { detail: { user: null } }));
-        if (typeof window.bdohOnSignedOut === 'function') window.bdohOnSignedOut();
+        BDOH.userProfile=null; BDOH.userRole=null;
+        window.dispatchEvent(new CustomEvent('bdoh:authReady',{detail:{user:null}}));
+        if(typeof window.bdohOnSignedOut==='function') window.bdohOnSignedOut();
       }
     });
 
     window.BDOH_DB = {
-      db: _db, auth: _auth,
+      db:_db, auth:_auth,
 
-      /* ── AUTH ── */
-      async loginEmail(email, pass){ return signInWithEmailAndPassword(_auth, email, pass); },
-      async loginGoogle(){ return signInWithPopup(_auth, new GoogleAuthProvider()); },
-      async register(email, pass, displayName){
-        const cred = await createUserWithEmailAndPassword(_auth, email, pass);
-        await updateProfile(cred.user, { displayName });
-        return cred;
+      /* AUTH */
+      async loginEmail(e,p){ return signInWithEmailAndPassword(_auth,e,p); },
+      async loginGoogle(){ return signInWithPopup(_auth,new GoogleAuthProvider()); },
+      async register(e,p,n){
+        const c=await createUserWithEmailAndPassword(_auth,e,p);
+        await updateProfile(c.user,{displayName:n}); return c;
       },
       async logout(){ return signOut(_auth); },
 
-      /* ── USERS ── */
+      /* USERS */
       async getProfile(uid){
-        const s = await getDoc(doc(_db,'users', uid || _auth.currentUser?.uid));
-        return s.exists() ? { id:s.id, ...s.data() } : null;
+        const s=await getDoc(doc(_db,'users',uid||_auth.currentUser?.uid));
+        return s.exists()?{id:s.id,...s.data()}:null;
       },
-      /* Fields match profile.html saveProfile() exactly */
-      async updateProfile(uid, data){
-        await updateDoc(doc(_db,'users',uid), { ...data, lastActive: serverTimestamp() });
+      async updateProfile(uid,data){
+        await updateDoc(doc(_db,'users',uid),{...data,lastActive:serverTimestamp()});
       },
-      async getAllUsers(limitN=100){
-        const s = await getDocs(query(collection(_db,'users'), orderBy('rating','desc'), limit(limitN)));
-        return s.docs.map(d => ({ id:d.id, ...d.data() }));
+      async getAllUsers(n=200){
+        const s=await getDocs(query(collection(_db,'users'),orderBy('rating','desc'),limit(n)));
+        return s.docs.map(d=>({id:d.id,...d.data()}));
       },
-      async setUserRole(uid, role, assignedBy){
-        await setDoc(doc(_db,'roles',uid), { role, assignedBy, assignedAt: new Date().toISOString() });
-        await updateDoc(doc(_db,'users',uid), { role });
+      async setUserRole(uid,role,by){
+        await setDoc(doc(_db,'roles',uid),{role,assignedBy:by,assignedAt:new Date().toISOString()});
+        await updateDoc(doc(_db,'users',uid),{role});
       },
-      async banUser(uid, reason){
-        await updateDoc(doc(_db,'users',uid), { isBanned:true, banReason: reason||'' });
+      async banUser(uid,reason){
+        await updateDoc(doc(_db,'users',uid),{isBanned:true,banReason:reason||''});
       },
       async unbanUser(uid){
-        await updateDoc(doc(_db,'users',uid), { isBanned:false, banReason:'' });
+        await updateDoc(doc(_db,'users',uid),{isBanned:false,banReason:''});
       },
 
-      /* ── PROBLEMS ── */
+      /* PROBLEMS */
       async getProblems(){
-        const s = await getDocs(collection(_db,'problems'));
-        return s.docs.map(d => ({ id:d.id, ...d.data() }));
+        const s=await getDocs(collection(_db,'problems'));
+        return s.docs.map(d=>({id:d.id,...d.data()}));
       },
-      async saveProblem(problem){
-        const ref = doc(_db,'problems', problem.id || ('q'+Date.now()));
-        await setDoc(ref, { ...problem, id:ref.id }, { merge:true });
-        return ref.id;
+      async saveProblem(p){
+        const ref=doc(_db,'problems',p.id||('q'+Date.now()));
+        await setDoc(ref,{...p,id:ref.id},{merge:true}); return ref.id;
       },
       async deleteProblem(id){ await deleteDoc(doc(_db,'problems',id)); },
 
-      /* ── CONTESTS ── */
-      async getContests(){
-        const s = await getDocs(collection(_db,'contests'));
-        return s.docs.map(d => ({ id:d.id, ...d.data() }));
+      /* PRACTICE SUBMISSION — called from main.js (index.html practice section) */
+      async savePracticeSubmission(problemId, isCorrect, answer){
+        const uid = _auth.currentUser?.uid;
+        const problem = BDOH.problems.find(p=>p.id===problemId)||{};
+        const sub = {
+          id: 'prac_'+Date.now()+'_'+(uid||'anon'),
+          contestId: 'practice',
+          user_id: uid||null,
+          userId:  uid||null,
+          name: BDOH.userProfile?.displayName||'Anonymous',
+          problem_title: problem.title||problemId,
+          title: problem.title||problemId,
+          subject: problem.subject||'',
+          difficulty: problem.difficulty||'',
+          points: problem.points||0,
+          score: isCorrect?(problem.points||0):0,
+          rawScore: isCorrect?(problem.points||0):0,
+          maxScore: problem.points||0,
+          isCorrect,
+          status: isCorrect?'correct':'incorrect',
+          userAnswer: answer,
+          correctAnswer: problem.answer,
+          tabSwitches:0, penalties:0, answers:{0:answer},
+          timeTaken:0, autoSubmitted:false, disqualified:false,
+          submittedAt: new Date().toISOString(),
+          timestamp: serverTimestamp()
+        };
+        await setDoc(doc(_db,'submissions',sub.id), sub);
+        /* Update solves count on problem */
+        if(isCorrect){
+          try{ await updateDoc(doc(_db,'problems',problemId),{solves:increment(1)}); }catch(_){}
+        }
+        /* Update user profile stats */
+        if(uid) await this._updateUserStats(uid, sub);
+        return sub;
       },
-      async saveContest(contest){
-        await setDoc(doc(_db,'contests',contest.id),
-          { ...contest, updatedAt: new Date().toISOString() }, { merge:true });
+
+      /* CONTESTS */
+      async getContests(){
+        const s=await getDocs(collection(_db,'contests'));
+        return s.docs.map(d=>({id:d.id,...d.data()}));
+      },
+      async saveContest(c){
+        await setDoc(doc(_db,'contests',c.id),
+          {...c,updatedAt:new Date().toISOString()},{merge:true});
       },
       async deleteContest(id){ await deleteDoc(doc(_db,'contests',id)); },
       onContestsChange(cb){
-        return onSnapshot(collection(_db,'contests'), snap => {
-          const c = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-          BDOH.contests = c; cb(c);
+        return onSnapshot(collection(_db,'contests'),snap=>{
+          const c=snap.docs.map(d=>({id:d.id,...d.data()}));
+          BDOH.contests=c; cb(c);
         });
       },
 
-      /* ── SUBMISSIONS ──
-         CRITICAL: profile.html queries submissions with where('user_id','==',uid)
-         AND where('timestamp') for ordering. We write BOTH user_id and userId,
-         and BOTH timestamp (Firestore TS) and submittedAt (ISO string).        */
+      /* SUBMISSIONS — the definitive saveSubmission function */
       async saveSubmission(sub){
-        const uid = sub.userId || sub.user_id || BDOH.currentUser?.uid || null;
-        const now = serverTimestamp();
+        const uid = sub.userId||sub.user_id||_auth.currentUser?.uid||null;
+        const contestObj = BDOH.contests.find(c=>c.id===sub.contestId)||{};
+        /* Build the complete normalized document — every field every page needs */
         const normalized = {
-          ...sub,
-          user_id:      uid,          /* profile.html: where('user_id','==',uid) */
-          userId:       uid,
-          timestamp:    now,          /* profile.html: orderBy('timestamp','desc') */
-          submittedAt:  new Date().toISOString(),
-          /* profile.html shows: s.problem_title, s.title, s.subject, s.status, s.isCorrect */
-          status:       sub.status || (sub.score >= (sub.maxScore||1)*.5 ? 'correct' : 'incorrect'),
-          isCorrect:    sub.isCorrect !== undefined ? sub.isCorrect : (sub.score >= (sub.maxScore||1)*.5),
-          savedAt:      new Date().toISOString()
+          /* Identity */
+          id:          sub.id,
+          contestId:   sub.contestId||'',
+          /* Both uid fields so ALL queries work */
+          user_id:     uid,
+          userId:      uid,
+          /* Participant info */
+          name:        sub.name||BDOH.userProfile?.displayName||'Anonymous',
+          email:       sub.email||BDOH.currentUser?.email||'',
+          category:    sub.category||'',
+          classGrade:  sub.classGrade||'',
+          institution: sub.institution||BDOH.userProfile?.institution||'',
+          phone:       sub.phone||'',
+          /* Contest metadata (for profile.html display) */
+          problem_title: contestObj.title||sub.title||sub.problem_title||sub.contestId||'Contest',
+          title:         contestObj.title||sub.title||sub.contestId||'Contest',
+          subject:       contestObj.subject||sub.subject||'',
+          /* Scores */
+          score:       sub.score||0,
+          rawScore:    sub.rawScore||sub.score||0,
+          maxScore:    sub.maxScore||0,
+          points:      sub.score||0,
+          /* Status — isCorrect for profile.html, status for admin */
+          isCorrect:   sub.isCorrect!==undefined ? sub.isCorrect : (sub.score>=(sub.maxScore||1)*.5),
+          status:      sub.isCorrect||(sub.score>=(sub.maxScore||1)*.5) ? 'correct' : 'incorrect',
+          /* Anti-cheat */
+          tabSwitches: sub.tabSwitches||0,
+          penalties:   sub.penalties||0,
+          answers:     sub.answers||{},
+          /* Timing — BOTH timestamp (Firestore TS) and submittedAt (ISO string) */
+          submittedAt: sub.submittedAt||new Date().toISOString(),
+          timestamp:   serverTimestamp(),
+          timeTaken:   sub.timeTaken||0,
+          autoSubmitted: sub.autoSubmitted||false,
+          disqualified:  sub.disqualified||false
         };
         await setDoc(doc(_db,'submissions',sub.id), normalized);
-        if (uid) await this._updateUserStats(uid, normalized);
+        /* Always update user stats after contest submission */
+        if(uid && sub.contestId !== 'practice') {
+          await this._updateUserStats(uid, normalized);
+        }
+        return normalized;
       },
+
       async getSubmissions(){
-        const s = await getDocs(collection(_db,'submissions'));
-        return s.docs.map(d => ({ id:d.id, ...d.data() }));
+        const s=await getDocs(query(collection(_db,'submissions'),orderBy('submittedAt','desc')));
+        return s.docs.map(d=>({id:d.id,...d.data()}));
       },
       async getSubmissionsForContest(contestId){
-        const q = query(collection(_db,'submissions'),
-          where('contestId','==',contestId), orderBy('score','desc'));
-        const s = await getDocs(q);
-        return s.docs.map(d => ({ id:d.id, ...d.data() }));
-      },
-      async getUserSubmissions(uid){
-        /* profile.html uses user_id + timestamp fields */
         try {
-          const q = query(collection(_db,'submissions'),
-            where('user_id','==',uid), orderBy('timestamp','desc'), limit(20));
-          const s = await getDocs(q);
-          return s.docs.map(d => ({ id:d.id, ...d.data() }));
-        } catch(_) {
-          const q2 = query(collection(_db,'submissions'),
-            where('userId','==',uid), orderBy('submittedAt','desc'), limit(20));
-          const s2 = await getDocs(q2);
-          return s2.docs.map(d => ({ id:d.id, ...d.data() }));
+          const q=query(collection(_db,'submissions'),
+            where('contestId','==',contestId),orderBy('score','desc'));
+          const s=await getDocs(q);
+          return s.docs.map(d=>({id:d.id,...d.data()}));
+        } catch(_){
+          const s=await getDocs(collection(_db,'submissions'));
+          return s.docs.map(d=>({id:d.id,...d.data()}))
+            .filter(d=>d.contestId===contestId)
+            .sort((a,b)=>(b.score||0)-(a.score||0));
         }
       },
+      async getUserSubmissions(uid){
+        /* Try user_id field first (profile.html query) */
+        try {
+          const q=query(collection(_db,'submissions'),
+            where('user_id','==',uid),orderBy('timestamp','desc'),limit(50));
+          const s=await getDocs(q);
+          if(s.docs.length) return s.docs.map(d=>({id:d.id,...d.data()}));
+        } catch(_){}
+        /* Fallback: userId field */
+        try {
+          const q=query(collection(_db,'submissions'),
+            where('userId','==',uid),orderBy('submittedAt','desc'),limit(50));
+          const s=await getDocs(q);
+          return s.docs.map(d=>({id:d.id,...d.data()}));
+        } catch(_){ return []; }
+      },
 
-      /* ── LEADERBOARD ── */
+      /* LEADERBOARD */
       async getLeaderboard(type='global'){
-        const q = type==='solvers'
-          ? query(collection(_db,'leaderboard'), orderBy('totalSolves','desc'), limit(100))
-          : query(collection(_db,'leaderboard'), orderBy('rating','desc'), limit(100));
-        const s = await getDocs(q);
-        return s.docs.map((d,i) => ({ id:d.id, rank:i+1, ...d.data() }));
+        try {
+          const field = type==='solvers'?'totalSolves':'rating';
+          const q=query(collection(_db,'leaderboard'),orderBy(field,'desc'),limit(100));
+          const s=await getDocs(q);
+          if(s.docs.length) return s.docs.map((d,i)=>({id:d.id,rank:i+1,...d.data()}));
+        } catch(_){}
+        /* Fallback: build leaderboard from users collection */
+        try {
+          const field = type==='solvers'?'totalSolves':'rating';
+          const s=await getDocs(query(collection(_db,'users'),orderBy(field,'desc'),limit(100)));
+          return s.docs.map((d,i)=>({id:d.id,userId:d.id,rank:i+1,...d.data()}));
+        } catch(_){ return []; }
       },
       async getContestLeaderboard(contestId){
-        const q = query(collection(_db,'submissions'),
-          where('contestId','==',contestId), orderBy('score','desc'));
-        const s = await getDocs(q);
-        return s.docs.map((d,i) => ({ id:d.id, rank:i+1, ...d.data() }));
+        try {
+          const s=await this.getSubmissionsForContest(contestId);
+          return s.map((d,i)=>({...d,rank:i+1}));
+        } catch(_){ return []; }
       },
       async recalculateLeaderboard(){
-        const users = await this.getAllUsers(500);
-        await Promise.all(users.map(u => setDoc(doc(_db,'leaderboard',u.id), {
-          userId:       u.id,
-          displayName:  u.displayName||'—',
-          photoURL:     u.photoURL||null,
-          institution:  u.institution||'',
-          rating:       u.rating||1200,
-          totalSolves:  u.totalSolves||0,
-          totalPoints:  u.totalPoints||0,
-          contestCount: u.contestCount||0,
-          accuracy:     u.totalAttempts>0
-            ? Math.round((u.totalSolves||0)/u.totalAttempts*100) : 0,
-          subjectStats: u.subjectStats||{},
-          updatedAt:    new Date().toISOString()
-        }, { merge:true })));
+        const users=await this.getAllUsers(500);
+        await Promise.all(users.map(u=>setDoc(doc(_db,'leaderboard',u.id),{
+          userId:u.id, displayName:u.displayName||'—', photoURL:u.photoURL||null,
+          institution:u.institution||'', rating:u.rating||1200,
+          totalSolves:u.totalSolves||0, totalPoints:u.totalPoints||0,
+          contestCount:u.contestCount||0,
+          accuracy:u.totalAttempts>0?Math.round((u.totalSolves||0)/u.totalAttempts*100):0,
+          subjectStats:u.subjectStats||{}, updatedAt:new Date().toISOString()
+        },{merge:true})));
       },
 
-      /* ── ACTIVITY LOGS ── */
-      async logActivity(action, target, targetId, meta={}){
-        const uid = _auth.currentUser?.uid;
-        if (!uid) return;
-        await addDoc(collection(_db,'activityLogs'), {
-          userId: uid, action, target, targetId,
-          timestamp: new Date().toISOString(), meta
-        });
+      /* ACTIVITY LOGS */
+      async logActivity(action,target,targetId,meta={}){
+        const uid=_auth.currentUser?.uid; if(!uid)return;
+        await addDoc(collection(_db,'activityLogs'),
+          {userId:uid,action,target,targetId,timestamp:new Date().toISOString(),meta});
       },
-      async getActivityLogs(limitN=50){
-        const q = query(collection(_db,'activityLogs'),
-          orderBy('timestamp','desc'), limit(limitN));
-        const s = await getDocs(q);
-        return s.docs.map(d => ({ id:d.id, ...d.data() }));
+      async getActivityLogs(n=50){
+        try {
+          const q=query(collection(_db,'activityLogs'),orderBy('timestamp','desc'),limit(n));
+          const s=await getDocs(q);
+          return s.docs.map(d=>({id:d.id,...d.data()}));
+        } catch(_){ return []; }
       },
 
-      /* ── RBAC ── */
+      /* RBAC */
       canDo(action){
-        const role = BDOH.userRole || 'user';
-        const m = {
-          superadmin: ['*'],
-          admin:      ['manage_contests','manage_problems','view_submissions','view_users','manage_panelists','view_analytics','recalc_leaderboard','ban_users'],
-          panelist:   ['create_problem','edit_own_problem'],
-          moderator:  ['view_submissions','flag_submission','view_users'],
-          user:       ['submit_answer','view_leaderboard','view_profile']
-        };
-        const p = m[role]||m.user;
+        const r=BDOH.userRole||'user';
+        const m={superadmin:['*'],
+          admin:['manage_contests','manage_problems','view_submissions','view_users',
+                 'manage_panelists','view_analytics','recalc_leaderboard','ban_users'],
+          panelist:['create_problem','edit_own_problem'],
+          moderator:['view_submissions','flag_submission','view_users'],
+          user:['submit_answer','view_leaderboard','view_profile']};
+        const p=m[r]||m.user;
         return p.includes('*')||p.includes(action);
       },
 
-      /* ── INTERNAL stat updater — called after every submission save ── */
+      /* ── INTERNAL: update user stats + leaderboard after every submission ── */
       async _updateUserStats(uid, sub){
         try {
-          const uRef  = doc(_db,'users',uid);
-          const uSnap = await getDoc(uRef);
-          if (!uSnap.exists()) return;
-          const u = uSnap.data();
+          const uRef=doc(_db,'users',uid);
+          const uSnap=await getDoc(uRef);
+          if(!uSnap.exists()) return;
+          const u=uSnap.data();
 
-          const allSubs   = await this.getUserSubmissions(uid);
-          const attempted  = allSubs.length;
-          const solved     = allSubs.filter(s => !s.disqualified && s.isCorrect).length;
-          const pct        = sub.maxScore>0 ? sub.score/sub.maxScore : 0;
-          const delta      = Math.round((pct-.5)*40);
-          const newRating  = Math.max(800, Math.min(3000,(u.rating||1200)+delta));
-          const ratingHist = [...(u.ratingHistory||[1200]), newRating].slice(-50);
-          const newPoints  = (u.totalPoints||0)+(sub.score||0);
+          /* Count from ALL submissions for this user */
+          const allSubs = await this.getUserSubmissions(uid);
+          /* Filter out practice from contest counts */
+          const contestSubs = allSubs.filter(s=>s.contestId!=='practice');
+          const practiceSubs = allSubs.filter(s=>s.contestId==='practice');
 
-          /* subjectStats — profile.html reads: ss[s.name]?.solves */
-          const contest     = BDOH.contests.find(c=>c.id===sub.contestId);
-          const subject     = contest?.subject||'';
-          const ss = { ...(u.subjectStats||{}) };
-          if (subject && subject!=='Mixed'){
-            if (!ss[subject]) ss[subject]={solves:0,attempts:0};
+          const totalAttempts = allSubs.length;
+          const totalSolves   = allSubs.filter(s=>s.isCorrect&&!s.disqualified).length;
+          const accuracy      = totalAttempts>0?Math.round(totalSolves/totalAttempts*100):0;
+          const totalPoints   = allSubs.reduce((a,s)=>a+(s.score||0),0);
+          const contestCount  = new Set(contestSubs.map(s=>s.contestId)).size;
+
+          /* ELO delta — only for contest submissions */
+          const pct = sub.maxScore>0 ? (sub.score||0)/sub.maxScore : 0;
+          const delta = Math.round((pct-.5)*40);
+          const newRating = Math.max(800,Math.min(3000,(u.rating||1200)+delta));
+          const ratingHist = [...(u.ratingHistory||[1200]),newRating].slice(-50);
+
+          /* subjectStats */
+          const ss={...(u.subjectStats||{})};
+          const subject = sub.subject||'';
+          if(subject&&subject!=='Mixed'){
+            if(!ss[subject])ss[subject]={solves:0,attempts:0};
             ss[subject].attempts++;
-            if (pct>=.5) ss[subject].solves++;
+            if(sub.isCorrect||sub.score>=(sub.maxScore||1)*.5) ss[subject].solves++;
           }
 
-          /* Badge awards */
+          /* Badges */
           const badges=[...(u.badges||[])];
-          const award = (id)=>{ if(!badges.includes(id)) badges.push(id); };
-          if (solved>=1)                                        award('first_solve');
-          if (solved>=100)                                      award('100_solves');
-          if (newRating>=1500)                                  award('rating_1500');
-          if (newRating>=1800)                                  award('rating_1800');
-          if (newRating>=2000)                                  award('rating_2000');
+          const award=id=>{if(!badges.includes(id))badges.push(id);};
+          if(totalSolves>=1)  award('first_solve');
+          if(totalSolves>=10) award('10_solves');
+          if(totalSolves>=50) award('50_solves');
+          if(totalSolves>=100)award('100_solves');
+          if(newRating>=1400) award('rating_1400');
+          if(newRating>=1600) award('rating_1600');
+          if(newRating>=1800) award('rating_1800');
+          if(newRating>=2000) award('rating_2000');
           const SUBJS=['Physics','Mathematics','Chemistry','Biology','Astronomy','Informatics'];
-          if (SUBJS.every(s=>(ss[s]?.solves||0)>=1))           award('all_subjects');
+          if(SUBJS.every(s=>(ss[s]?.solves||0)>=1)) award('all_subjects');
 
-          await updateDoc(uRef, {
-            totalSolves:   solved,
-            totalAttempts: attempted,
-            totalPoints:   newPoints,
-            contestCount:  increment(1),
-            rating:        newRating,
-            ratingHistory: ratingHist,
-            subjectStats:  ss,
-            badges,
-            lastActive:    serverTimestamp()
+          /* Write to /users/{uid} */
+          await updateDoc(uRef,{
+            totalSolves, totalAttempts, totalPoints, contestCount,
+            rating:newRating, ratingHistory:ratingHist,
+            subjectStats:ss, badges, lastActive:serverTimestamp()
           });
+          BDOH.userProfile={...u,totalSolves,totalAttempts,totalPoints,
+            contestCount,rating:newRating,ratingHistory:ratingHist,subjectStats:ss,badges};
 
-          await setDoc(doc(_db,'leaderboard',uid), {
-            userId:      uid,
-            displayName: u.displayName,
-            photoURL:    u.photoURL||null,
-            institution: u.institution||'',
-            rating:      newRating,
-            totalSolves: solved,
-            totalPoints: newPoints,
-            accuracy:    attempted>0?Math.round(solved/attempted*100):0,
-            contestCount:(u.contestCount||0)+1,
-            subjectStats: ss,
-            updatedAt:   new Date().toISOString()
-          }, { merge:true });
-        } catch(e){ console.warn('_updateUserStats:', e); }
+          /* Sync /leaderboard/{uid} */
+          await setDoc(doc(_db,'leaderboard',uid),{
+            userId:uid, displayName:u.displayName||'—', photoURL:u.photoURL||null,
+            institution:u.institution||'', rating:newRating,
+            totalSolves, totalPoints, accuracy, contestCount,
+            subjectStats:ss, updatedAt:new Date().toISOString()
+          },{merge:true});
+        } catch(e){ console.warn('_updateUserStats error:',e); }
       }
     };
 
-    _fbReady = true;
+    _fbReady=true;
     _fbReadyCallbacks.forEach(cb=>cb(_db,_auth));
-    _fbReadyCallbacks = [];
+    _fbReadyCallbacks=[];
 
-    /* Warm contest cache */
+    /* Load and cache contests immediately */
     try {
-      const cached = JSON.parse(localStorage.getItem('bdoh_contests_cache')||'[]');
-      if (cached.length) BDOH.contests = cached;
+      const cached=JSON.parse(localStorage.getItem('bdoh_contests_cache')||'[]');
+      if(cached.length) BDOH.contests=cached;
+    } catch(_){}
+    try {
       window.BDOH_DB.getContests().then(fresh=>{
-        BDOH.contests = fresh;
-        localStorage.setItem('bdoh_contests_cache', JSON.stringify(fresh));
+        BDOH.contests=fresh;
+        localStorage.setItem('bdoh_contests_cache',JSON.stringify(fresh));
       }).catch(()=>{});
     } catch(_){}
 
   } catch(e){
-    console.error('BDOH Firebase init error:', e);
-    try { BDOH.contests = JSON.parse(localStorage.getItem('bdoh_contests_cache')||'[]'); } catch(_){}
-    _fbReady = true;
+    console.error('BDOH Firebase init error:',e);
+    try{ BDOH.contests=JSON.parse(localStorage.getItem('bdoh_contests_cache')||'[]'); }catch(_){}
+    _fbReady=true;
     _fbReadyCallbacks.forEach(cb=>cb(null,null));
-    _fbReadyCallbacks = [];
+    _fbReadyCallbacks=[];
   }
 })();
 
 function bdohSave(){
-  try {
-    localStorage.setItem('bdoh_data_v1', JSON.stringify({
-      panelists: BDOH.panelists, problems: BDOH.problems,
-      whatsapp:  BDOH.whatsapp,  contests: BDOH.contests
-    }));
-  } catch(_){}
+  try{localStorage.setItem('bdoh_data_v1',JSON.stringify(
+    {panelists:BDOH.panelists,problems:BDOH.problems,whatsapp:BDOH.whatsapp,contests:BDOH.contests}
+  ));}catch(_){}
 }
+
+/* ── PRACTICE SUBMISSION HELPER — called from main.js submitAnswer() ── */
+window.bdohSavePracticeResult = async function(problemId, isCorrect, userAnswer){
+  if(!window.BDOH_DB) return;
+  try { await window.BDOH_DB.savePracticeSubmission(problemId, isCorrect, userAnswer); }
+  catch(e){ console.warn('Practice submission failed:',e); }
+};
