@@ -1283,43 +1283,100 @@ function exportDataSnapshot(){
   const auth=getAuth(app);
   const db=getFirestore(app);
 
-  document.getElementById('login-btn').addEventListener('click',()=>{
-    const email=document.getElementById('admin-email').value;
-    const pass=document.getElementById('admin-pass').value;
-    const btn=document.getElementById('login-btn');
-    const err=document.getElementById('login-error');
-    btn.textContent='Verifying…';err.style.display='none';
-    signInWithEmailAndPassword(auth,email,pass).catch(e=>{
-      btn.textContent='Unlock Dashboard';
-      err.textContent='Login failed: '+e.code;err.style.display='block';
-    });
+  /* Expose signOut for inline onclick in access-denied screen */
+  window._bdohAdminSignOut = ()=> signOut(auth).then(()=>location.reload()).catch(()=>location.reload());
+
+  const loginBtn = document.getElementById('login-btn');
+  const loginErr = document.getElementById('login-error');
+
+  /* Enter key submits */
+  document.getElementById('admin-pass').addEventListener('keydown', e=>{
+    if(e.key==='Enter') loginBtn.click();
   });
 
-  onAuthStateChanged(auth,async(user)=>{
+  loginBtn.addEventListener('click', async ()=>{
+    const email = document.getElementById('admin-email').value.trim();
+    const pass  = document.getElementById('admin-pass').value;
+    if(!email||!pass){ loginErr.textContent='Enter your email and password.'; loginErr.style.display='block'; return; }
+    loginBtn.textContent='Verifying…'; loginBtn.disabled=true; loginErr.style.display='none';
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      /* onAuthStateChanged will handle the rest */
+    }catch(e){
+      loginBtn.textContent='Unlock Dashboard'; loginBtn.disabled=false;
+      const MAP={
+        'auth/user-not-found':'No account with this email.',
+        'auth/wrong-password':'Incorrect password.',
+        'auth/invalid-credential':'Incorrect email or password.',
+        'auth/too-many-requests':'Too many attempts. Try again later.',
+        'auth/invalid-email':'Invalid email address.'
+      };
+      loginErr.textContent = MAP[e.code]||('Login failed: '+e.code);
+      loginErr.style.display='block';
+    }
+  });
+
+  async function getEffectiveRole(user){
+    /* Check /roles/{uid} first, then /users/{uid}.role, then deny */
+    try{
+      const rSnap = await getDoc(doc(db,'roles',user.uid));
+      if(rSnap.exists() && rSnap.data().role) return rSnap.data().role;
+    }catch(_){}
+    try{
+      const uSnap = await getDoc(doc(db,'users',user.uid));
+      if(uSnap.exists() && uSnap.data().role) return uSnap.data().role;
+    }catch(_){}
+    return 'user';
+  }
+
+  onAuthStateChanged(auth, async(user)=>{
+    const overlay = document.getElementById('login-overlay');
     if(user){
-      document.getElementById('login-overlay').style.display='none';
-      /* Check role — only allow admin/superadmin */
-      try{
-        const rSnap=await getDoc(doc(db,'roles',user.uid));
-        const role=rSnap.exists()?rSnap.data().role:'user';
-        const uSnap=await getDoc(doc(db,'users',user.uid));
-        const uRole=uSnap.exists()?uSnap.data().role:role;
-        const effectiveRole=role||uRole;
-        const allowed=['superadmin','admin'];
-        if(!allowed.includes(effectiveRole)){
-          document.getElementById('login-overlay').innerHTML=`<div style="text-align:center;color:#f87171;font-family:var(--fH);padding:40px"><div style="font-size:48px;margin-bottom:16px">🚫</div><h2>Access Denied</h2><p style="margin-top:10px;color:rgba(238,241,255,.6)">Your account role (${effectiveRole}) does not have admin access.</p><br/><a href="index.html" style="color:var(--teal)">← Return to Home</a></div>`;
-          document.getElementById('login-overlay').style.display='flex';
-          return;
-        }
-        document.getElementById('login-overlay').style.display='none';
-        document.getElementById('sidebar-role').textContent=effectiveRole==='superadmin'?'⭐ Super Admin':'🛡️ Admin';
-        document.getElementById('admin-user-badge').textContent=user.email.split('@')[0];
-      }catch(e){
-        /* Firestore check failed — allow basic admins (email-based fallback) */
-        document.getElementById('login-overlay').style.display='none';
+      /* Determine role */
+      let role = 'user';
+      try{ role = await getEffectiveRole(user); }catch(_){}
+
+      const ALLOWED = ['superadmin','admin'];
+      if(!ALLOWED.includes(role)){
+        /* Not an admin — show access denied, sign them out */
+        overlay.innerHTML=`
+          <div style="text-align:center;font-family:var(--fH);padding:40px;max-width:440px">
+            <div style="font-size:52px;margin-bottom:16px">🚫</div>
+            <h2 style="font-size:24px;font-weight:800;color:#f87171;margin-bottom:10px">Access Denied</h2>
+            <p style="color:rgba(238,241,255,.6);margin-bottom:8px">
+              You are signed in as <strong style="color:#e8edf5">${user.email}</strong>
+            </p>
+            <p style="color:rgba(238,241,255,.5);font-size:13px;margin-bottom:24px">
+              Your role (<strong>${role}</strong>) does not have admin access.<br>
+              Only <strong>Admin</strong> and <strong>Super Admin</strong> accounts can access this panel.
+            </p>
+            <button onclick="window._bdohAdminSignOut()"
+              style="padding:10px 24px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);
+              color:#f87171;border-radius:10px;font-family:var(--fH);font-weight:700;cursor:pointer;margin-right:8px">
+              Sign Out
+            </button>
+            <a href="index.html" style="color:#00b4cc;font-size:13px">← Return to Site</a>
+          </div>`;
+        overlay.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;';
+        return;
       }
+
+      /* ✅ Authorised — hide overlay and set up panel */
+      overlay.style.display='none';
+      document.getElementById('sidebar-role').textContent =
+        role==='superadmin' ? '⭐ Super Admin' : '🛡️ Admin';
+      document.getElementById('admin-user-badge').textContent =
+        user.email.split('@')[0];
+
+      /* Hide RBAC-restricted features for non-superadmin */
+      if(role!=='superadmin'){
+        /* Admins cannot change user roles */
+        document.querySelectorAll('.role-select').forEach(el=>el.disabled=true);
+      }
+
     } else {
-      document.getElementById('login-overlay').style.display='flex';
+      /* Signed out — show login overlay */
+      overlay.style.display='flex';
     }
   });
 </script>
