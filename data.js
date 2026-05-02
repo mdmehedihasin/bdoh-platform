@@ -353,9 +353,7 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
         return p.includes('*')||p.includes(action);
       },
 
-      /* ── INTERNAL: update user stats + leaderboard after every submission ──
-         Uses atomic increment() — NO composite Firestore indexes required.
-         Never re-queries all submissions, so it can't silently zero-out stats. ── */
+      /* ── INTERNAL: update user stats + leaderboard after every submission ── */
       async _updateUserStats(uid, sub){
         try {
           const uRef  = doc(_db,'users',uid);
@@ -363,56 +361,72 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
           if(!uSnap.exists()) return;
           const u = uSnap.data();
 
-          /* ── What changed? ── */
+          /* ── What changed this submission ── */
           const scored     = sub.score||0;
           const isCorrect  = !!(sub.isCorrect || (scored>0 && scored>=(sub.maxScore||1)*.5));
           const isPractice = sub.contestId==='practice';
 
-          /* ── Atomic field increments (single-field — no index needed) ── */
+          /* ── Atomic increments — NO composite index needed ── */
           const updates = {
             totalAttempts: increment(1),
             totalPoints:   increment(scored),
             lastActive:    serverTimestamp()
           };
-          if(isCorrect) updates.totalSolves = increment(1);
+          if(isCorrect){
+            updates.totalSolves    = increment(1);
+            updates.practiceSolves = isPractice ? increment(1) : increment(0);
+          }
 
-          /* Track unique contest IDs so contestCount is accurate */
+          /* Track unique contest IDs for contestCount */
           if(!isPractice){
             const known = u.knownContestIds||[];
             if(!known.includes(sub.contestId)){
-              updates.contestCount   = increment(1);
-              updates.knownContestIds= [...known, sub.contestId];
+              updates.contestCount    = increment(1);
+              updates.knownContestIds = [...known, sub.contestId];
             }
           }
 
-          /* ── ELO delta — contests only ── */
+          /* ── Rating formula (see RATING_SYSTEM.md) ──
+             Practice: small fixed delta based on difficulty
+             Contest:  ELO-style based on % of max score achieved        */
           let newRating  = u.rating||1200;
           let ratingHist = u.ratingHistory||[1200];
-          if(!isPractice && (sub.maxScore||0)>0){
-            const pct   = scored/sub.maxScore;
-            const delta = Math.round((pct-.5)*40);
-            newRating   = Math.max(800,Math.min(3000,newRating+delta));
-            ratingHist  = [...ratingHist,newRating].slice(-50);
+
+          if(isPractice && isCorrect){
+            /* Practice correct solve: +5 easy, +10 medium, +15 hard, +20 expert */
+            const diffMap = {easy:5, medium:10, hard:15, expert:20};
+            const practiceGain = diffMap[(sub.difficulty||'medium').toLowerCase()] || 10;
+            newRating = Math.min(3000, newRating + practiceGain);
+            ratingHist = [...ratingHist, newRating].slice(-50);
+            updates.rating        = newRating;
+            updates.ratingHistory = ratingHist;
+          } else if(!isPractice && (sub.maxScore||0)>0){
+            /* Contest ELO delta: range -40 to +60 based on score percentage */
+            const pct   = scored / sub.maxScore;
+            const delta = Math.round((pct - 0.5) * 100);   // -50 to +50
+            const capped = Math.max(-40, Math.min(60, delta));
+            newRating   = Math.max(800, Math.min(3000, newRating + capped));
+            ratingHist  = [...ratingHist, newRating].slice(-50);
             updates.rating        = newRating;
             updates.ratingHistory = ratingHist;
           }
 
-          /* ── subjectStats — incremental merge ── */
+          /* ── subjectStats ── */
           const ss      = {...(u.subjectStats||{})};
           const subject = sub.subject||'';
-          if(subject&&subject!=='Mixed'){
+          if(subject && subject!=='Mixed'){
             if(!ss[subject]) ss[subject]={solves:0,attempts:0};
-            ss[subject]={
-              attempts:(ss[subject].attempts||0)+1,
-              solves:  (ss[subject].solves||0)+(isCorrect?1:0)
+            ss[subject] = {
+              attempts: (ss[subject].attempts||0)+1,
+              solves:   (ss[subject].solves||0)+(isCorrect?1:0)
             };
             updates.subjectStats = ss;
           }
 
-          /* ── Badges — projected totals ── */
-          const badges     = [...(u.badges||[])];
-          const award      = id=>{ if(!badges.includes(id)) badges.push(id); };
-          const projSolves = (u.totalSolves||0)+(isCorrect?1:0);
+          /* ── Badges ── */
+          const badges    = [...(u.badges||[])];
+          const award     = id=>{ if(!badges.includes(id)) badges.push(id); };
+          const projSolves= (u.totalSolves||0)+(isCorrect?1:0);
           if(projSolves>=1)   award('first_solve');
           if(projSolves>=10)  award('10_solves');
           if(projSolves>=50)  award('50_solves');
@@ -425,32 +439,43 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
           if(SUBJS.every(s=>(ss[s]?.solves||0)>=1)) award('all_subjects');
           if(badges.length!==(u.badges||[]).length) updates.badges=badges;
 
-          /* ── Write atomically ── */
+          /* ── Write to /users/{uid} ── */
           await updateDoc(uRef, updates);
 
-          /* ── Update in-memory cache so profile page sees changes without reload ── */
-          if(BDOH.userProfile&&BDOH.userProfile.uid===uid){
-            BDOH.userProfile={
+          /* ── Update in-memory cache ── */
+          if(BDOH.userProfile && BDOH.userProfile.uid===uid){
+            BDOH.userProfile = {
               ...BDOH.userProfile,
-              totalAttempts:(BDOH.userProfile.totalAttempts||0)+1,
-              totalPoints:  (BDOH.userProfile.totalPoints||0)+scored,
-              totalSolves:  (BDOH.userProfile.totalSolves||0)+(isCorrect?1:0),
-              rating:newRating, ratingHistory:ratingHist,
-              subjectStats:ss, badges
+              totalAttempts: (BDOH.userProfile.totalAttempts||0)+1,
+              totalPoints:   (BDOH.userProfile.totalPoints||0)+scored,
+              totalSolves:   (BDOH.userProfile.totalSolves||0)+(isCorrect?1:0),
+              rating: newRating, ratingHistory: ratingHist,
+              subjectStats: ss, badges
             };
           }
 
-          /* ── Sync /leaderboard/{uid} ── */
+          /* ── Sync /leaderboard/{uid} ──
+             Uses projected values so leaderboard is immediately up-to-date.
+             Both practice solves and contest solves count toward totalSolves. ── */
           const projAttempts = (u.totalAttempts||0)+1;
           const projPoints   = (u.totalPoints||0)+scored;
-          const projContests = (u.contestCount||0)+(!isPractice&&!(u.knownContestIds||[]).includes(sub.contestId)?1:0);
+          const projSolvesLB = projSolves;
+          const projAcc      = projAttempts>0 ? Math.round(projSolvesLB/projAttempts*100) : 0;
+          const projContests = !isPractice && !(u.knownContestIds||[]).includes(sub.contestId)
+            ? (u.contestCount||0)+1 : (u.contestCount||0);
+
           await setDoc(doc(_db,'leaderboard',uid),{
-            userId:uid, displayName:u.displayName||'—', photoURL:u.photoURL||null,
-            institution:u.institution||'', rating:newRating,
-            totalSolves:projSolves, totalPoints:projPoints,
-            accuracy:projAttempts>0?Math.round(projSolves/projAttempts*100):0,
-            contestCount:projContests, subjectStats:ss,
-            updatedAt:new Date().toISOString()
+            userId:       uid,
+            displayName:  u.displayName||'—',
+            photoURL:     u.photoURL||null,
+            institution:  u.institution||'',
+            rating:       newRating,
+            totalSolves:  projSolvesLB,   /* includes both practice & contest solves */
+            totalPoints:  projPoints,
+            accuracy:     projAcc,
+            contestCount: projContests,
+            subjectStats: ss,
+            updatedAt:    new Date().toISOString()
           },{merge:true});
 
         } catch(e){ console.warn('_updateUserStats error:',e); }
