@@ -23,10 +23,23 @@ html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
 html{
   min-height:100%;
   background-color:var(--bg);
-  background-image:url('assets/dark_exam_hero.png');
-  background-size:cover;background-position:center center;background-attachment:fixed;background-repeat:no-repeat;
+  /* Animated mesh gradient background — visible even if external image fails */
+  background-image:
+    url('assets/dark_exam_hero.png'),
+    radial-gradient(ellipse at 20% 20%, rgba(0,123,143,.35) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(76,175,80,.25) 0%, transparent 55%),
+    radial-gradient(ellipse at 60% 10%, rgba(0,180,204,.2) 0%, transparent 45%),
+    radial-gradient(ellipse at 10% 80%, rgba(0,64,80,.4) 0%, transparent 50%);
+  background-size:cover,100% 100%,100% 100%,100% 100%,100% 100%;
+  background-position:center center,0 0,0 0,0 0,0 0;
+  background-attachment:fixed;background-repeat:no-repeat;
 }
-html::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:rgba(6,9,26,.72);}
+html::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    linear-gradient(135deg, rgba(6,9,26,.65) 0%, rgba(9,13,34,.55) 50%, rgba(6,9,26,.70) 100%);
+  backdrop-filter:none;
+}
 body{background:transparent;color:var(--txt);font-family:var(--fB);min-height:100vh;overflow-x:hidden;position:relative;z-index:1;}
 button{font-family:var(--fB);cursor:pointer;border:none;outline:none}
 input{outline:none;font-family:var(--fB)}
@@ -58,7 +71,7 @@ a{color:inherit;text-decoration:none}
 .cd-lbl{font-size:11px;color:var(--m);font-family:var(--fH);font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:1px}
 
 /* REGISTER */
-#scr-register{align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+#scr-register{align-items:center;justify-content:center;padding:24px;background:transparent}
 .reg-card{background:var(--bg3);border:1px solid var(--ba);border-radius:22px;padding:42px 40px;
   width:100%;max-width:560px;box-shadow:var(--shadow);animation:slideUp .38s ease both}
 @keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
@@ -86,12 +99,12 @@ a{color:inherit;text-decoration:none}
 .btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(0,123,143,.55)}
 
 /* ─── EXAM LAYOUT ─── */
-#scr-exam{flex-direction:column;background:var(--bg)}
+#scr-exam{flex-direction:column;background:transparent}
 #scr-exam.active{display:flex}
 
 /* TOP BAR */
-.exam-bar{position:sticky;top:0;z-index:100;background:rgba(9,13,34,.92);
-  backdrop-filter:blur(16px);border-bottom:1px solid var(--bd);
+.exam-bar{position:sticky;top:0;z-index:100;background:rgba(6,9,26,.96);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);
   display:flex;align-items:center;justify-content:space-between;
   padding:0 20px;height:58px;gap:12px;flex-wrap:nowrap}
 .exam-bar-left{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
@@ -119,7 +132,8 @@ a{color:inherit;text-decoration:none}
 
 /* LEFT — STATEMENT */
 .exam-left{flex:1;overflow-y:auto;padding:32px 36px;border-right:1px solid var(--bd);
-  display:flex;flex-direction:column;gap:0;scroll-behavior:smooth}
+  display:flex;flex-direction:column;gap:0;scroll-behavior:smooth;
+  background:rgba(6,9,26,.65);backdrop-filter:blur(2px)}
 .q-badge-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .q-num-badge{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:2px;color:var(--m)}
@@ -131,9 +145,9 @@ a{color:inherit;text-decoration:none}
 .q-diff-medium{background:rgba(255,152,0,.12);color:#ffb74d}
 .q-diff-hard{background:rgba(239,68,68,.12);color:#f87171}
 .q-diff{padding:3px 10px;border-radius:8px;font-family:var(--fH);font-size:11px;font-weight:700}
-.q-title{font-family:var(--fH);font-size:22px;font-weight:800;color:var(--txt);
-  margin-bottom:18px;line-height:1.3}
-.q-statement{font-size:15px;line-height:1.9;color:var(--txt);white-space:pre-wrap;word-break:break-word}
+.q-title{font-family:var(--fH);font-size:28px;font-weight:800;color:var(--txt);
+  margin-bottom:20px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.q-statement{font-size:17px;line-height:2;color:var(--txt);white-space:pre-wrap;word-break:break-word;font-weight:400}
 .q-image{max-width:100%;border-radius:12px;border:1px solid var(--bd);margin-top:18px;display:block}
 .q-hint-toggle{display:inline-flex;align-items:center;gap:7px;margin-top:20px;padding:9px 18px;
   background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:10px;
@@ -146,7 +160,7 @@ a{color:inherit;text-decoration:none}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* RIGHT — ANSWERS + NAV */
-.exam-right{width:320px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;background:var(--bg2)}
+.exam-right{width:320px;flex-shrink:0;overflow-y:auto;display:flex;flex-direction:column;background:rgba(9,13,34,.85);backdrop-filter:blur(8px)}
 .exam-right-inner{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1}
 
 /* Q navigator grid */
@@ -181,7 +195,7 @@ a{color:inherit;text-decoration:none}
 .q-opt.selected .q-opt-letter{background:var(--tl);border-color:var(--tl);color:#fff}
 .q-opt.rev-correct .q-opt-letter{background:var(--green);border-color:var(--green);color:#fff}
 .q-opt.rev-wrong .q-opt-letter{background:var(--red);border-color:var(--red);color:#fff}
-.q-opt-text{font-size:13px;line-height:1.5;color:var(--txt);margin-top:1px}
+.q-opt-text{font-size:15px;line-height:1.6;color:var(--txt);margin-top:1px;font-weight:500}
 .q-short-input{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--bd);
   border-radius:10px;padding:12px 15px;font-size:15px;color:var(--txt);
   transition:border-color .2s,box-shadow .2s}
@@ -210,7 +224,7 @@ a{color:inherit;text-decoration:none}
 .autosave-note{text-align:center;font-size:11px;color:var(--d);font-family:var(--fH);font-weight:600;padding:4px}
 
 /* ── DONE SCREEN ── */
-#scr-done{align-items:center;justify-content:center;padding:32px 20px;background:var(--bg)}
+#scr-done{align-items:center;justify-content:center;padding:32px 20px;background:transparent}
 .done-card{width:100%;max-width:600px;text-align:center;animation:slideUp .4s ease both}
 .done-icon{font-size:72px;margin-bottom:10px}
 .done-h1{font-family:var(--fH);font-size:clamp(24px,4vw,36px);font-weight:800;margin-bottom:24px}

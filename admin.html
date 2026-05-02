@@ -16,8 +16,15 @@
 html{
   min-height:100%;
   background-color:var(--bg);
-  background-image:url('assets/dark_admin_hero.png');
-  background-size:cover;background-position:center top;background-attachment:fixed;background-repeat:no-repeat;
+  background-image:
+    url('assets/dark_admin_hero.png'),
+    radial-gradient(ellipse at 15% 25%, rgba(0,123,143,.4) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 75%, rgba(76,175,80,.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 75% 10%, rgba(0,180,204,.2) 0%, transparent 45%),
+    radial-gradient(ellipse at 5% 90%, rgba(0,60,75,.45) 0%, transparent 45%);
+  background-size:cover,100% 100%,100% 100%,100% 100%,100% 100%;
+  background-position:center top,0 0,0 0,0 0,0 0;
+  background-attachment:fixed;background-repeat:no-repeat;
 }
 [data-theme=light] html{background-image:url('assets/light_admin_hero.png');}
 html::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:rgba(6,9,26,.68);}
@@ -672,6 +679,38 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   </div>
 </div>
 
+<!-- RATING EDIT MODAL -->
+<div class="mf-bg" id="ratingModal">
+  <div class="mf-box" style="max-width:460px">
+    <h3>⭐ Edit Rating</h3>
+    <p style="color:var(--m);font-size:14px;margin-bottom:24px">Manually set rating for <strong id="ratingModalName" style="color:var(--txt)">—</strong></p>
+    <div class="fg" style="grid-template-columns:1fr">
+      <div class="fg-group">
+        <label>New Rating (0 – 9999)</label>
+        <input id="ratingInput" type="number" min="0" max="9999" step="1" value="1200"
+          style="font-size:28px;font-weight:800;font-family:var(--fH);text-align:center;color:var(--teal);padding:16px"/>
+      </div>
+      <div class="fg-group" style="margin-top:4px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+          <button type="button" class="act" onclick="document.getElementById('ratingInput').value=1000" style="font-size:12px;border-color:var(--bd)">1000 Rookie</button>
+          <button type="button" class="act" onclick="document.getElementById('ratingInput').value=1200" style="font-size:12px;border-color:rgba(76,175,80,.4);color:#81c784">1200 Beginner</button>
+          <button type="button" class="act" onclick="document.getElementById('ratingInput').value=1500" style="font-size:12px;border-color:rgba(0,180,204,.4);color:var(--teal)">1500 Expert</button>
+          <button type="button" class="act" onclick="document.getElementById('ratingInput').value=1800" style="font-size:12px;border-color:rgba(168,85,247,.4);color:#a855f7">1800 Master</button>
+          <button type="button" class="act" onclick="document.getElementById('ratingInput').value=2000" style="font-size:12px;border-color:rgba(255,215,0,.4);color:#FFD700">2000 Grandmaster</button>
+        </div>
+      </div>
+      <div class="fg-group">
+        <label>Reason / Note (optional)</label>
+        <input id="ratingReasonInput" type="text" placeholder="e.g. Manual correction after contest dispute"/>
+      </div>
+    </div>
+    <div class="f-btns" style="margin-top:16px">
+      <button class="btn-cancel" onclick="closeRatingModal()">Cancel</button>
+      <button class="btn-add" id="ratingModalSave" onclick="saveUserRating()">💾 Save Rating</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="data.js"></script>
@@ -1117,13 +1156,21 @@ function renderUserTable(users){
   document.getElementById('users-tbl').innerHTML=users.map(u=>{
     const initials=(u.displayName||'U').charAt(0).toUpperCase();
     const joinDate=u.joinedAt?new Date(u.joinedAt).toLocaleDateString():'—';
+    const rating=u.rating||1200;
+    const ratingColor=rating>=2000?'#FFD700':rating>=1800?'#a855f7':rating>=1500?'#00b4cc':rating>=1200?'#4CAF50':'var(--m)';
     return `<tr>
       <td><div class="user-cell">
         <div class="user-avatar-sm">${u.photoURL?`<img src="${u.photoURL}" alt="${u.displayName}"/>`:`<span>${initials}</span>`}</div>
         ${u.displayName||'—'}
       </div></td>
       <td style="font-size:12px">${u.email||'—'}</td>
-      <td style="font-family:var(--fH);font-weight:700;color:var(--teal)">${u.rating||1200}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--fH);font-weight:800;color:${ratingColor};font-size:15px">${rating}</span>
+          <button class="act" onclick="openRatingModal('${u.id}','${u.displayName||'User'}',${rating})"
+            style="padding:3px 10px;font-size:11px;border-color:rgba(0,180,204,.35);color:var(--teal)">✏️ Edit</button>
+        </div>
+      </td>
       <td>${u.totalSolved||0}</td>
       <td style="font-size:12px">${joinDate}</td>
       <td>
@@ -1144,6 +1191,51 @@ async function changeUserRole(uid,role){
     toast('Role updated to '+role+'!');
     await loadUsers();
   }catch(e){toast('Failed to update role.',false);}
+}
+
+/* ── RATING MODAL ── */
+let _ratingUid=null;
+function openRatingModal(uid,name,currentRating){
+  _ratingUid=uid;
+  document.getElementById('ratingModalName').textContent=name;
+  document.getElementById('ratingInput').value=currentRating;
+  document.getElementById('ratingReasonInput').value='';
+  document.getElementById('ratingModal').classList.add('open');
+}
+function closeRatingModal(){document.getElementById('ratingModal').classList.remove('open');_ratingUid=null;}
+async function saveUserRating(){
+  if(!_ratingUid){toast('No user selected.',false);return;}
+  const newRating=parseInt(document.getElementById('ratingInput').value);
+  const reason=document.getElementById('ratingReasonInput').value.trim();
+  if(isNaN(newRating)||newRating<0||newRating>9999){toast('Rating must be 0–9999.',false);return;}
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  const btn=document.getElementById('ratingModalSave');
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    // Import firestore utilities from window.BDOH_DB or directly
+    const {getFirestore,doc,updateDoc,collection,addDoc,serverTimestamp}=window._firestoreUtils||{};
+    if(window._firestoreUtils){
+      const db=getFirestore();
+      await updateDoc(doc(db,'users',_ratingUid),{rating:newRating,updatedAt:serverTimestamp()});
+      if(reason){
+        await addDoc(collection(db,'activityLogs'),{
+          action:'rating_override',userId:'admin',targetId:_ratingUid,
+          detail:`Rating set to ${newRating}. Reason: ${reason}`,timestamp:serverTimestamp()
+        });
+      }
+    } else {
+      // Fallback: try BDOH_DB generic update
+      if(window.BDOH_DB.updateUser) await window.BDOH_DB.updateUser(_ratingUid,{rating:newRating});
+      else throw new Error('updateUser not available');
+    }
+    toast('✅ Rating updated to '+newRating+'!');
+    closeRatingModal();
+    await loadUsers();
+  }catch(e){
+    console.error(e);
+    toast('Failed to update rating: '+e.message,false);
+  }
+  btn.disabled=false;btn.textContent='Save Rating';
 }
 
 // ============================================================
@@ -1288,12 +1380,15 @@ function exportDataSnapshot(){
 <script type="module">
   import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const cfg={apiKey:"AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",authDomain:"bdoh-project.firebaseapp.com",projectId:"bdoh-project",storageBucket:"bdoh-project.firebasestorage.app",messagingSenderId:"413106966781",appId:"1:413106966781:web:f3123769a8d2cec02e2e94"};
   const app=getApps().length?getApps()[0]:initializeApp(cfg);
   const auth=getAuth(app);
   const db=getFirestore(app);
+
+  /* Expose Firestore utilities for rating edit and other admin ops */
+  window._firestoreUtils={getFirestore:()=>db,doc,updateDoc,collection,addDoc,serverTimestamp};
 
   /* Expose signOut for inline onclick in access-denied screen */
   window._bdohAdminSignOut = ()=> signOut(auth).then(()=>location.reload()).catch(()=>location.reload());
