@@ -2178,3 +2178,209 @@ body::before {
 }
 
 /* 🔧 SURGERY END */
+
+/* ================================================================
+   BDOH — LEADERBOARD HERO OVERHAUL
+   Replaces the cartoonish green trophy heading with an editorial,
+   Bebas Neue-driven professional header true to the BDOH design system.
+================================================================ */
+
+/* ── Leaderboard page hero ── */
+.lb-hero {
+  position: relative;
+  text-align: center;
+  padding: clamp(100px,14vw,160px) clamp(20px,5vw,60px) clamp(48px,6vw,80px);
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* Subtle ruled lines behind the text — architectural, not decorative */
+.lb-hero::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(600px, 80vw, 1000px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,123,143,.18), rgba(76,175,80,.12), transparent);
+  pointer-events: none;
+}
+
+/* Top eyebrow — replaces the emoji */
+.lb-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--fH);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--txt-d);
+  margin-bottom: 18px;
+}
+
+.lb-eyebrow-line {
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal));
+}
+.lb-eyebrow-line.right {
+  background: linear-gradient(90deg, var(--teal), transparent);
+}
+
+/* Main heading — Bebas Neue, massive, gradient-clipped */
+.lb-heading {
+  font-family: var(--fD);             /* Bebas Neue */
+  font-size: clamp(72px, 13vw, 160px);
+  line-height: 0.88;
+  letter-spacing: 4px;
+  margin-bottom: 10px;
+  color: var(--txt);
+  position: relative;
+  display: block;
+}
+
+/* "LEADERBOARD" gets the gradient treatment — no emoji, just raw type */
+.lb-heading-grad {
+  display: block;
+  background: linear-gradient(120deg, #007B8F 0%, #00b4cc 38%, #4CAF50 68%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: var(--fD);
+  font-size: clamp(72px, 13vw, 160px);
+  line-height: 0.88;
+  letter-spacing: 4px;
+}
+
+/* Sub-line below the heading */
+.lb-sub {
+  font-family: var(--fH);
+  font-size: clamp(13px, 1.4vw, 15px);
+  color: var(--txt-d);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-top: 20px;
+  display: block;
+}
+
+/* Thin accent rule under the whole hero */
+.lb-hero-rule {
+  display: block;
+  width: clamp(60px, 8vw, 100px);
+  height: 2px;
+  background: var(--gb);
+  margin: 24px auto 0;
+  border-radius: 2px;
+}
+
+/* ── Override / kill the old cartoonish leaderboard hero elements ── */
+/* These target whatever class structure leaderboard.html uses */
+.lb-title,
+.leaderboard-title,
+.leaderboard-hero h1,
+.leaderboard-hero h2,
+[class*="lb-hero"] h1,
+[class*="lb-hero"] h2 {
+  font-family: var(--fD) !important;
+  font-size: clamp(64px, 11vw, 140px) !important;
+  font-weight: 400 !important;           /* Bebas Neue is always weight 400 */
+  letter-spacing: 3px !important;
+  line-height: 0.9 !important;
+  color: var(--txt) !important;
+  text-shadow: none !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--txt) !important;
+}
+
+/* Kill any trophy emoji injected via ::before / content */
+.leaderboard-hero .trophy-icon,
+.leaderboard-hero .lb-icon,
+.lb-trophy,
+[class*="trophy"] {
+  display: none !important;
+}
+
+/* Kill the big green color used on leaderboard hero text */
+.leaderboard-hero h1 span,
+.leaderboard-hero h2 span,
+.lb-title span {
+  color: var(--teal-lt) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--teal-lt) !important;
+}
+
+/* ── Leaderboard subtitle / tagline ── */
+.lb-desc,
+.leaderboard-hero p,
+.leaderboard-hero .sub,
+.leaderboard-hero .subtitle {
+  font-family: var(--fH) !important;
+  font-size: clamp(13px, 1.4vw, 15px) !important;
+  color: var(--txt-d) !important;
+  letter-spacing: 2.5px !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  margin-top: 16px !important;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.8 !important;
+}
+
+/* ── Podium: make it feel premium, not game-show ── */
+.podium-wrap,
+.leaderboard-podium {
+  background: transparent !important;
+}
+
+/* Remove cartoonish glow rings on podium avatars */
+.podium-avatar {
+  box-shadow: 0 0 0 2px rgba(255,255,255,.1) !important;
+  filter: none !important;
+}
+
+/* Podium numbers: use Bebas Neue */
+.podium-rank,
+.podium-num,
+[class*="podium"] [class*="rank"],
+[class*="podium"] [class*="num"] {
+  font-family: var(--fD) !important;
+  letter-spacing: 1px !important;
+  color: var(--txt-d) !important;
+  text-shadow: none !important;
+}
+
+/* ── Table header row: keep it minimal ── */
+.lb-table thead th,
+.leaderboard-table thead th,
+[class*="lb-tbl"] thead th {
+  font-family: var(--fH) !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  color: var(--txt-d) !important;
+}
+
+/* ── Responsive leaderboard hero ── */
+@media (max-width: 768px) {
+  .lb-heading,
+  .lb-heading-grad {
+    font-size: clamp(56px, 16vw, 96px) !important;
+    letter-spacing: 2px !important;
+  }
+  .lb-eyebrow { letter-spacing: 2.5px; font-size: 10px; }
+  .lb-sub { font-size: 11px; letter-spacing: 2px; margin-top: 14px; }
+}
+
+@media (max-width: 480px) {
+  .lb-heading,
+  .lb-heading-grad {
+    font-size: clamp(44px, 14vw, 72px) !important;
+    letter-spacing: 1px !important;
+  }
+}
