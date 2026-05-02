@@ -405,7 +405,7 @@ body {
 
 .profile-role-badge {
   margin-top: 10px;
-  padding: 4px 14px;
+  padding: 6px 18px;
   border-radius: 20px;
   font-family: var(--fH);
   font-size: 11px;
@@ -415,6 +415,29 @@ body {
   background: linear-gradient(135deg, rgba(0,180,204,.2), rgba(76,175,80,.2));
   border: 1px solid rgba(0,180,204,.3);
   color: var(--teal);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+.profile-role-badge[href] {
+  cursor: pointer;
+}
+.profile-role-badge[href]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,180,204,.25);
+  border-color: rgba(0,180,204,.6);
+}
+.role-badge-tooltip {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--txt-d);
+  margin-top: 3px;
+  letter-spacing: 0.3px;
+  text-transform: none;
 }
 
 .profile-divider {
@@ -1153,7 +1176,7 @@ body {
           </div>
           <div class="profile-name" id="profileName">—</div>
           <div class="profile-email" id="profileEmail">—</div>
-          <div class="profile-role-badge" id="profileRoleBadge">Olympiadian</div>
+          <a class="profile-role-badge" id="profileRoleBadge">Olympiadian</a>
           <!-- Admin Panel Button — only shown for admins/superadmins via JS -->
           <a id="adminPanelBtn" href="admin.html"
             style="display:none;margin-top:12px;padding:10px 24px;
@@ -1597,11 +1620,35 @@ async function renderProfile(user, snap) {
   const roleMap = { super_admin:'⭐ Super Admin', superadmin:'⭐ Super Admin', admin:'🛡️ Admin', panelist:'🎓 Panelist', moderator:'🔧 Moderator', user:'Olympiadian' };
   set('profileRoleBadge', roleMap[d.role] || 'Olympiadian');
   const roleBadgeEl = document.getElementById('profileRoleBadge');
-  if(roleBadgeEl && ['admin','superadmin','super_admin'].includes(d.role)){
-    roleBadgeEl.style.background='linear-gradient(135deg,rgba(0,123,143,.3),rgba(76,175,80,.2))';
-    roleBadgeEl.style.borderColor='rgba(0,180,204,.6)';
-    roleBadgeEl.style.color='#00dcf0';
-    roleBadgeEl.style.boxShadow='0 0 12px rgba(0,180,204,.3)';
+  if (roleBadgeEl) {
+    /* Role → destination and style */
+    const roleConfig = {
+      super_admin: { href:'admin.html',      bg:'linear-gradient(135deg,rgba(0,123,143,.35),rgba(76,175,80,.25))', border:'rgba(0,220,240,.6)', color:'#00dcf0', shadow:'rgba(0,180,204,.35)', tip:'Click to open Admin Panel' },
+      superadmin:  { href:'admin.html',      bg:'linear-gradient(135deg,rgba(0,123,143,.35),rgba(76,175,80,.25))', border:'rgba(0,220,240,.6)', color:'#00dcf0', shadow:'rgba(0,180,204,.35)', tip:'Click to open Admin Panel' },
+      admin:       { href:'admin.html',      bg:'linear-gradient(135deg,rgba(0,123,143,.3),rgba(76,175,80,.2))',  border:'rgba(0,180,204,.5)', color:'#00dcf0', shadow:'rgba(0,180,204,.25)', tip:'Click to open Admin Panel' },
+      panelist:    { href:'panelist.html',   bg:'linear-gradient(135deg,rgba(168,85,247,.2),rgba(0,123,143,.15))', border:'rgba(168,85,247,.5)', color:'#c084fc', shadow:'rgba(168,85,247,.3)', tip:'Click to open Panelist Panel' },
+      moderator:   { href:'moderator.html',  bg:'linear-gradient(135deg,rgba(251,146,60,.2),rgba(0,123,143,.15))', border:'rgba(251,146,60,.5)', color:'#fb923c', shadow:'rgba(251,146,60,.3)', tip:'Click to open Moderator Panel' },
+    };
+    const cfg = roleConfig[d.role];
+    if (cfg) {
+      roleBadgeEl.href = cfg.href;
+      roleBadgeEl.style.background = cfg.bg;
+      roleBadgeEl.style.borderColor = cfg.border;
+      roleBadgeEl.style.color = cfg.color;
+      roleBadgeEl.style.boxShadow = `0 0 14px ${cfg.shadow}`;
+      roleBadgeEl.title = cfg.tip;
+      /* append small tooltip hint below badge text */
+      const tipEl = document.createElement('span');
+      tipEl.className = 'role-badge-tooltip';
+      tipEl.textContent = '↗ ' + cfg.tip;
+      /* Only add if not already there */
+      if (!roleBadgeEl.querySelector('.role-badge-tooltip')) {
+        roleBadgeEl.appendChild(tipEl);
+      }
+    } else {
+      /* plain user — no link */
+      roleBadgeEl.removeAttribute('href');
+    }
   }
   const adminBtn = document.getElementById('adminPanelBtn');
   if(adminBtn){

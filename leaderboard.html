@@ -57,13 +57,19 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
 .container{max-width:1000px;margin:0 auto;padding:40px clamp(16px,4vw,40px)}
 
 /* PAGE HEADER */
-.page-header{text-align:center;margin-bottom:40px}
-.page-tag{display:inline-block;font-family:var(--fH);font-size:11px;font-weight:700;
-  letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:12px}
-.page-title{font-family:var(--fH);font-size:clamp(28px,4vw,48px);font-weight:800;
-  background:var(--g);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;margin-bottom:10px}
-.page-sub{color:var(--m);font-size:16px}
+.page-header{text-align:center;margin-bottom:44px;position:relative}
+.page-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--fH);font-size:11px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;color:var(--green);margin-bottom:16px;
+  padding:5px 16px;border:1px solid rgba(76,175,80,.3);border-radius:20px;background:rgba(76,175,80,.07)}
+.page-title-wrap{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:10px}
+.page-title-trophy{font-size:clamp(36px,6vw,56px);filter:drop-shadow(0 0 20px rgba(255,215,0,.5));animation:trophy-glow 2.5s ease-in-out infinite}
+@keyframes trophy-glow{0%,100%{filter:drop-shadow(0 0 16px rgba(255,215,0,.4))}50%{filter:drop-shadow(0 0 30px rgba(255,215,0,.75))}}
+.page-title{font-family:var(--fH);font-size:clamp(32px,5vw,58px);font-weight:800;
+  background:linear-gradient(120deg,#007B8F,#4CAF50,#FFD700 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;letter-spacing:-1.5px}
+.page-sub{color:var(--m);font-size:15px;max-width:440px;margin:0 auto;line-height:1.6}
+.page-header-rule{width:64px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0;border-radius:2px}
 
 /* TOP 3 PODIUM */
 .podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-bottom:40px}
@@ -161,10 +167,14 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
   <div class="nav-brand">
     <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
       <img src="assets/logo.png" alt="BDOH" style="width:38px;height:38px;border-radius:50%;object-fit:cover"/>
-      <div class="nav-title">Leaderboard</div>
+      <div>
+        <div class="nav-title">BDOH</div>
+        <div style="font-size:10px;color:var(--m);font-family:var(--fH);font-weight:600;letter-spacing:1px;text-transform:uppercase">Leaderboard</div>
+      </div>
     </a>
   </div>
-  <div style="display:flex;gap:10px;position:relative;z-index:2">
+  <div style="display:flex;gap:10px;position:relative;z-index:2;align-items:center">
+    <span id="lbCurrentUserName" style="font-family:var(--fH);font-size:12px;font-weight:700;color:var(--teal-lt);display:none"></span>
     <a href="profile.html" class="nav-back" style="display:flex;align-items:center;gap:6px">
       <svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
       Profile
@@ -175,9 +185,13 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
 
 <div class="container">
   <div class="page-header">
-    <div class="page-tag">Rankings</div>
-    <div class="page-title">🏆 Leaderboard</div>
-    <p class="page-sub">Compete, improve, and rise through the ranks.</p>
+    <div class="page-tag">🌏 Bangladesh Olympiad Hub</div>
+    <div class="page-title-wrap">
+      <span class="page-title-trophy">🏆</span>
+      <div class="page-title">Leaderboard</div>
+    </div>
+    <p class="page-sub">Compete, improve, and rise through the ranks of Bangladesh's finest olympiad solvers.</p>
+    <div class="page-header-rule"></div>
   </div>
 
   <!-- PODIUM -->
@@ -227,6 +241,41 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
 </div>
 
 <script src="data.js"></script>
+<script type="module">
+/* ── Pull display name from Firestore so leaderboard uses the user-chosen name ── */
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+const FIREBASE_CONFIG = {
+  apiKey:"AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",authDomain:"bdoh-project.firebaseapp.com",
+  projectId:"bdoh-project",storageBucket:"bdoh-project.firebasestorage.app",
+  messagingSenderId:"413106966781",appId:"1:413106966781:web:f3123769a8d2cec02e2e94"
+};
+const app = getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    window._lbCurrentUid = user.uid;
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        const displayName = snap.data().displayName || user.displayName || '';
+        window._lbCurrentDisplayName = displayName;
+        const nameTag = document.getElementById('lbCurrentUserName');
+        if (nameTag && displayName) {
+          nameTag.textContent = '👋 ' + displayName;
+          nameTag.style.display = 'inline';
+        }
+      }
+    } catch(e) { console.warn('Could not fetch profile:', e); }
+    /* fire event for the leaderboard script below */
+    window.dispatchEvent(new CustomEvent('bdoh:authReady', { detail: { user } }));
+  }
+});
+</script>
 <script>
 let allRows = [];
 let currentTab = 'global';
@@ -235,7 +284,11 @@ let currentUserUid = null;
 const RATING_COLORS = { 2400:'#f87171', 2200:'#FFD700', 2000:'#81c784', 1800:'#5bcfdf', 1200:'#007B8F' };
 function getRatingColor(r){ return r>=2400?'#f87171':r>=2200?'#FFD700':r>=2000?'#81c784':r>=1800?'#5bcfdf':'#007B8F'; }
 
-window.addEventListener('bdoh:authReady', (e)=>{ currentUserUid = e.detail.user?.uid || null; });
+window.addEventListener('bdoh:authReady', (e)=>{
+  currentUserUid = e.detail.user?.uid || null;
+  /* Re-render if table is already loaded */
+  if (allRows.length) renderTable(allRows);
+});
 
 document.addEventListener('DOMContentLoaded', ()=>{
   bdohFirebaseReady(async()=>{
