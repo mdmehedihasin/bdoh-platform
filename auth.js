@@ -168,11 +168,13 @@ function _renderNavWrap(user, profile){
       ${name}
     </a>`;
 
-    /* Also update profile-patch.js targets (mobile menu pill) */
+    /* Mobile menu: show profile card, hide sign-in link */
+    const mobSignIn = document.getElementById('mobSignInLink');
+    if(mobSignIn) mobSignIn.style.display = 'none';
     const mobLink   = document.getElementById('mobProfileNavLink');
     const mobAvatar = document.getElementById('mobProfileAvatar');
     const mobName   = document.getElementById('mobProfileName');
-    if(mobLink)   mobLink.style.display   = '';
+    if(mobLink)   mobLink.style.display   = 'flex';
     if(mobName)   mobName.textContent     = name;
     if(mobAvatar){
       if(photoURL) mobAvatar.innerHTML = `<img src="${photoURL}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
@@ -181,10 +183,30 @@ function _renderNavWrap(user, profile){
 
   } else {
     wrap.innerHTML = `<button class="bdoh-nav-signin" onclick="BDOH_AUTH.open()">Sign In</button>`;
+    /* Mobile menu: show sign-in link, hide profile card */
+    const mobSignIn = document.getElementById('mobSignInLink');
+    if(mobSignIn) mobSignIn.style.display = 'flex';
     const mobLink = document.getElementById('mobProfileNavLink');
     if(mobLink) mobLink.style.display = 'none';
   }
 }
+
+/* ── Immediately show Sign In button — don't wait for Firebase ──
+   This ensures the button is visible the instant the page loads.
+   bdoh:authReady will overwrite it with a profile pill if user is signed in. ── */
+(function _immediateSignInBtn(){
+  function _inject(){
+    const wrap = document.getElementById('navAuthWrap');
+    if(wrap && !wrap.hasChildNodes()){
+      wrap.innerHTML = `<button class="bdoh-nav-signin" onclick="BDOH_AUTH.open()">Sign In</button>`;
+    }
+    /* Also ensure mobile sign-in link is visible when not signed in */
+    const mobSignIn = document.getElementById('mobSignInLink');
+    if(mobSignIn) mobSignIn.style.display = 'flex';
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', _inject);
+  else _inject();
+})();
 
 /* ── Listen for auth state (fired by data.js onAuthStateChanged) ── */
 window.addEventListener('bdoh:authReady', e => {

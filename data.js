@@ -353,71 +353,106 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
         return p.includes('*')||p.includes(action);
       },
 
-      /* ── INTERNAL: update user stats + leaderboard after every submission ── */
+      /* ── INTERNAL: update user stats + leaderboard after every submission ──
+         Uses atomic increment() — NO composite Firestore indexes required.
+         Never re-queries all submissions, so it can't silently zero-out stats. ── */
       async _updateUserStats(uid, sub){
         try {
-          const uRef=doc(_db,'users',uid);
-          const uSnap=await getDoc(uRef);
+          const uRef  = doc(_db,'users',uid);
+          const uSnap = await getDoc(uRef);
           if(!uSnap.exists()) return;
-          const u=uSnap.data();
+          const u = uSnap.data();
 
-          /* Count from ALL submissions for this user */
-          const allSubs = await this.getUserSubmissions(uid);
-          /* Filter out practice from contest counts */
-          const contestSubs = allSubs.filter(s=>s.contestId!=='practice');
-          const practiceSubs = allSubs.filter(s=>s.contestId==='practice');
+          /* ── What changed? ── */
+          const scored     = sub.score||0;
+          const isCorrect  = !!(sub.isCorrect || (scored>0 && scored>=(sub.maxScore||1)*.5));
+          const isPractice = sub.contestId==='practice';
 
-          const totalAttempts = allSubs.length;
-          const totalSolves   = allSubs.filter(s=>s.isCorrect&&!s.disqualified).length;
-          const accuracy      = totalAttempts>0?Math.round(totalSolves/totalAttempts*100):0;
-          const totalPoints   = allSubs.reduce((a,s)=>a+(s.score||0),0);
-          const contestCount  = new Set(contestSubs.map(s=>s.contestId)).size;
+          /* ── Atomic field increments (single-field — no index needed) ── */
+          const updates = {
+            totalAttempts: increment(1),
+            totalPoints:   increment(scored),
+            lastActive:    serverTimestamp()
+          };
+          if(isCorrect) updates.totalSolves = increment(1);
 
-          /* ELO delta — only for contest submissions */
-          const pct = sub.maxScore>0 ? (sub.score||0)/sub.maxScore : 0;
-          const delta = Math.round((pct-.5)*40);
-          const newRating = Math.max(800,Math.min(3000,(u.rating||1200)+delta));
-          const ratingHist = [...(u.ratingHistory||[1200]),newRating].slice(-50);
-
-          /* subjectStats */
-          const ss={...(u.subjectStats||{})};
-          const subject = sub.subject||'';
-          if(subject&&subject!=='Mixed'){
-            if(!ss[subject])ss[subject]={solves:0,attempts:0};
-            ss[subject].attempts++;
-            if(sub.isCorrect||sub.score>=(sub.maxScore||1)*.5) ss[subject].solves++;
+          /* Track unique contest IDs so contestCount is accurate */
+          if(!isPractice){
+            const known = u.knownContestIds||[];
+            if(!known.includes(sub.contestId)){
+              updates.contestCount   = increment(1);
+              updates.knownContestIds= [...known, sub.contestId];
+            }
           }
 
-          /* Badges */
-          const badges=[...(u.badges||[])];
-          const award=id=>{if(!badges.includes(id))badges.push(id);};
-          if(totalSolves>=1)  award('first_solve');
-          if(totalSolves>=10) award('10_solves');
-          if(totalSolves>=50) award('50_solves');
-          if(totalSolves>=100)award('100_solves');
+          /* ── ELO delta — contests only ── */
+          let newRating  = u.rating||1200;
+          let ratingHist = u.ratingHistory||[1200];
+          if(!isPractice && (sub.maxScore||0)>0){
+            const pct   = scored/sub.maxScore;
+            const delta = Math.round((pct-.5)*40);
+            newRating   = Math.max(800,Math.min(3000,newRating+delta));
+            ratingHist  = [...ratingHist,newRating].slice(-50);
+            updates.rating        = newRating;
+            updates.ratingHistory = ratingHist;
+          }
+
+          /* ── subjectStats — incremental merge ── */
+          const ss      = {...(u.subjectStats||{})};
+          const subject = sub.subject||'';
+          if(subject&&subject!=='Mixed'){
+            if(!ss[subject]) ss[subject]={solves:0,attempts:0};
+            ss[subject]={
+              attempts:(ss[subject].attempts||0)+1,
+              solves:  (ss[subject].solves||0)+(isCorrect?1:0)
+            };
+            updates.subjectStats = ss;
+          }
+
+          /* ── Badges — projected totals ── */
+          const badges     = [...(u.badges||[])];
+          const award      = id=>{ if(!badges.includes(id)) badges.push(id); };
+          const projSolves = (u.totalSolves||0)+(isCorrect?1:0);
+          if(projSolves>=1)   award('first_solve');
+          if(projSolves>=10)  award('10_solves');
+          if(projSolves>=50)  award('50_solves');
+          if(projSolves>=100) award('100_solves');
           if(newRating>=1400) award('rating_1400');
           if(newRating>=1600) award('rating_1600');
           if(newRating>=1800) award('rating_1800');
           if(newRating>=2000) award('rating_2000');
           const SUBJS=['Physics','Mathematics','Chemistry','Biology','Astronomy','Informatics'];
           if(SUBJS.every(s=>(ss[s]?.solves||0)>=1)) award('all_subjects');
+          if(badges.length!==(u.badges||[]).length) updates.badges=badges;
 
-          /* Write to /users/{uid} */
-          await updateDoc(uRef,{
-            totalSolves, totalAttempts, totalPoints, contestCount,
-            rating:newRating, ratingHistory:ratingHist,
-            subjectStats:ss, badges, lastActive:serverTimestamp()
-          });
-          BDOH.userProfile={...u,totalSolves,totalAttempts,totalPoints,
-            contestCount,rating:newRating,ratingHistory:ratingHist,subjectStats:ss,badges};
+          /* ── Write atomically ── */
+          await updateDoc(uRef, updates);
 
-          /* Sync /leaderboard/{uid} */
+          /* ── Update in-memory cache so profile page sees changes without reload ── */
+          if(BDOH.userProfile&&BDOH.userProfile.uid===uid){
+            BDOH.userProfile={
+              ...BDOH.userProfile,
+              totalAttempts:(BDOH.userProfile.totalAttempts||0)+1,
+              totalPoints:  (BDOH.userProfile.totalPoints||0)+scored,
+              totalSolves:  (BDOH.userProfile.totalSolves||0)+(isCorrect?1:0),
+              rating:newRating, ratingHistory:ratingHist,
+              subjectStats:ss, badges
+            };
+          }
+
+          /* ── Sync /leaderboard/{uid} ── */
+          const projAttempts = (u.totalAttempts||0)+1;
+          const projPoints   = (u.totalPoints||0)+scored;
+          const projContests = (u.contestCount||0)+(!isPractice&&!(u.knownContestIds||[]).includes(sub.contestId)?1:0);
           await setDoc(doc(_db,'leaderboard',uid),{
             userId:uid, displayName:u.displayName||'—', photoURL:u.photoURL||null,
             institution:u.institution||'', rating:newRating,
-            totalSolves, totalPoints, accuracy, contestCount,
-            subjectStats:ss, updatedAt:new Date().toISOString()
+            totalSolves:projSolves, totalPoints:projPoints,
+            accuracy:projAttempts>0?Math.round(projSolves/projAttempts*100):0,
+            contestCount:projContests, subjectStats:ss,
+            updatedAt:new Date().toISOString()
           },{merge:true});
+
         } catch(e){ console.warn('_updateUserStats error:',e); }
       }
     };

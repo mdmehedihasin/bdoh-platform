@@ -350,7 +350,7 @@ a{color:inherit;text-decoration:none}
 
 <!-- ERROR -->
 <div class="screen" id="scr-error">
-  <div class="big-icon" style="font-size:32px;color:#f87171"><div class="big-icon">❌</div>#10007;</div>
+  <div class="big-icon">❌</div>
   <div class="screen-title">Contest Not Found</div>
   <div class="screen-sub">This contest doesn't exist or has been removed.</div>
   <a href="index.html" class="back-link">← Back to BDOH</a>
@@ -358,7 +358,7 @@ a{color:inherit;text-decoration:none}
 
 <!-- CLOSED / UPCOMING -->
 <div class="screen" id="scr-closed">
-  <div class="big-icon" id="cl-icon"><svg viewBox="0 0 20 20" width="40" height="40" fill="currentColor" style="opacity:.5"><path fill-rule="evenodd" d="M5 9V7a7 7 0 0114 0v2a2 2 0 012 2v5a2 2 0 01-2 2H3a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg></div>
+  <div class="big-icon" id="cl-icon">🔒</div>
   <div class="screen-title" id="cl-title">Exam Not Available</div>
   <div class="screen-sub" id="cl-msg">This exam is not currently open.</div>
   <div class="countdown-grid" id="cl-countdown"></div>
@@ -401,7 +401,7 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="exam-bar-right">
       <div class="exam-clock" id="exam-clock">00:00</div>
-      <button class="bar-btn bar-btn-submit" onclick="confirmSubmit()">Submit</button>
+      <button class="bar-btn bar-btn-submit" onclick="confirmSubmit()">✅ Submit</button>
     </div>
   </div>
 
@@ -437,7 +437,7 @@ a{color:inherit;text-decoration:none}
         <button class="btn-submit-big" id="btn-submit-big" onclick="confirmSubmit()" style="display:none">
           ✅ Submit Exam
         </button>
-        <div class="autosave-note" id="autosave-note">Auto-saved</div>
+        <div class="autosave-note" id="autosave-note">💾 Auto-saved</div>
       </div>
     </div>
   </div>
@@ -461,7 +461,7 @@ a{color:inherit;text-decoration:none}
     <div class="done-btns">
       <button class="btn-home" onclick="location.href='index.html'">← Back to BDOH</button>
       <button class="btn-outline" id="btn-review" onclick="openReview()" style="display:none">📋 Review Answers</button>
-      <button class="btn-outline" onclick="location.href='leaderboard.html'">Leaderboard</button>
+      <button class="btn-outline" onclick="location.href='leaderboard.html'">🏆 Leaderboard</button>
       <button class="btn-outline" onclick="location.href='profile.html'">👤 My Profile</button>
     </div>
   </div>
@@ -474,14 +474,14 @@ a{color:inherit;text-decoration:none}
     <div class="overlay-body" id="confirm-body">Are you sure?</div>
     <div class="overlay-btns">
       <button class="ov-cancel" onclick="closeOverlay('confirm-ov')">Keep Reviewing</button>
-      <button class="ov-ok" onclick="submitExam()">Confirm Submit</button>
+      <button class="ov-ok" onclick="submitExam()">✅ Yes, Submit</button>
     </div>
   </div>
 </div>
 
 <div class="warn-ov" id="warn-ov">
   <div class="warn-card">
-    <div class="warn-title">Tab Switch Detected</div>
+    <div class="warn-title">⚠️ Tab Switch Detected!</div>
     <div class="warn-body" id="warn-body">You switched away from this exam window.</div>
     <div class="warn-count-text" id="warn-count"></div>
     <button class="warn-ok-btn" onclick="closeOverlay('warn-ov')">I Understand — Return to Exam</button>
@@ -586,7 +586,7 @@ function checkTiming(){
   const open=contest.openTime?new Date(contest.openTime):null;
   const close=contest.closeTime?new Date(contest.closeTime):null;
   if(close&&now>close){
-    document.getElementById('cl-icon').innerHTML='<svg viewBox="0 0 20 20" width="28" height="28" fill="currentColor" style="opacity:.5"><path fill-rule="evenodd" d="M5 9V7a7 7 0 0114 0v2a2 2 0 012 2v5a2 2 0 01-2 2H3a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>';
+    document.getElementById('cl-icon').textContent='🔒';
     document.getElementById('cl-title').textContent='Exam Closed';
     document.getElementById('cl-msg').textContent='This exam closed on '+close.toLocaleString()+'.';
     show('scr-closed'); return;
@@ -599,7 +599,7 @@ function checkTiming(){
     show('scr-closed'); return;
   }
   if(contest.status==='past'){
-    document.getElementById('cl-icon').innerHTML='<svg viewBox="0 0 20 20" width="28" height="28" fill="currentColor" style="opacity:.5"><path fill-rule="evenodd" d="M5 9V7a7 7 0 0114 0v2a2 2 0 012 2v5a2 2 0 01-2 2H3a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>';
+    document.getElementById('cl-icon').textContent='🔒';
     document.getElementById('cl-title').textContent='Exam Ended';
     document.getElementById('cl-msg').textContent='This contest has concluded.';
     show('scr-closed'); return;
@@ -638,7 +638,7 @@ function buildRegForm(){
     ${close?`<br>Closes: <strong>${close.toLocaleString()}</strong>`:''}
     ${topics?`<br>Topics: <strong>${topics}</strong>`:''}
     ${contest.description?`<br><br>${contest.description}`:''}
-    ${contest.security?.tabDetect?`<br><br><strong>Anti-cheat is active.</strong> Tab switching is monitored and penalised.`:''}`;
+    ${contest.security?.tabDetect?`<br><br>⚠️ <strong>Anti-cheat is active.</strong> Tab switching is monitored and penalised.`:''}`;
 
   /* Build fields */
   const req=contest.requiredFields||{name:true,category:true,classGrade:true,institution:true};
@@ -805,7 +805,7 @@ function toggleFlag(){
 function autoSave(){
   try{ localStorage.setItem('bdoh_as_'+contestId,JSON.stringify({answers,curQ,timeLeft})); }catch(_){}
   const n=document.getElementById('autosave-note');
-  if(n){ n.textContent='Saved'; setTimeout(()=>n.textContent='Auto-saved',2000); }
+  if(n){ n.textContent='✅ Saved'; setTimeout(()=>n.textContent='💾 Auto-saved',2000); }
 }
 
 // ── SUBMIT ──
@@ -878,14 +878,14 @@ function submitExam(auto=false){
   if(window.BDOH_DB){
     window.BDOH_DB.saveSubmission(sub)
       .then(()=>{
-        document.getElementById('done-saving').innerHTML='Results saved to your profile!';
+        document.getElementById('done-saving').innerHTML='✅ Results saved to your profile!';
       })
       .catch(e=>{
         console.warn('Submission save error:',e);
-        document.getElementById('done-saving').innerHTML='Could not save online — check connection.';
+        document.getElementById('done-saving').innerHTML='⚠️ Could not save online — check connection.';
       });
   } else {
-    document.getElementById('done-saving').innerHTML='Firebase not ready — results saved locally only.';
+    document.getElementById('done-saving').innerHTML='⚠️ Firebase not ready — results saved locally only.';
   }
 }
 
@@ -896,7 +896,7 @@ function showDone(sub){
   const pct=sub.maxScore?Math.round(sub.score/sub.maxScore*100):0;
   const pass=pct>=(contest.passingScore||60);
   const badge=document.getElementById('done-badge');
-  badge.textContent=pass?'Passed — '+pct+'%':'Did not pass — '+pct+'%';
+  badge.textContent=pass?'✅ Passed — '+pct+'%':'❌ Did not pass — '+pct+'%';
   badge.className='done-pct-badge '+(pass?'done-pct-pass':'done-pct-fail');
 
   /* Correct / Wrong / Skipped counts */

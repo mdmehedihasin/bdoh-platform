@@ -459,7 +459,7 @@ function renderPanelists(){
                 :`<div class="pres-initials">${pres.initials}</div>`}
             </div>
           </div>
-          <div class="pres-badge" aria-hidden="true"></div>
+          <div class="pres-badge" aria-hidden="true">🔥</div>
         </div>
         <div class="reveal rd1">
           <div class="pres-corner-tag">President's Corner</div>
@@ -580,7 +580,7 @@ function renderProblems(filter='All'){
       <div class="p-title">${p.title}</div>
       <div class="p-stmt">${p.statement.slice(0,110)}…</div>
       <div class="p-foot">
-        <span class="p-meta">${p.timeMin} min &nbsp;·&nbsp; ${p.solves.toLocaleString()} solves</span>
+        <span class="p-meta">⏱ ${p.timeMin} min &nbsp;·&nbsp; ${p.solves.toLocaleString()} solves</span>
         <button class="p-start-btn" aria-label="Start problem: ${p.title}">
           Start
           <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor"><path d="M4 2l5 4-5 4V2z"/></svg>
@@ -639,11 +639,6 @@ function reObserve(){
 ════════════════════════════════════════════════════════════════ */
 let _examId=null, _timerInterval=null, _answered=false;
 let _problemList=null, _problemIdx=0;
-/* Expose _examId on window so the practice submission patch can read it */
-Object.defineProperty(window, '_examId', {
-  get(){ return _examId; },
-  configurable: true
-});
 
 window.openExam=function(id){
   const p=BDOH.problems.find(x=>x.id===id);
@@ -669,7 +664,7 @@ function loadExamProblem(p){
   const diff=document.getElementById('examDiff');
   diff.textContent=p.difficulty;
   diff.className='exam-diff-badge '+DM[p.difficulty];
-  document.getElementById('examMeta').textContent=`${p.timeMin} min suggested · ${p.solves.toLocaleString()} solves`;
+  document.getElementById('examMeta').textContent=`⏱ ${p.timeMin} min suggested · ${p.solves.toLocaleString()} solves`;
   document.getElementById('hintBtn').textContent='Show Hint';
   document.getElementById('hintBox').textContent=p.hint;
   document.getElementById('hintBox').classList.remove('open');
@@ -1131,7 +1126,7 @@ async function bdohRenderRecentSubmissions(uid) {
         ? s.timestamp.toDate().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
         : '—';
       const badgeCls = s.status === 'correct' ? 'psb-correct' : 'psb-wrong';
-      const badgeTxt = s.status === 'correct' ? 'Correct' : 'Wrong';
+      const badgeTxt = s.status === 'correct' ? '✓ Correct' : '✗ Wrong';
       return `
         <div class="profile-sub-item">
           <div>
@@ -1148,90 +1143,83 @@ async function bdohRenderRecentSubmissions(uid) {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   12e. PRACTICE — Firestore submission on answer
-   Hooks into submitAnswer() to save results + award points.
+   12e. PRACTICE — save submission + award points after answer
    Uses BDOH_DB.savePracticeSubmission (data.js v4+).
+   No legacy Firebase refs — works with the current architecture.
 ════════════════════════════════════════════════════════════════ */
 
-(function patchSubmitAnswer() {
-  /* Wait until submitAnswer exists (set in section 9) then wrap it */
-  function doWrap() {
-    const _orig = window.submitAnswer;
-    if (typeof _orig !== 'function') {
-      /* retry — submitAnswer is defined synchronously so this should hit fast */
-      setTimeout(doWrap, 50);
-      return;
-    }
+(function patchSubmitAnswer(){
+  /* submitAnswer is defined synchronously above (section 9).
+     Wrap it immediately — no timeout needed. */
+  const _orig = window.submitAnswer;
+  if(typeof _orig !== 'function'){
+    console.warn('BDOH: submitAnswer not found — practice save disabled');
+    return;
+  }
 
-    window.submitAnswer = async function () {
-      /* 1. Run original (shows feedback, reveals solution) */
-      _orig.call(this);
+  window.submitAnswer = function(){
+    /* 1. Run the original (shows feedback, marks _answered = true) */
+    _orig.call(this);
 
-      /* 2. Need a tick so _answered flag is set by original */
-      await new Promise(r => setTimeout(r, 160));
+    /* 2. Save to Firestore asynchronously — don't block the UI */
+    (async()=>{
+      /* Only save if Firebase is ready and user is signed in */
+      if(!window.BDOH_DB || !BDOH.currentUser) return;
 
-      /* 3. Only proceed if Firebase is ready */
-      if (!window.BDOH_DB) return;
+      /* Give the UI one tick to update, then read state */
+      await new Promise(r=>setTimeout(r,80));
 
-      /* 4. Resolve the current problem */
-      const p = (window.BDOH?.problems || []).find(x => x.id === window._examId);
-      if (!p) return;
+      /* Read which problem is open */
+      const p = BDOH.problems.find(x=>x.id===_examId);
+      if(!p) return;
 
-      /* 5. Read what the user typed */
-      const raw = document.getElementById('examInput')?.value?.trim() || '';
-      if (!raw) return;
+      const raw = (document.getElementById('examInput')?.value||'').trim();
+      if(!raw) return;
 
-      /* 6. Re-evaluate correctness (same logic as original submitAnswer) */
-      const val = parseFloat(raw);
-      const exp = parseFloat(p.answer);
-      const isOk = p.tolerance === 0
-        ? (raw === p.answer || (!isNaN(val) && val === exp))
-        : (!isNaN(val) && Math.abs(val - exp) <= p.tolerance);
+      /* Evaluate correctness (mirrors original submitAnswer logic) */
+      const val   = parseFloat(raw);
+      const exp   = parseFloat(p.answer);
+      const isOk  = p.tolerance===0
+        ? (raw===p.answer || (!isNaN(val)&&val===exp))
+        : (!isNaN(val)&&Math.abs(val-exp)<=p.tolerance);
 
-      /* 7. Save to Firestore — this also updates user profile stats & points */
-      try {
+      try{
         await window.BDOH_DB.savePracticeSubmission(p.id, isOk, raw);
-
-        /* 8. Show a small +pts toast if correct and user is signed in */
-        if (isOk && window.BDOH?.currentUser && p.points) {
-          _showPracticeToast(`+${p.points} pts awarded to your profile!`);
+        /* Show a +pts toast if correct */
+        if(isOk && p.points){
+          _practicePtsToast('+'+p.points+' pts added to your profile!');
         }
-      } catch (err) {
-        console.warn('BDOH practice save error:', err);
+      }catch(err){
+        console.warn('BDOH practice save error:',err);
       }
-    };
-  }
-
-  /* Run after DOM ready so submitAnswer is defined */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', doWrap);
-  } else {
-    doWrap();
-  }
+    })();
+  };
 })();
 
-/* Small toast for practice point award */
-function _showPracticeToast(msg) {
-  let t = document.getElementById('_pracToast');
-  if (!t) {
+/* Small bottom toast for point awards */
+function _practicePtsToast(msg){
+  let t = document.getElementById('_bdohPracToast');
+  if(!t){
     t = document.createElement('div');
-    t.id = '_pracToast';
-    t.style.cssText = [
-      'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%) translateY(20px)',
+    t.id = '_bdohPracToast';
+    t.style.cssText=[
+      'position:fixed','bottom:28px','left:50%',
+      'transform:translateX(-50%) translateY(16px)',
       'background:linear-gradient(135deg,#007B8F,#4CAF50)',
-      'color:#fff', 'font-family:var(--fH,sans-serif)', 'font-size:14px', 'font-weight:700',
-      'padding:12px 24px', 'border-radius:30px', 'z-index:9999',
-      'box-shadow:0 8px 28px rgba(0,123,143,.4)', 'pointer-events:none',
-      'transition:opacity .4s,transform .4s', 'opacity:0'
+      'color:#fff','padding:11px 24px','border-radius:30px',
+      'font-family:var(--fH,sans-serif)','font-size:14px','font-weight:700',
+      'box-shadow:0 8px 28px rgba(0,123,143,.45)',
+      'z-index:9999','pointer-events:none',
+      'transition:opacity .4s,transform .4s','opacity:0'
     ].join(';');
     document.body.appendChild(t);
   }
   t.textContent = msg;
-  t.style.opacity = '1';
-  t.style.transform = 'translateX(-50%) translateY(0)';
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => {
-    t.style.opacity = '0';
-    t.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 3000);
+  t.style.opacity='1';
+  t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>{
+    t.style.opacity='0';
+    t.style.transform='translateX(-50%) translateY(16px)';
+  },3200);
 }

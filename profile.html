@@ -1715,36 +1715,59 @@ function renderBadges(earned) {
 async function renderSubmissions(uid) {
   const box = document.getElementById('submissionsList');
   if (!box) return;
+  box.innerHTML = `<div class="subs-empty" style="opacity:.5">Loading submissions…</div>`;
   try {
-    const q = query(
-      collection(db, 'submissions'),
-      where('user_id', '==', uid),
-      orderBy('timestamp', 'desc'),
-      limit(10)
-    );
-    const snap = await getDocs(q);
-    if (snap.empty) {
-      box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon">📭</span>No submissions yet.<br/>Start solving problems to build your record!</div>`;
+    /* Single-field where queries need NO composite index.
+       Try user_id first, fall back to userId, then client-side filter. */
+    let docs = [];
+    const tryQuery = async (field) => {
+      try {
+        const q = query(collection(db,'submissions'), where(field,'==',uid), limit(50));
+        const snap = await getDocs(q);
+        return snap.docs.map(d=>({id:d.id,...d.data()}));
+      } catch(_){ return null; }
+    };
+    docs = await tryQuery('user_id');
+    if(!docs || docs.length===0) docs = await tryQuery('userId');
+    if(!docs) docs = [];
+
+    /* Sort client-side by submittedAt or timestamp string */
+    docs.sort((a,b)=>{
+      const ta = a.submittedAt||a.timestamp||'';
+      const tb = b.submittedAt||b.timestamp||'';
+      return tb.localeCompare ? tb.localeCompare(ta) : 0;
+    });
+    docs = docs.slice(0,20);
+
+    if(docs.length===0){
+      box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon" style="font-size:28px">&#128240;</span><br/>No submissions yet.<br/>Start solving problems to build your record!</div>`;
       return;
     }
-    box.innerHTML = `<div class="submissions-list">${snap.docs.map(d => {
-      const s = d.data();
-      const ts = s.timestamp?.toDate ? s.timestamp.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
-      const ok = s.status === 'correct' || s.isCorrect;
+    box.innerHTML = `<div class="submissions-list">${docs.map(s => {
+      const ts = s.timestamp?.toDate
+        ? s.timestamp.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+        : (s.submittedAt ? new Date(s.submittedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—');
+      const ok = s.status==='correct' || s.isCorrect;
+      const pts = s.score||s.points||0;
+      const isPractice = s.contestId==='practice';
       return `<div class="sub-item">
         <div>
-          <div class="sub-prob">${s.problem_title || s.title || 'Problem'}</div>
+          <div class="sub-prob">${s.problem_title||s.title||'Problem'}</div>
           <div class="sub-meta-row">
             <span class="sub-time">${ts}</span>
             ${s.subject ? `<span class="sub-subj">${s.subject}</span>` : ''}
+            <span class="sub-type" style="font-size:10px;opacity:.5">${isPractice?'Practice':'Contest'}</span>
           </div>
         </div>
-        <span class="sub-badge ${ok ? 'sub-correct' : 'sub-wrong'}">${ok ? '✓ Correct' : '✗ Wrong'}</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="sub-badge ${ok?'sub-correct':'sub-wrong'}">${ok?'&#10003; Correct':'&#10007; Wrong'}</span>
+          ${pts?`<span style="font-size:11px;color:var(--gold);font-family:var(--fH);font-weight:700">+${pts} pts</span>`:''}
+        </div>
       </div>`;
     }).join('')}</div>`;
-  } catch (err) {
-    console.warn('Could not load submissions:', err);
-    box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon">⚠️</span>Could not load submissions.</div>`;
+  } catch(err){
+    console.warn('Could not load submissions:',err);
+    box.innerHTML = `<div class="subs-empty">Could not load submissions. Please refresh.</div>`;
   }
 }
 
