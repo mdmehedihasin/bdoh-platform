@@ -329,7 +329,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
   <div class="pg" id="pg-results">
     <div class="tbl-sec">
       <div class="tbl-hdr">
-        <h3>Submissions &amp; Results</h3>
+        <h3>Submissions & Results</h3>
         <div class="tbl-hdr-btns">
           <select id="res-filter" onchange="renderResults()" style="width:auto;padding:8px 14px"><option value="">All Contests</option></select>
           <select id="res-sort" onchange="renderResults()" style="width:auto;padding:8px 14px">
@@ -337,8 +337,7 @@ input:checked+.toggle-slider:before{transform:translateX(20px)}
             <option value="time">Sort: Time</option>
             <option value="name">Sort: Name</option>
           </select>
-          <button class="export-btn" onclick="refreshResults()" style="background:rgba(0,123,143,.15);border-color:rgba(0,123,143,.4);color:#5bcfdf">Refresh Data</button>
-          <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+          <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
         </div>
       </div>
       <table><thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Category</th><th>Institution</th><th>Contest</th><th>Time Used</th><th>Tab Switches</th><th>Penalties</th><th>Status</th><th>Submitted</th></tr></thead>
@@ -1244,46 +1243,27 @@ function closePlF(){document.getElementById('plModal').classList.remove('open')}
 // ============================================================
 if(!BDOH.submissions)BDOH.submissions=[];if(!BDOH.contests)BDOH.contests=[];
 
-async function _adminLoadCloud(){
-  if(!window.BDOH_DB) return false;
-  try{
-    const[contests,subs]=await Promise.all([
-      window.BDOH_DB.getContests(),
-      window.BDOH_DB.getSubmissions()
-    ]);
-    BDOH.contests=contests; BDOH.submissions=subs;
-    updateMetrics(); renderDashboard();
-    /* Refresh results page if active */
-    if(document.getElementById('pg-results')?.classList.contains('on')) renderResults();
-    /* Populate contest filter in results tab */
-    const sel=document.getElementById('res-filter');
-    if(sel){
-      const prev=sel.value;
-      sel.innerHTML='<option value="">All Contests</option>'+
-        contests.map(c=>`<option value="${c.id}">${c.title||c.id}</option>`).join('');
-      if(prev) sel.value=prev;
-    }
-    return true;
-  }catch(e){ console.error('Admin cloud load:',e); return false; }
-}
-
-async function refreshResults(){
-  toast('Refreshing data from cloud...');
-  const ok=await _adminLoadCloud();
-  if(ok) toast('Refreshed — '+BDOH.submissions.length+' submissions loaded.');
-  else toast('Refresh failed. Check connection.',false);
-}
-
 async function adminInit(){
-  updateMetrics(); renderDashboard();
-  /* Always go through bdohFirebaseReady — handles both already-ready and pending cases */
-  bdohFirebaseReady(async()=>{
-    const ok=await _adminLoadCloud();
-    if(ok) toast('Data loaded from cloud.');
-    else toast('Could not load cloud data. Check connection.',false);
-  });
+  updateMetrics();renderDashboard();
+  if(window.BDOH_DB){
+    try{
+      const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
+      BDOH.contests=contests;BDOH.submissions=subs;
+      updateMetrics();renderDashboard();toast('Data loaded from cloud ☁️');
+    }catch(e){console.error(e);toast('Cloud load failed. Check connection.',false);}
+  } else {
+    bdohFirebaseReady(async()=>{
+      if(window.BDOH_DB){
+        try{
+          const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
+          BDOH.contests=contests;BDOH.submissions=subs;
+          updateMetrics();renderDashboard();toast('Data loaded ☁️');
+        }catch(e){console.error(e);}
+      }
+    });
+  }
 }
-adminInit();
+setTimeout(adminInit,800);
 
 function exportDataSnapshot(){
   const json=JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions},null,2);
@@ -1352,9 +1332,11 @@ function exportDataSnapshot(){
   onAuthStateChanged(auth, async(user)=>{
     const overlay = document.getElementById('login-overlay');
     if(user){
-      /* Determine role */
+      /* Determine role — normalise underscore variant so both spellings work */
       let role = 'user';
       try{ role = await getEffectiveRole(user); }catch(_){}
+      /* Normalise: Firestore stores 'super_admin', older code used 'superadmin' */
+      if(role === 'super_admin') role = 'superadmin';
 
       const ALLOWED = ['superadmin','admin'];
       if(!ALLOWED.includes(role)){
