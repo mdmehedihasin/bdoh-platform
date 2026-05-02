@@ -13,18 +13,19 @@
 [data-theme=light]{--bg:#f0f5f9;--bg2:#e3ecf4;--bg3:#d6e4ef;--sf:rgba(0,0,0,.04);
   --bd:rgba(0,0,0,.09);--txt:#080d24;--m:rgba(8,13,36,.6);--d:rgba(8,13,36,.3)}
 *,::before,::after{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:var(--bg);color:var(--txt);font-family:var(--fB);display:flex;min-height:100vh;
+html{
+  min-height:100%;
+  background-color:var(--bg);
   background-image:url('assets/dark_admin_hero.png');
-  background-size:cover;background-position:center top;background-attachment:fixed;
-  background-blend-mode:overlay;
+  background-size:cover;background-position:center top;background-attachment:fixed;background-repeat:no-repeat;
 }
-[data-theme=light] body{background-image:url('assets/light_admin_hero.png');}
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(6,9,26,.82) 0%,rgba(6,9,26,.68) 100%);}
-[data-theme=light] body::before{
-  background:linear-gradient(180deg,rgba(240,245,249,.84) 0%,rgba(240,245,249,.72) 100%);}
-body>*{position:relative;z-index:1;}
+[data-theme=light] html{background-image:url('assets/light_admin_hero.png');}
+html::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:rgba(6,9,26,.68);}
+[data-theme=light] html::after{background:rgba(240,245,249,.72);}
+body{
+  background:transparent;color:var(--txt);font-family:var(--fB);display:flex;min-height:100vh;
+  position:relative;z-index:1;
+}
 a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer}
 
 /* ── SIDEBAR ── */

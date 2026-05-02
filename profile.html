@@ -6,7 +6,7 @@
 <title>BDOH · My Profile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
 
 <style>
 /* ═══════════════════════════════════════
@@ -20,9 +20,10 @@
   --red:     #ef4444;
   --purple:  #a855f7;
 
-  --fH: 'Syne', sans-serif;
-  --fB: 'DM Sans', sans-serif;
-  --fM: 'JetBrains Mono', monospace;
+  --fH: 'Outfit', sans-serif;         /* headings, labels, UI */
+  --fB: 'DM Sans', sans-serif;        /* body text */
+  --fN: 'Space Grotesk', sans-serif;  /* big numbers — tabular, punchy */
+  --fM: 'JetBrains Mono', monospace;  /* code, answers */
 }
 
 [data-theme="dark"] {
@@ -55,34 +56,25 @@
 
 html { scroll-behavior: smooth; }
 
+html{
+  min-height:100%;
+  background-color:var(--bg);
+  background-image:url('assets/dark_profile_hero.png');
+  background-size:cover;background-position:center top;background-attachment:fixed;background-repeat:no-repeat;
+}
+[data-theme="light"] html{background-image:url('assets/light_profile_hero.png');}
+html::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:rgba(7,11,16,.6);}
+[data-theme="light"] html::after{background:rgba(240,244,248,.68);}
 body {
   font-family: var(--fB);
-  background: var(--bg);
+  background: transparent;
   color: var(--txt);
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  background-image: url('assets/dark_profile_hero.png');
-  background-size: cover;
-  background-position: center top;
-  background-attachment: fixed;
-  background-blend-mode: overlay;
+  position: relative;
+  z-index: 1;
 }
-[data-theme="light"] body {
-  background-image: url('assets/light_profile_hero.png');
-}
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg,rgba(7,11,16,.75) 0%,rgba(7,11,16,.55) 35%,rgba(7,11,16,.85) 100%);
-}
-[data-theme="light"] body::before {
-  background: linear-gradient(180deg,rgba(240,244,248,.8) 0%,rgba(240,244,248,.62) 35%,rgba(240,244,248,.88) 100%);
-}
-body > * { position: relative; z-index: 1; }
 
 /* ═══════════════════════════════════════
    KINETIC CANVAS
@@ -101,7 +93,7 @@ body > * { position: relative; z-index: 1; }
 .nav {
   position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 100;
+  z-index: 800;
   height: 62px;
   display: flex;
   align-items: center;
@@ -593,10 +585,12 @@ body > * { position: relative; z-index: 1; }
 }
 
 .rating-big {
-  font-family: var(--fH);
-  font-size: 64px;
-  font-weight: 800;
+  font-family: var(--fN);
+  font-size: 72px;
+  font-weight: 700;
   line-height: 1;
+  letter-spacing: -2px;
+  font-variant-numeric: tabular-nums;
   background: linear-gradient(135deg, var(--teal), var(--cyan));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -710,19 +704,22 @@ body > * { position: relative; z-index: 1; }
 
 .sbg-icon { font-size: 24px; margin-bottom: 10px; }
 .sbg-val {
-  font-family: var(--fH);
-  font-size: 28px;
-  font-weight: 800;
+  font-family: var(--fN);
+  font-size: 32px;
+  font-weight: 700;
   color: var(--accent, var(--teal));
   line-height: 1;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 .sbg-lbl {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--txt-d);
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: var(--fH);
   font-weight: 600;
-  letter-spacing: .4px;
+  letter-spacing: .8px;
+  text-transform: uppercase;
 }
 
 /* Badges */
@@ -1077,7 +1074,10 @@ body > * { position: relative; z-index: 1; }
 
 <!-- Navbar -->
 <nav class="nav">
-  <a href="index.html" class="nav-logo">BDOH</a>
+  <a href="index.html" class="nav-logo" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+    <img src="assets/logo.png" alt="BDOH" style="width:36px;height:36px;border-radius:50%;object-fit:cover"/>
+    <span style="font-family:var(--fH);font-weight:800;font-size:17px;color:var(--teal);letter-spacing:-.3px">BDOH</span>
+  </a>
   <button class="nav-back" onclick="history.length>1?history.back():location.href='index.html'">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     Back
