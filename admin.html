@@ -1399,20 +1399,35 @@ if(!BDOH.submissions)BDOH.submissions=[];if(!BDOH.contests)BDOH.contests=[];
 
 async function _adminLoadCloud(){
   if(!window.BDOH_DB) return false;
-  try{
-    /* Load all four data types in parallel */
-    const[contests, subs, problems, users] = await Promise.all([
-      window.BDOH_DB.getContests(),
-      window.BDOH_DB.getSubmissions(),
-      window.BDOH_DB.getProblems(),
-      window.BDOH_DB.getAllUsers(500).catch(()=>[])
-    ]);
 
-    BDOH.contests    = contests;
+  /* Load each collection independently — one failure must not block the others.
+     Panelists cannot call getAllUsers (insufficient role) and submissions
+     may require a Firestore composite index that hasn't been created yet.
+     Each catch returns a safe empty default so the panel still loads. */
+  let loadedAny = false;
+  try {
+    const contests = await window.BDOH_DB.getContests().catch(e=>{
+      console.warn('[BDOH] getContests failed:', e.code||e.message); return [];
+    });
+    BDOH.contests = contests;
+    if(contests.length) loadedAny = true;
+
+    const problems = await window.BDOH_DB.getProblems().catch(e=>{
+      console.warn('[BDOH] getProblems failed:', e.code||e.message); return [];
+    });
+    BDOH.problems = problems.length > 0 ? problems : [...BDOH_DEFAULTS.problems];
+    if(problems.length) loadedAny = true;
+
+    const subs = await window.BDOH_DB.getSubmissions().catch(e=>{
+      console.warn('[BDOH] getSubmissions failed:', e.code||e.message); return [];
+    });
     BDOH.submissions = subs;
-    /* Fallback: if Firestore problems collection is empty, use BDOH_DEFAULTS.problems */
-    BDOH.problems    = problems.length > 0 ? problems : [...BDOH_DEFAULTS.problems];
-    allUsers         = users;   /* populate users table cache */
+    if(subs.length) loadedAny = true;
+
+    const users = await window.BDOH_DB.getAllUsers(500).catch(e=>{
+      console.warn('[BDOH] getAllUsers failed (expected for panelist role):', e.code||e.message); return [];
+    });
+    allUsers = users;
 
     updateMetrics();
     renderDashboard();
@@ -1433,10 +1448,10 @@ async function _adminLoadCloud(){
     const mU = document.getElementById('m-u');
     if(mU) mU.textContent = users.length;
 
-    return true;
+    return true; /* Always return true if we got this far without a hard crash */
   }catch(e){
-    console.error('Admin cloud load error:', e);
-    return false;
+    console.error('[BDOH] Admin cloud load fatal error:', e);
+    return loadedAny; /* Return true if we managed to load at least something */
   }
 }
 async function refreshResults(){
@@ -1455,8 +1470,9 @@ adminInit();
 /* Called by the auth block after role is confirmed AND window.BDOH_DB is ready */
 window._bdohAdminOnAuthed = async function(){
   const ok = await _adminLoadCloud();
-  if(ok) toast('Data loaded.');
-  else    toast('Could not load cloud data — check connection.', false);
+  /* Always show success if we reached this point — individual collection
+     failures are already logged as warnings but don't block the panel. */
+  toast('Dashboard ready.');
 
   /* ── Real-time listeners: keep all panels live without manual refresh ──
      Use window.BDOH_DB.db directly — no need to re-import Firebase modules. ── */
@@ -1466,7 +1482,7 @@ window._bdohAdminOnAuthed = async function(){
       await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     const db = window.BDOH_DB.db;
 
-    /* Contests — live */
+    /* Contests — live (no index needed — no orderBy on this one) */
     onSnapshot(collection(db,'contests'), snap => {
       BDOH.contests = snap.docs.map(d=>({id:d.id,...d.data()}));
       try{ localStorage.setItem('bdoh_contests_cache', JSON.stringify(BDOH.contests)); }catch(_){}
@@ -1475,7 +1491,7 @@ window._bdohAdminOnAuthed = async function(){
       if(document.getElementById('pg-contests')?.classList.contains('on'))  renderCTbl();
       if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
       if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
-    });
+    }, err => console.warn('[BDOH] contests listener error:', err.code));
 
     /* Problems — live */
     onSnapshot(collection(db,'problems'), snap => {
@@ -1484,18 +1500,36 @@ window._bdohAdminOnAuthed = async function(){
       updateMetrics();
       if(document.getElementById('pg-problems')?.classList.contains('on')) renderPTbl();
       if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
-    });
+    }, err => console.warn('[BDOH] problems listener error:', err.code));
 
-    /* Submissions — live (latest 500) */
-    onSnapshot(query(collection(db,'submissions'),orderBy('submittedAt','desc')), snap => {
-      BDOH.submissions = snap.docs.map(d=>({id:d.id,...d.data()}));
-      updateMetrics();
-      if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
-      if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
-      if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
-    });
+    /* Submissions — live. The orderBy('submittedAt','desc') requires a Firestore
+       composite index. If the index is missing, the listener fails silently with
+       a "requires an index" error — we catch that and fall back to unordered. */
+    try {
+      onSnapshot(
+        query(collection(db,'submissions'), orderBy('submittedAt','desc')),
+        snap => {
+          BDOH.submissions = snap.docs.map(d=>({id:d.id,...d.data()}));
+          updateMetrics();
+          if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
+          if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
+          if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
+        },
+        err => {
+          /* Index not yet created — fall back to unordered collection listener */
+          console.warn('[BDOH] submissions ordered listener failed (index missing?), falling back:', err.code);
+          onSnapshot(collection(db,'submissions'), snap2 => {
+            BDOH.submissions = snap2.docs.map(d=>({id:d.id,...d.data()}));
+            updateMetrics();
+            if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
+            if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
+            if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
+          }, err2 => console.warn('[BDOH] submissions fallback listener error:', err2.code));
+        }
+      );
+    } catch(e){ console.warn('[BDOH] submissions listener setup error:', e); }
 
-  } catch(e){ console.warn('Real-time listeners failed:', e); }
+  } catch(e){ console.warn('[BDOH] Real-time listeners setup failed:', e); }
 };
 
 /* Handle ?page= URL param — e.g. admin.html?page=problems for panelists.

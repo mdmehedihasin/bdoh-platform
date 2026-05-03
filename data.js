@@ -269,8 +269,16 @@ window.BDOH_DB_READY = new Promise(res => { _bdohDbReadyResolve = res; });
       },
 
       async getSubmissions(){
-        const s=await getDocs(query(collection(_db,'submissions'),orderBy('submittedAt','desc')));
-        return s.docs.map(d=>({id:d.id,...d.data()}));
+        /* orderBy needs a Firestore index — fall back to unordered if missing */
+        try {
+          const s=await getDocs(query(collection(_db,'submissions'),orderBy('submittedAt','desc')));
+          return s.docs.map(d=>({id:d.id,...d.data()}));
+        } catch(e) {
+          console.warn('[BDOH] getSubmissions ordered failed (index missing?), falling back unordered:', e.code);
+          const s=await getDocs(collection(_db,'submissions'));
+          const all=s.docs.map(d=>({id:d.id,...d.data()}));
+          return all.sort((a,b)=>(b.submittedAt||'').localeCompare(a.submittedAt||''));
+        }
       },
       async getSubmissionsForContest(contestId){
         try {
