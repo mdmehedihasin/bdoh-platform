@@ -770,7 +770,7 @@ function goPage(id,el){
 }
   if(id==='analytics')renderAnalytics();
   updateMetrics();
-}
+
 
 function updateMetrics(){
   document.getElementById('m-p').textContent=BDOH.problems.length;
@@ -1403,6 +1403,15 @@ async function adminInit(){
 }
 adminInit();
 
+/* Handle ?page= URL param — e.g. admin.html?page=problems for panelists */
+(function handlePageParam(){
+  const p = new URLSearchParams(location.search).get('page');
+  if(!p) return;
+  const btn = Array.from(document.querySelectorAll('.nav-item'))
+    .find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+p+"'"));
+  if(btn) { setTimeout(()=>{ goPage(p, btn); }, 600); }
+})();
+
 function exportDataSnapshot(){
   const json=JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions},null,2);
   const blob=new Blob([`/* BDOH DATA SNAPSHOT — ${new Date().toLocaleString()} */\nconst SNAP=${json};\n`],{type:'text/javascript'});
@@ -1475,7 +1484,7 @@ function exportDataSnapshot(){
       try{ role = await getEffectiveRole(user); }catch(_){}
       if(role==='super_admin') role='superadmin';
 
-      const ALLOWED = ['superadmin','admin'];
+      const ALLOWED = ['superadmin','admin','panelist'];
       if(!ALLOWED.includes(role)){
         /* Not an admin — show access denied, sign them out */
         overlay.innerHTML=`
@@ -1508,17 +1517,36 @@ function exportDataSnapshot(){
       document.getElementById('sidebar-role').textContent = roleLabels[role] || role;
       document.getElementById('admin-user-badge').textContent = (user.displayName||user.email||'').split('@')[0];
 
-      /* Role-based nav: hide Users & Roles from non-superadmin */
-      const navUsers = document.getElementById('nav-users');
-      if(navUsers && role !== 'superadmin') navUsers.style.display = 'none';
+      /* ── ROLE-BASED UI RESTRICTIONS ── */
 
-      /* Panelists nav: hide from non-admin roles */
-      const navPanel = document.getElementById('nav-panelists');
-      if(navPanel && !['superadmin','admin'].includes(role)) navPanel.style.display = 'none';
+      if(role === 'panelist'){
+        /* Panelists see ONLY the Problems page */
+        /* Hide all nav items except Problems */
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          const text = btn.textContent.trim();
+          if(!text.includes('Problems') && !text.includes('View Live Site')){
+            btn.style.display = 'none';
+          }
+        });
+        /* Hide section labels and separators */
+        document.querySelectorAll('.nav-section-lbl, .nav-sep').forEach(el => el.style.display='none');
+        /* Switch to problems page immediately */
+        const probBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.textContent.includes('Problems'));
+        if(probBtn) goPage('problems', probBtn);
+        /* Hide topbar action buttons that panelists shouldn't use */
+        document.querySelectorAll('.topbar-r .btn-secondary').forEach(b=>b.style.display='none');
 
-      /* Disable role-change selects for non-superadmin */
-      if(role !== 'superadmin'){
-        document.querySelectorAll('.role-select').forEach(el=>el.disabled=true);
+      } else {
+        /* admin / superadmin */
+
+        /* Hide Users & Roles nav from non-superadmin */
+        const navUsers = document.getElementById('nav-users');
+        if(navUsers && role !== 'superadmin') navUsers.style.display = 'none';
+
+        /* Disable role-change selects for non-superadmin */
+        if(role !== 'superadmin'){
+          document.querySelectorAll('.role-select').forEach(el=>el.disabled=true);
+        }
       }
 
     } else {
