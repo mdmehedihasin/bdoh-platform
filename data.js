@@ -164,10 +164,12 @@ window.BDOH_DB_READY = new Promise(res => { _bdohDbReadyResolve = res; });
       },
       async deleteProblem(id){ await deleteDoc(doc(_db,'problems',id)); },
 
-      /* PRACTICE SUBMISSION — called from main.js (index.html practice section) */
-      async savePracticeSubmission(problemId, isCorrect, answer){
+      /* PRACTICE SUBMISSION — called from practice.js and main.js */
+      async savePracticeSubmission(problemId, isCorrect, answer, extraMeta){
         const uid = _auth.currentUser?.uid;
-        const problem = BDOH.problems.find(p=>p.id===problemId)||{};
+        // extraMeta supplied by practice.js contains richer fields (title, pts, difficulty, subject)
+        const problem = extraMeta || BDOH.problems.find(p=>p.id===problemId) || {};
+        const pts = problem.pts || problem.points || 0;
         const sub = {
           id: 'prac_'+Date.now()+'_'+(uid||'anon'),
           contestId: 'practice',
@@ -178,10 +180,10 @@ window.BDOH_DB_READY = new Promise(res => { _bdohDbReadyResolve = res; });
           title: problem.title||problemId,
           subject: problem.subject||'',
           difficulty: problem.difficulty||'',
-          points: problem.points||0,
-          score: isCorrect?(problem.points||0):0,
-          rawScore: isCorrect?(problem.points||0):0,
-          maxScore: problem.points||0,
+          points: pts,
+          score: isCorrect ? pts : 0,
+          rawScore: isCorrect ? pts : 0,
+          maxScore: pts,
           isCorrect,
           status: isCorrect?'correct':'incorrect',
           userAnswer: answer,

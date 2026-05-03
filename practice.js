@@ -770,6 +770,9 @@ const PA = (function () {
 
   /* ── Stats management ── */
   function recordAttempt(p, correct) {
+    // ── 1. Update local state (for immediate UI feedback) ──
+    const alreadySolvedCorrectly = userStats.solved[p.id]?.correct;
+
     if (!userStats.solved[p.id]) {
       userStats.solved[p.id] = { correct, attempts: 1, pts: correct ? p.pts : 0 };
     } else {
@@ -787,7 +790,7 @@ const PA = (function () {
     userStats.subjectTotal[p.subject]++;
     if (correct) userStats.subjectCorrect[p.subject]++;
 
-    // Rating
+    // Rating (local mirror — Firebase is the source of truth)
     if (correct) {
       const delta = Math.floor(p.pts * 1.5);
       userStats.rating += delta;
@@ -797,6 +800,53 @@ const PA = (function () {
 
     saveStats();
     updateTopbarBadges();
+
+    // ── 2. Persist to Firebase → profile history + leaderboard ──
+    // Always write the submission so history is complete.
+    // _updateUserStats in data.js is idempotent for rating/points when
+    // the user has already solved this problem correctly, so it's safe
+    // to call on every attempt.
+    _persistToFirebase(p, correct);
+  }
+
+  /**
+   * Write a practice submission to Firestore and update the user's
+   * profile stats + leaderboard entry via data.js helpers.
+   *
+   * Uses window.BDOH_DB (set by data.js) which exposes:
+   *   savePracticeSubmission(problemId, isCorrect, userAnswer, problemMeta)
+   *
+   * Falls back to the simpler window.bdohSavePracticeResult if BDOH_DB
+   * is not yet ready (race condition on slow connections).
+   */
+  function _persistToFirebase(p, correct) {
+    // Build a rich meta object so data.js can write all required fields
+    const meta = {
+      title:      p.title,
+      subject:    p.subject,
+      difficulty: p.difficulty,
+      pts:        p.pts,
+      points:     p.pts,
+      answer:     String(p.answer),
+    };
+
+    const rawAnswer = $('answerInput') ? $('answerInput').value.trim() : '';
+
+    if (window.BDOH_DB && typeof window.BDOH_DB.savePracticeSubmission === 'function') {
+      // data.js v4.4+ — full submission with user stats + leaderboard sync
+      window.BDOH_DB.savePracticeSubmission(p.id, correct, rawAnswer, meta)
+        .catch(err => console.warn('[PA] Firebase submission failed:', err));
+    } else if (typeof window.bdohSavePracticeResult === 'function') {
+      // Fallback shim defined at bottom of data.js
+      window.bdohSavePracticeResult(p.id, correct, rawAnswer)
+        .catch(err => console.warn('[PA] bdohSavePracticeResult failed:', err));
+    } else {
+      // Firebase not yet initialised — retry once it fires bdoh:dbReady
+      window.addEventListener('bdoh:dbReady', function _retry() {
+        window.removeEventListener('bdoh:dbReady', _retry);
+        _persistToFirebase(p, correct);
+      }, { once: true });
+    }
   }
 
   function updateStreak() {
