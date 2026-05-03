@@ -59,15 +59,8 @@ html { scroll-behavior: smooth; }
 html{
   min-height:100%;
   background-color:var(--bg);
-  background-image:
-    url('assets/dark_profile_hero.png'),
-    radial-gradient(ellipse at 20% 30%, rgba(0,180,204,.3) 0%, transparent 55%),
-    radial-gradient(ellipse at 80% 70%, rgba(76,175,80,.25) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 5%, rgba(0,180,204,.15) 0%, transparent 40%),
-    radial-gradient(ellipse at 10% 85%, rgba(0,60,80,.4) 0%, transparent 45%);
-  background-size:cover,100% 100%,100% 100%,100% 100%,100% 100%;
-  background-position:center top,0 0,0 0,0 0,0 0;
-  background-attachment:fixed;background-repeat:no-repeat;
+  background-image:url('assets/dark_profile_hero.png');
+  background-size:cover;background-position:center top;background-attachment:fixed;background-repeat:no-repeat;
 }
 [data-theme="light"] html{background-image:url('assets/light_profile_hero.png');}
 html::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:rgba(7,11,16,.6);}
@@ -405,7 +398,7 @@ body {
 
 .profile-role-badge {
   margin-top: 10px;
-  padding: 6px 18px;
+  padding: 4px 14px;
   border-radius: 20px;
   font-family: var(--fH);
   font-size: 11px;
@@ -415,29 +408,6 @@ body {
   background: linear-gradient(135deg, rgba(0,180,204,.2), rgba(76,175,80,.2));
   border: 1px solid rgba(0,180,204,.3);
   color: var(--teal);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: default;
-  transition: transform .2s, box-shadow .2s, border-color .2s;
-}
-.profile-role-badge[href] {
-  cursor: pointer;
-}
-.profile-role-badge[href]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,180,204,.25);
-  border-color: rgba(0,180,204,.6);
-}
-.role-badge-tooltip {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--txt-d);
-  margin-top: 3px;
-  letter-spacing: 0.3px;
-  text-transform: none;
 }
 
 .profile-divider {
@@ -1176,20 +1146,10 @@ body {
           </div>
           <div class="profile-name" id="profileName">—</div>
           <div class="profile-email" id="profileEmail">—</div>
-          <a class="profile-role-badge" id="profileRoleBadge">Olympiadian</a>
-          <!-- Admin Panel Button — only shown for admins/superadmins via JS -->
-          <a id="adminPanelBtn" href="admin.html"
-            style="display:none;margin-top:12px;padding:10px 24px;
-            background:linear-gradient(135deg,#007B8F,#4CAF50);
-            border:none;border-radius:12px;color:#fff;font-family:var(--fH);
-            font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;
-            box-shadow:0 4px 20px rgba(0,123,143,.5);
-            transition:transform .2s,box-shadow .2s;
-            display:none;align-items:center;gap:8px;letter-spacing:.3px"
-            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(0,123,143,.65)'"
-            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(0,123,143,.5)'">
-            🛡️ Admin Panel
-          </a>
+          <div class="profile-role-badge" id="profileRoleBadge">Olympiadian</div>
+
+          <!-- Role-based panel access button — injected by JS based on role -->
+          <div id="rolePanelBtnWrap" style="display:none;margin-top:14px;width:100%"></div>
         </div>
 
         <div class="profile-divider"></div>
@@ -1617,54 +1577,36 @@ async function renderProfile(user, snap) {
   const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   set('profileName',   d.displayName || '—');
   set('profileEmail',  d.email || '—');
-  const roleMap = { super_admin:'⭐ Super Admin', superadmin:'⭐ Super Admin', admin:'🛡️ Admin', panelist:'🎓 Panelist', moderator:'🔧 Moderator', user:'Olympiadian' };
+  const roleMap = { super_admin:'Super Admin', admin:'Admin', panelist:'Panelist', moderator:'Moderator', user:'Olympiadian' };
   set('profileRoleBadge', roleMap[d.role] || 'Olympiadian');
-  const roleBadgeEl = document.getElementById('profileRoleBadge');
-  if (roleBadgeEl) {
-    /* Role → destination and style */
-    const roleConfig = {
-      super_admin: { href:'admin.html',      bg:'linear-gradient(135deg,rgba(0,123,143,.35),rgba(76,175,80,.25))', border:'rgba(0,220,240,.6)', color:'#00dcf0', shadow:'rgba(0,180,204,.35)', tip:'Click to open Admin Panel' },
-      superadmin:  { href:'admin.html',      bg:'linear-gradient(135deg,rgba(0,123,143,.35),rgba(76,175,80,.25))', border:'rgba(0,220,240,.6)', color:'#00dcf0', shadow:'rgba(0,180,204,.35)', tip:'Click to open Admin Panel' },
-      admin:       { href:'admin.html',      bg:'linear-gradient(135deg,rgba(0,123,143,.3),rgba(76,175,80,.2))',  border:'rgba(0,180,204,.5)', color:'#00dcf0', shadow:'rgba(0,180,204,.25)', tip:'Click to open Admin Panel' },
-      panelist:    { href:'panelist.html',   bg:'linear-gradient(135deg,rgba(168,85,247,.2),rgba(0,123,143,.15))', border:'rgba(168,85,247,.5)', color:'#c084fc', shadow:'rgba(168,85,247,.3)', tip:'Click to open Panelist Panel' },
-      moderator:   { href:'moderator.html',  bg:'linear-gradient(135deg,rgba(251,146,60,.2),rgba(0,123,143,.15))', border:'rgba(251,146,60,.5)', color:'#fb923c', shadow:'rgba(251,146,60,.3)', tip:'Click to open Moderator Panel' },
+
+  /* ── Role-based panel access button ── */
+  const wrap = document.getElementById('rolePanelBtnWrap');
+  if(wrap){
+    const role = d.role || 'user';
+    const panelConfig = {
+      super_admin: { label:'Admin Panel', icon:'M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z', href:'admin.html', color:'rgba(0,123,143,.25)', border:'rgba(0,180,204,.45)', text:'#5bcfdf', glow:'rgba(0,180,204,.25)' },
+      admin: { label:'Admin Panel', icon:'M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z', href:'admin.html', color:'rgba(0,123,143,.22)', border:'rgba(0,180,204,.4)', text:'#5bcfdf', glow:'rgba(0,180,204,.22)' },
+      panelist: { label:'Panelist Panel', icon:'M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.396 0 2.757.3 4 .804V4.804zM14.5 4c-1.255 0-2.443.29-3.5.804v10A7.97 7.97 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4z', href:'admin.html?page=problems', color:'rgba(76,175,80,.18)', border:'rgba(76,175,80,.4)', text:'#81c784', glow:'rgba(76,175,80,.2)' },
+      moderator: { label:'Moderator Panel', icon:'M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z', href:'admin.html?page=users', color:'rgba(255,215,0,.15)', border:'rgba(255,215,0,.35)', text:'#FFD700', glow:'rgba(255,215,0,.15)' }
     };
-    const cfg = roleConfig[d.role];
-    if (cfg) {
-      roleBadgeEl.href = cfg.href;
-      roleBadgeEl.style.background = cfg.bg;
-      roleBadgeEl.style.borderColor = cfg.border;
-      roleBadgeEl.style.color = cfg.color;
-      roleBadgeEl.style.boxShadow = `0 0 14px ${cfg.shadow}`;
-      roleBadgeEl.title = cfg.tip;
-      /* append small tooltip hint below badge text */
-      const tipEl = document.createElement('span');
-      tipEl.className = 'role-badge-tooltip';
-      tipEl.textContent = '↗ ' + cfg.tip;
-      /* Only add if not already there */
-      if (!roleBadgeEl.querySelector('.role-badge-tooltip')) {
-        roleBadgeEl.appendChild(tipEl);
-      }
+    const cfg = panelConfig[role];
+    if(cfg){
+      wrap.style.display = 'block';
+      wrap.innerHTML = `<a href="${cfg.href}"
+        style="display:flex;align-items:center;justify-content:center;gap:9px;width:100%;box-sizing:border-box;
+        background:${cfg.color};border:1px solid ${cfg.border};color:${cfg.text};
+        padding:11px 18px;border-radius:12px;font-family:var(--fH);font-size:13px;font-weight:800;
+        text-decoration:none;transition:all .25s;box-shadow:0 4px 18px ${cfg.glow};letter-spacing:.3px"
+        onmouseover="this.style.filter='brightness(1.15)';this.style.transform='translateY(-2px)'"
+        onmouseout="this.style.filter='';this.style.transform=''">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" style="flex-shrink:0">
+          <path fill-rule="evenodd" d="${cfg.icon}" clip-rule="evenodd"/>
+        </svg>
+        ${cfg.label}
+      </a>`;
     } else {
-      /* plain user — no link */
-      roleBadgeEl.removeAttribute('href');
-    }
-  }
-  const adminBtn = document.getElementById('adminPanelBtn');
-  if(adminBtn){
-    const isAdmin=['admin','superadmin','super_admin'].includes(d.role);
-    adminBtn.style.display = isAdmin ? 'flex' : 'none';
-    if(isAdmin){
-      adminBtn.style.marginTop='12px';
-      adminBtn.style.padding='10px 24px';
-      adminBtn.style.background='linear-gradient(135deg,#007B8F,#4CAF50)';
-      adminBtn.style.borderRadius='12px';
-      adminBtn.style.color='#fff';
-      adminBtn.style.fontFamily="'Plus Jakarta Sans',sans-serif";
-      adminBtn.style.fontSize='13px';
-      adminBtn.style.fontWeight='800';
-      adminBtn.style.textDecoration='none';
-      adminBtn.style.boxShadow='0 4px 20px rgba(0,123,143,.5)';
+      wrap.style.display = 'none';
     }
   }
 
