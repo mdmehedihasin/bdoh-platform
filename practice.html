@@ -795,55 +795,103 @@ window.recordSubmission = async (problem, isCorrect, userAnswer) => {
   if (!window.CURRENT_USER) return;
   const { collection, addDoc, doc, updateDoc, getDoc, serverTimestamp,
           increment, arrayUnion } = window._FB;
-  const db = window._db;
+  const db  = window._db;
   const uid = window.CURRENT_USER.uid;
+  const pts = problem.points || problem.pts || 10;
+  const now = new Date().toISOString();
 
+  // ── 1. Write submission doc with ALL fields profile.html & admin need ──
+  const subId = 'prac_' + Date.now() + '_' + uid;
   const subData = {
-    uid,
-    userName:     window.CURRENT_USER.displayName || 'Student',
-    userEmail:    window.CURRENT_USER.email || '',
-    userPhoto:    window.CURRENT_USER.photoURL || '',
-    problemId:    problem.id,
-    problemTitle: problem.title,
-    subject:      problem.subject,
-    difficulty:   problem.difficulty,
-    userAnswer,
+    // Fields profile.html queries by:
+    user_id:       uid,
+    userId:        uid,
+    // Fields profile.html displays:
+    problem_title: problem.title,
+    title:         problem.title,
+    subject:       problem.subject || '',
+    difficulty:    problem.difficulty || '',
     isCorrect,
-    pointsEarned: isCorrect ? (problem.points || problem.pts || 10) : 0,
-    submittedAt:  serverTimestamp(),
-    page:         'practice-arena'
+    status:        isCorrect ? 'correct' : 'incorrect',
+    score:         isCorrect ? pts : 0,
+    rawScore:      isCorrect ? pts : 0,
+    maxScore:      pts,
+    points:        isCorrect ? pts : 0,
+    contestId:     'practice',
+    submittedAt:   now,
+    // Legacy / admin fields:
+    uid,
+    userName:      window.CURRENT_USER.displayName || 'Student',
+    userEmail:     window.CURRENT_USER.email || '',
+    userPhoto:     window.CURRENT_USER.photoURL || '',
+    problemId:     problem.id,
+    problemTitle:  problem.title,
+    userAnswer,
+    pointsEarned:  isCorrect ? pts : 0,
+    page:          'practice-arena'
+  };
+  try {
+    const { setDoc } = window._FB;
+    if (setDoc) {
+      await setDoc(doc(db, 'submissions', subId), {
+        ...subData, timestamp: serverTimestamp()
+      });
+    } else {
+      await addDoc(collection(db, 'submissions'), {
+        ...subData, timestamp: serverTimestamp()
+      });
+    }
+  } catch(e) { console.warn('[PA] submission write failed:', e); }
+
+  // ── 2. Update user document with fields profile.html reads ──
+  const uRef    = doc(db, 'users', uid);
+  const snap    = await getDoc(uRef);
+  const userData = snap.exists() ? snap.data() : {};
+  const solved   = userData.solvedProblems || [];
+  const alreadySolvedCorrectly = solved.includes(problem.id);
+
+  // Always increment attempts
+  const updates = {
+    totalAttempts:   increment(1),
+    submissionsCount: increment(1),
+    lastActive:      serverTimestamp()
   };
 
-  // 1. Write to global 'submissions' (admin can read this)
-  await addDoc(collection(db, 'submissions'), subData);
-
-  // 2. Update user document
-  const uRef = doc(db, 'users', uid);
-  const snap = await getDoc(uRef);
-  const userData = snap.data() || {};
-  const pts = problem.points || problem.pts || 10;
-  const solved = userData.solvedProblems || [];
-  const alreadySolved = solved.includes(problem.id);
-
-  const updates = { submissionsCount: increment(1) };
-
-  // Subject stats
-  const subjTotal   = userData.subjectTotal   || {};
-  const subjCorrect = userData.subjectCorrect || {};
+  // Subject stats (both naming conventions)
+  const subjTotal   = { ...(userData.subjectTotal   || {}) };
+  const subjCorrect = { ...(userData.subjectCorrect || {}) };
   subjTotal[problem.subject]   = (subjTotal[problem.subject]   || 0) + 1;
   if (isCorrect) subjCorrect[problem.subject] = (subjCorrect[problem.subject] || 0) + 1;
   updates.subjectTotal   = subjTotal;
   updates.subjectCorrect = subjCorrect;
 
-  if (isCorrect && !alreadySolved) {
-    updates.points         = increment(pts);
-    updates.solvedProblems = arrayUnion(problem.id);
+  // subjectStats format that profile.html uses for accuracy bars
+  const ss = { ...(userData.subjectStats || {}) };
+  if (problem.subject) {
+    if (!ss[problem.subject]) ss[problem.subject] = { solves: 0, attempts: 0 };
+    ss[problem.subject].attempts = (ss[problem.subject].attempts || 0) + 1;
+    if (isCorrect) ss[problem.subject].solves = (ss[problem.subject].solves || 0) + 1;
+    updates.subjectStats = ss;
+  }
+
+  if (isCorrect) {
+    // totalSolves — what profile.html shows as "PROBLEMS SOLVED"
+    updates.totalSolves = increment(1);
+
+    if (!alreadySolvedCorrectly) {
+      // totalPoints — what profile.html shows as "TOTAL POINTS"
+      updates.totalPoints    = increment(pts);
+      // Legacy points field (practice.html leaderboard reads this)
+      updates.points         = increment(pts);
+      updates.solvedProblems = arrayUnion(problem.id);
+    }
+
     // Streak logic
-    const today = new Date().toDateString();
-    const last  = userData.lastSolveDate;
+    const today     = new Date().toDateString();
+    const last      = userData.lastSolveDate;
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     if (last === today) {
-      // same day, no streak update
+      // same day — no change
     } else if (last === yesterday) {
       updates.streakDays    = increment(1);
       updates.lastSolveDate = today;
@@ -853,11 +901,40 @@ window.recordSubmission = async (problem, isCorrect, userAnswer) => {
     }
   }
 
-  await updateDoc(uRef, updates);
+  try {
+    await updateDoc(uRef, updates);
+  } catch(e) { console.warn('[PA] user update failed:', e); }
 
-  // Refresh local USER_DATA
-  const fresh = await getDoc(uRef);
-  window.USER_DATA = fresh.data();
+  // ── 3. Sync leaderboard entry ──
+  try {
+    const fresh    = await getDoc(uRef);
+    const fd       = fresh.exists() ? fresh.data() : {};
+    const projSolves   = fd.totalSolves  || 0;
+    const projPoints   = fd.totalPoints  || 0;
+    const projAttempts = fd.totalAttempts || 0;
+    const { setDoc: sd } = window._FB;
+    if (sd) {
+      await sd(doc(db, 'leaderboard', uid), {
+        userId:      uid,
+        displayName: fd.displayName || window.CURRENT_USER.displayName || '—',
+        photoURL:    fd.photoURL    || window.CURRENT_USER.photoURL    || null,
+        institution: fd.institution || '',
+        rating:      fd.rating      || 1200,
+        totalSolves: projSolves,
+        totalPoints: projPoints,
+        accuracy:    projAttempts > 0 ? Math.round(projSolves / projAttempts * 100) : 0,
+        contestCount: fd.contestCount || 0,
+        subjectStats: ss,
+        updatedAt:   now
+      }, { merge: true });
+    }
+  } catch(e) { console.warn('[PA] leaderboard sync failed:', e); }
+
+  // ── 4. Refresh local cache & re-render UI ──
+  try {
+    const fresh2 = await getDoc(uRef);
+    window.USER_DATA = fresh2.exists() ? fresh2.data() : window.USER_DATA;
+  } catch(_) {}
   renderUserCard(window.CURRENT_USER, window.USER_DATA);
   renderAccBars();
   updateHeroStats();
