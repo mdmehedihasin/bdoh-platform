@@ -84,16 +84,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   padding:0 clamp(12px,3vw,40px);height:62px;
   background:rgba(7,16,26,.88);backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
+  gap:8px;
+  overflow:hidden;
 }
-.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
-.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:cover}
-.nav-brand-text{font-family:var(--font-head);font-size:.88rem;line-height:1.1;color:var(--text)}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0;min-width:0}
+.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.nav-brand-text{font-family:var(--font-head);font-size:.88rem;line-height:1.1;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-brand-text strong{display:block;font-weight:800;color:var(--teal)}
+.nav-center-label{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-width:0}
+.nav-center-label span{font-family:var(--font-head);font-size:.85rem;font-weight:700;color:var(--teal);letter-spacing:.06em;text-transform:uppercase;opacity:.7;white-space:nowrap}
 .nav-links{display:flex;gap:2px;list-style:none;align-items:center}
 .nav-links a{color:var(--text2);font-size:.82rem;font-weight:500;padding:6px 11px;border-radius:6px;text-decoration:none;transition:.2s;white-space:nowrap}
 .nav-links a:hover,.nav-links a.active{color:var(--teal);background:rgba(0,198,216,.08)}
-.nav-actions{display:flex;align-items:center;gap:7px}
-.btn-theme{background:none;border:1px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.nav-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.btn-theme{background:none;border:1px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
 .btn-theme:hover{color:var(--teal);border-color:var(--teal)}
 .nav-user-pill{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border2);border-radius:50px;padding:4px 12px 4px 4px;cursor:pointer;transition:.2s;text-decoration:none;color:var(--text)}
 .nav-user-pill:hover{border-color:var(--teal)}
@@ -101,38 +105,76 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .nav-user-avatar img{width:100%;height:100%;object-fit:cover}
 .nav-user-name{font-size:.78rem;font-weight:600;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-user-pts{font-size:.68rem;color:var(--gold);font-weight:700}
-.btn-nav-signin{background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:.2s;font-family:var(--font)}
+.btn-nav-signin{background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:.2s;font-family:var(--font);white-space:nowrap;flex-shrink:0}
 .btn-nav-signin:hover{opacity:.85}
 .hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
 .hamburger span{width:20px;height:2px;background:var(--text2);border-radius:2px;transition:.3s}
 
+/* Mobile navbar: hide brand text + center label, only show logo + actions */
+@media(max-width:600px){
+  .nav-brand-text{display:none}
+  .nav-center-label{display:none!important}
+  .nav-exit-btn{display:none!important}
+  .navbar{padding:0 12px;gap:6px}
+  .nav-brand{gap:0}
+  /* show a compact "Practice Arena" pill instead */
+  .nav-mobile-title{
+    display:flex!important;
+    flex:1;
+    align-items:center;
+    justify-content:center;
+  }
+}
+@media(min-width:601px){
+  .nav-mobile-title{display:none!important}
+}
+
 /* ══════════ MOBILE DRAWER ══════════ */
 .mob-overlay{display:none;position:fixed;inset:0;z-index:998;background:rgba(0,0,0,.7);backdrop-filter:blur(4px)}
 .mob-overlay.open{display:block}
-.mob-drawer{position:fixed;top:0;right:0;bottom:0;z-index:999;width:min(300px,90vw);background:var(--bg2);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;padding:18px;gap:6px;overflow-y:auto}
+.mob-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:999;
+  width:min(300px,85vw);
+  background:var(--bg2);
+  border-left:1px solid var(--border);
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  padding:0;
+  gap:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
 .mob-drawer.open{transform:translateX(0)}
-.mob-close{align-self:flex-end;background:none;border:1px solid var(--border2);color:var(--text2);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
-.mob-link{display:block;color:var(--text2);text-decoration:none;padding:9px 12px;border-radius:8px;font-size:.9rem;font-weight:500;transition:.2s}
+.mob-close{
+  background:none;border:1px solid var(--border2);color:var(--text2);
+  width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:15px;
+  display:flex;align-items:center;justify-content:center;
+  transition:.2s;flex-shrink:0;
+}
+.mob-close:hover{border-color:rgba(255,77,109,.4);color:#f87171}
+.mob-link{display:flex;align-items:center;gap:9px;color:var(--text2);text-decoration:none;padding:10px 14px;border-radius:8px;font-size:.86rem;font-weight:500;transition:.2s;margin:0 8px}
 .mob-link:hover,.mob-link.active{background:var(--surface2);color:var(--teal)}
 
 /* ══════════ HERO ══════════ */
 .arena-hero{position:relative;z-index:1;padding:106px clamp(16px,5vw,60px) 36px;text-align:center}
 .arena-eyebrow{
-  display:inline-flex;align-items:center;gap:8px;
+  display:inline-flex;align-items:center;gap:6px;
   background:rgba(0,198,216,.07);border:1px solid rgba(0,198,216,.18);
-  border-radius:50px;padding:5px 16px;
-  font-size:.73rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;
+  border-radius:50px;padding:5px 14px;
+  font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);margin-bottom:18px;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.arena-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s ease-in-out infinite}
+.arena-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s ease-in-out infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-.arena-title{font-family:var(--font-disp);font-size:clamp(52px,8vw,108px);line-height:.9;letter-spacing:-.01em;margin-bottom:10px}
+.arena-title{font-family:var(--font-disp);font-size:clamp(44px,10vw,108px);line-height:.9;letter-spacing:-.01em;margin-bottom:10px}
 .arena-title .l1{display:block;color:var(--text)}
 .arena-title .l2{display:block;background:linear-gradient(90deg,var(--teal),var(--green),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.arena-sub{color:var(--text2);font-size:clamp(.88rem,2vw,1.05rem);max-width:540px;margin:0 auto 28px;line-height:1.75}
-.arena-stats-row{display:flex;justify-content:center;gap:clamp(14px,4vw,44px);flex-wrap:wrap}
+.arena-sub{color:var(--text2);font-size:clamp(.82rem,2vw,1.05rem);max-width:540px;margin:0 auto 28px;line-height:1.75;padding:0 4px}
+.arena-stats-row{display:flex;justify-content:center;gap:clamp(12px,4vw,44px);flex-wrap:wrap}
 .astat{text-align:center}
-.astat-n{display:block;font-family:var(--font-disp);font-size:clamp(28px,4vw,40px);background:linear-gradient(135deg,var(--teal),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
-.astat-l{display:block;font-size:.72rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-top:2px}
+.astat-n{display:block;font-family:var(--font-disp);font-size:clamp(26px,5vw,40px);background:linear-gradient(135deg,var(--teal),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.astat-l{display:block;font-size:.68rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-top:2px}
 
 /* ══════════ MAIN LAYOUT ══════════ */
 .arena-main{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 clamp(10px,2.5vw,36px) 80px;display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start}
@@ -420,20 +462,30 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .three-dot-btn-p.open span:nth-child(2) { opacity: 0; transform: scale(0); }
 .three-dot-btn-p.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg) scaleX(2.1); border-radius: 2px; }
 
-/* Enhanced mob drawer */
+/* Enhanced mob drawer header */
 .mob-drawer-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 16px 14px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 6px;
+  flex-shrink: 0;
   background: var(--bg2);
   position: sticky; top: 0; z-index: 2;
 }
-.mob-drawer-brand { font-family: var(--font-head); font-size: .8rem; font-weight: 800; color: var(--teal); }
+.mob-drawer.open { padding: 0; }
+.mob-drawer-brand { font-family: var(--font-head); font-size: .85rem; font-weight: 800; color: var(--teal); }
 .mob-section-label {
-  font-size: .63rem; font-weight: 700; letter-spacing: .1em;
+  font-size: .62rem; font-weight: 700; letter-spacing: .1em;
   text-transform: uppercase; color: var(--text3);
-  padding: 8px 12px 4px; display: block;
+  padding: 10px 14px 4px; display: block;
+}
+.mob-drawer .mob-link {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px !important;
+  border-radius: 9px !important;
+  font-size: .86rem !important;
+  font-weight: 500 !important;
 }
 
 /* ══════════ RESPONSIVE ══════════ */
@@ -452,27 +504,37 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
   .modal-backdrop{align-items:flex-end;padding:0}
 }
 @media(max-width:700px){
-  .arena-hero { padding: 84px clamp(14px,5vw,40px) 28px !important; }
-  .arena-title { font-size: clamp(44px,12vw,80px) !important; }
-  .arena-stats-row { gap: 20px !important; }
-  .prob-toolbar { flex-direction: column; align-items: stretch; }
-  .search-wrap { max-width: 100%; }
-  .result-count { margin-left: 0; }
-  .three-dot-btn-p { display: flex !important; }
-  .nav-links { display: none !important; }
-  .hamburger { display: none !important; }
-}
-@media(max-width:580px){
+  .three-dot-btn-p{display:flex!important}
+  .hamburger{display:none!important}
+  .nav-exit-btn{display:none!important}
+  .nav-links{display:none!important}
+  /* Hero tightening */
+  .arena-hero{padding:80px 16px 28px!important}
+  .arena-eyebrow{font-size:.62rem!important;padding:4px 12px!important;max-width:90vw}
+  .arena-title{font-size:clamp(38px,10vw,72px)!important}
+  .arena-sub{font-size:.82rem!important;padding:0 2px}
+  .arena-stats-row{gap:14px!important}
+  .astat-n{font-size:clamp(22px,6vw,32px)!important}
+  /* problem toolbar */
   .prob-toolbar{flex-direction:column;align-items:stretch}
   .search-wrap{max-width:100%}
   .result-count{margin-left:0}
-  .hamburger{display:flex}
-  .nav-links{display:none}
-  .three-dot-btn-p { display: flex !important; }
+  .arena-main{padding:0 12px 80px!important}
+}
+@media(max-width:420px){
+  .arena-title{font-size:36px!important}
+  .arena-eyebrow{font-size:.6rem!important;white-space:normal!important;text-align:center}
+  .arena-stats-row{gap:10px!important}
 }
 @media(min-width:701px){
   .mob-overlay,.mob-drawer{display:none!important}
-  .three-dot-btn-p { display: none !important; }
+  .three-dot-btn-p{display:none!important}
+}
+/* Extra mobile polish */
+@media(max-width:700px){
+  .modal-tabs{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  .modal-tab{flex-shrink:0}
+  .solve-modal{max-height:98vh!important}
 }
 </style>
 </head>
@@ -535,13 +597,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
 <!-- NAVBAR -->
 <nav class="navbar" id="mainNav">
+  <!-- Logo (always visible) -->
   <a href="index.html" class="nav-brand">
     <img src="assets/logo.png" alt="BDOH" class="nav-logo" onerror="this.style.display='none'"/>
     <span class="nav-brand-text">Bangladesh<strong>Olympiadians Hub</strong></span>
   </a>
-  <div style="flex:1;display:flex;align-items:center;justify-content:center">
-    <span style="font-family:var(--font-head);font-size:.85rem;font-weight:700;color:var(--teal);letter-spacing:.06em;text-transform:uppercase;opacity:.7">Practice Arena</span>
+
+  <!-- Center label — hidden on mobile (<600px), shown on desktop -->
+  <div class="nav-center-label">
+    <span>⚡ Practice Arena</span>
   </div>
+
+  <!-- Mobile-only compact title (replaces brand text + center label below 600px) -->
+  <div class="nav-mobile-title" style="display:none">
+    <span style="font-family:var(--font-head);font-size:.82rem;font-weight:800;color:var(--teal);letter-spacing:.04em">⚡ Practice Arena</span>
+  </div>
+
+  <!-- Actions -->
   <div class="nav-actions">
     <div id="navUserWrap"></div>
     <button class="btn-theme" id="themeBtn" aria-label="Toggle theme">
@@ -549,8 +621,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     </button>
     <a href="index.html" class="btn-nav-signin nav-exit-btn" style="text-decoration:none;display:flex;align-items:center;gap:6px">
       <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M7.707 14.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L3.414 7H15a1 1 0 110 2H3.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
-      <span class="exit-label">Exit Practice Arena</span>
+      Exit
     </a>
+    <!-- 3-dot menu button — shown on mobile only -->
     <button class="three-dot-btn-p" id="threeDotBtnP" aria-label="Open menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -1996,54 +2069,52 @@ window.addEventListener('load',()=>{
 </script>
 
 <style>
-/* ── Extra mobile polish for practice page ── */
-@media(max-width:700px){
-  .nav-exit-btn .exit-label { display: none; }
-  .nav-exit-btn { padding: 6px 10px !important; }
-  .navbar { padding: 0 12px !important; }
-  .arena-hero { padding-left: 16px !important; padding-right: 16px !important; }
-  .arena-stats-row { gap: 16px !important; }
-  .astat-n { font-size: clamp(24px,6vw,36px) !important; }
-  .filter-fab { bottom: 24px !important; right: 16px !important; }
-  .solve-modal { max-height: 98vh !important; }
-  .modal-body { padding: 12px 14px !important; }
+/* ── Extra mobile polish ── */
+@media(max-width:600px){
+  /* hide exit button label & show only icon on very small screens */
+  .nav-exit-btn span { display:none }
+  .nav-exit-btn { padding:7px 9px!important; min-width:0 }
+  /* drawer padding fix */
+  .mob-drawer { padding:0!important }
 }
-@media(max-width:400px){
-  .arena-title { font-size: 40px !important; }
-  .modal-tab { padding: 7px 10px !important; font-size: .73rem !important; }
+@media(max-width:380px){
+  /* on tiny phones hide exit button entirely — it's in the drawer */
+  .nav-exit-btn { display:none!important }
 }
 </style>
 
 <script>
 /* ── 3-DOT MENU CONTROLLER (Practice) ── */
 (function(){
-  const btn   = document.getElementById('threeDotBtnP');
-  const menu  = document.getElementById('mobDrawer');
+  const btn     = document.getElementById('threeDotBtnP');
+  const menu    = document.getElementById('mobDrawer');
   const overlay = document.getElementById('mobOverlay');
-  // legacy hamburger
-  const hb    = document.querySelector('.hamburger');
 
   function openMenu(){
-    menu && menu.classList.add('open');
+    if(!menu) return;
+    menu.classList.add('open');
     overlay && overlay.classList.add('open');
-    btn && btn.classList.add('open');
-    btn && btn.setAttribute('aria-expanded','true');
+    btn && (btn.classList.add('open'), btn.setAttribute('aria-expanded','true'));
     document.body.style.overflow = 'hidden';
   }
   function closeMenu(){
-    menu && menu.classList.remove('open');
+    if(!menu) return;
+    menu.classList.remove('open');
     overlay && overlay.classList.remove('open');
-    btn && btn.classList.remove('open');
-    btn && btn.setAttribute('aria-expanded','false');
+    btn && (btn.classList.remove('open'), btn.setAttribute('aria-expanded','false'));
     document.body.style.overflow = '';
   }
 
-  if(btn) btn.addEventListener('click', () => menu && menu.classList.contains('open') ? closeMenu() : openMenu());
-  if(hb)  hb.addEventListener('click',  () => menu && menu.classList.contains('open') ? closeMenu() : openMenu());
+  btn     && btn.addEventListener('click', () => menu.classList.contains('open') ? closeMenu() : openMenu());
   overlay && overlay.addEventListener('click', closeMenu);
   document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMenu(); });
 
-  // expose for onclick
+  // Close when a drawer link is tapped
+  document.querySelectorAll('#mobDrawer a, #mobDrawer button').forEach(el =>
+    el.addEventListener('click', () => { setTimeout(closeMenu, 80); })
+  );
+
+  // Expose globally (used by onclick in drawer buttons)
   window.closeMobMenu = closeMenu;
 })();
 </script>
