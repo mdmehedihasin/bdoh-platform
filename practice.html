@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="description" content="BDOH Practice Arena — Solve olympiad problems in Physics, Math, Chemistry, Biology, Astronomy, and Informatics."/>
+<meta name="theme-color" content="#007B8F"/>
+<title>Practice Arena — Bangladesh Olympiadians Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+<link rel="icon" href="assets/logo.png" type="image/png"/>
+<link rel="stylesheet" href="style.css"/>
+<link rel="stylesheet" href="practice.css"/>
+</head>
+<body>
+
+<!-- ══ +PTS TOAST ══ -->
+<div class="pa-pts-toast" id="ptsToast">+0 pts</div>
+
+<!-- ══ SOLVE MODAL ══ -->
+<div class="pa-solve-overlay" id="solveOverlay" role="dialog" aria-modal="true" aria-labelledby="solveName">
+
+  <div class="pa-solve-panel">
+
+    <!-- Panel topbar -->
+    <div class="pa-solve-topbar">
+      <div style="flex:1;min-width:0">
+        <div class="pa-solve-name" id="solveName">Problem Title</div>
+      </div>
+
+      <!-- Session progress pips -->
+      <div class="pa-prog-row" id="solveProgRow"></div>
+
+      <!-- Timer -->
+      <div class="pa-timer" id="solveTimer">15:00</div>
+
+      <!-- Close -->
+      <button class="pa-close-btn" onclick="PA.closePanel()" aria-label="Close">✕</button>
+    </div>
+
+    <!-- Split body -->
+    <div class="pa-solve-body">
+
+      <!-- LEFT: Statement -->
+      <div class="pa-solve-left">
+        <div class="pa-input-label" style="margin-bottom:8px">Problem Statement</div>
+
+        <div class="pa-stmt" id="solveStmt"></div>
+
+        <div class="pa-given-box" id="solveGiven" style="display:none"></div>
+
+        <!-- Hint + formula sheet -->
+        <div class="pa-hint-btns">
+          <button class="pa-hint-chip" id="hintBtn1" onclick="PA.revealHint(1)">💡 Hint</button>
+          <button class="pa-hint-chip" id="hintBtn2" onclick="PA.revealHint(2)">💡 Hint 2</button>
+          <button class="pa-hint-chip" id="formulaBtn" onclick="PA.toggleFormulas()">📐 Formula sheet</button>
+        </div>
+
+        <div class="pa-hint-content" id="hintBox1"></div>
+        <div class="pa-hint-content" id="hintBox2"></div>
+        <div class="pa-hint-content" id="formulaBox" style="border-color:rgba(55,138,221,.3);background:var(--pa-blue-bg)"></div>
+      </div>
+
+      <!-- RIGHT: Answer + solution -->
+      <div class="pa-solve-right">
+
+        <!-- Answer input -->
+        <div>
+          <div class="pa-input-label">Your Answer</div>
+          <input class="pa-answer-input" id="answerInput"
+            type="text"
+            placeholder="Enter numerical value…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Your numerical answer"
+            onkeydown="if(event.key==='Enter')PA.submit()"/>
+          <div class="pa-tolerance" id="toleranceLabel">Tolerance: ±0.5</div>
+        </div>
+
+        <button class="pa-submit-btn" id="submitBtn" onclick="PA.submit()">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/></svg>
+          Submit Answer
+        </button>
+
+        <!-- Feedback -->
+        <div class="pa-feedback" id="feedbackBox">
+          <span id="feedbackText"></span>
+        </div>
+
+        <!-- Solution -->
+        <div class="pa-solution-wrap">
+          <div class="pa-input-label">Solution</div>
+          <div class="pa-solution-locked" id="solutionLocked">
+            <svg viewBox="0 0 20 20" width="24" height="24" fill="currentColor"><path d="M5 9V7a7 7 0 0114 0v2a2 2 0 012 2v5a2 2 0 01-2 2H3a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z"/></svg>
+            <p>Submit your answer to unlock the full worked solution.</p>
+          </div>
+          <div class="pa-solution-content" id="solutionContent"></div>
+        </div>
+
+        <!-- Nav -->
+        <div class="pa-nav-row">
+          <button class="pa-nav-btn" id="prevBtn" onclick="PA.navigate(-1)" disabled>
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M7.707 14.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L3.414 7H15a1 1 0 110 2H3.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
+            Prev
+          </button>
+          <span class="pa-progress-label" id="progressLabel">1 / 10</span>
+          <button class="pa-nav-btn next" id="nextBtn" onclick="PA.navigate(1)">
+            Next
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8.293 1.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L12.586 9H1a1 1 0 010-2h11.586L8.293 2.707a1 1 0 010-1.414z"/></svg>
+          </button>
+        </div>
+
+      </div><!-- /pa-solve-right -->
+    </div><!-- /pa-solve-body -->
+  </div><!-- /pa-solve-panel -->
+</div><!-- /pa-solve-overlay -->
+
+<!-- ══ PAGE SHELL ══ -->
+<div class="pa-root">
+
+  <!-- TOP BAR -->
+  <header class="pa-topbar">
+    <a class="pa-topbar-brand" href="index.html">
+      <img src="assets/logo.png" alt="BDOH" width="32" height="32"/>
+      <span>BDOH</span>
+    </a>
+    <span style="color:var(--color-border-tertiary);font-size:16px">›</span>
+    <div class="pa-topbar-title">Practice Arena</div>
+
+    <!-- Search -->
+    <div class="pa-search-wrap">
+      <svg class="pa-search-icon" viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
+        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+      </svg>
+      <input class="pa-search" id="searchBox" type="text" placeholder="Search problems…"
+        aria-label="Search problems"
+        oninput="PA.applyFilters()"/>
+    </div>
+
+    <div class="pa-topbar-actions">
+      <div class="pa-streak" id="streakBadge" title="Daily solve streak">
+        🔥 <span id="streakCount">0</span>
+      </div>
+      <div class="pa-rating" id="ratingBadge" title="Your current rating">
+        ⚡ <span id="ratingNum">—</span>
+      </div>
+      <!-- Auth button rendered by auth.js -->
+      <div id="navAuthWrap2"></div>
+
+      <!-- Theme toggle -->
+      <button class="btn-theme" id="themeBtn2" aria-label="Toggle theme">
+        <svg id="themeIcon2" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- BODY -->
+  <div class="pa-body">
+
+    <!-- LEFT SIDEBAR — personal stats -->
+    <aside class="pa-sidebar" aria-label="Personal statistics">
+
+      <!-- Streak -->
+      <div class="pa-stat-card">
+        <div class="pa-stat-card-title">Daily Streak</div>
+        <div class="pa-big-num" id="sideStreakNum">0 <span style="font-size:14px;font-weight:400;color:var(--color-text-secondary)">days</span></div>
+        <div class="pa-streak-dots" id="sideStreakDots"></div>
+        <div class="pa-big-sub" style="margin-top:6px">Solve 1 problem/day to keep it going</div>
+      </div>
+
+      <!-- Rating -->
+      <div class="pa-stat-card">
+        <div class="pa-stat-card-title">Rating This Week</div>
+        <div class="pa-big-num">
+          <span id="sideRatingNum">—</span>
+          <span style="font-size:13px;font-weight:400;color:var(--pa-green)" id="sideRatingDelta"></span>
+        </div>
+        <div class="pa-mini-bars" id="sideMiniChart">
+          <div class="pa-mini-bar" style="height:35%"></div>
+          <div class="pa-mini-bar" style="height:50%"></div>
+          <div class="pa-mini-bar" style="height:42%"></div>
+          <div class="pa-mini-bar" style="height:60%"></div>
+          <div class="pa-mini-bar" style="height:55%"></div>
+          <div class="pa-mini-bar" style="height:75%"></div>
+          <div class="pa-mini-bar cur" style="height:88%"></div>
+        </div>
+      </div>
+
+      <!-- Problems solved -->
+      <div class="pa-stat-card">
+        <div class="pa-stat-card-title">Problems Solved</div>
+        <div class="pa-solved-row">
+          <div class="pa-solved-chip g"><span id="sideSolved">0</span>Solved</div>
+          <div class="pa-solved-chip a"><span id="sideAttempted">0</span>Attempted</div>
+          <div class="pa-solved-chip r"><span id="sideSkipped">0</span>Skipped</div>
+        </div>
+      </div>
+
+      <!-- Accuracy by subject -->
+      <div class="pa-stat-card">
+        <div class="pa-stat-card-title">Accuracy by Subject</div>
+        <div id="sideAccBars">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- First Solver Hall of Fame -->
+      <div class="pa-stat-card">
+        <div class="pa-stat-card-title">🏅 First Solvers</div>
+        <div id="sideHofList">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="pa-main" role="main">
+
+      <!-- Filter row — subjects -->
+      <div class="pa-filters" id="subjectFilters" role="group" aria-label="Filter by subject">
+        <button class="pa-pill active" data-subject="All" onclick="PA.setSubject(this)">All</button>
+        <button class="pa-pill" data-subject="Physics" onclick="PA.setSubject(this)">⚛ Physics</button>
+        <button class="pa-pill" data-subject="Mathematics" onclick="PA.setSubject(this)">∑ Math</button>
+        <button class="pa-pill" data-subject="Chemistry" onclick="PA.setSubject(this)">⚗ Chemistry</button>
+        <button class="pa-pill" data-subject="Biology" onclick="PA.setSubject(this)">🧬 Biology</button>
+        <button class="pa-pill" data-subject="Astronomy" onclick="PA.setSubject(this)">🔭 Astronomy</button>
+        <button class="pa-pill" data-subject="Informatics" onclick="PA.setSubject(this)">💻 Informatics</button>
+      </div>
+
+      <!-- Filter row — difficulty + status + sort -->
+      <div class="pa-filters" id="diffFilters" role="group" aria-label="Filter by difficulty">
+        <button class="pa-pill diff-easy"   data-diff="Easy"   onclick="PA.setDiff(this)">Easy</button>
+        <button class="pa-pill diff-medium" data-diff="Medium" onclick="PA.setDiff(this)">Medium</button>
+        <button class="pa-pill diff-hard"   data-diff="Hard"   onclick="PA.setDiff(this)">Hard</button>
+        <button class="pa-pill diff-expert" data-diff="Expert" onclick="PA.setDiff(this)">Expert</button>
+        <div class="pa-filter-divider"></div>
+        <button class="pa-pill" data-status="solved"    onclick="PA.setStatus(this)">✓ Solved</button>
+        <button class="pa-pill" data-status="attempted" onclick="PA.setStatus(this)">○ Attempted</button>
+        <button class="pa-pill" data-status="unseen"    onclick="PA.setStatus(this)">· Unseen</button>
+        <select class="pa-sort" id="sortSelect" onchange="PA.applyFilters()" aria-label="Sort problems">
+          <option value="popular">Sort: Popular</option>
+          <option value="newest">Newest</option>
+          <option value="easiest">Easiest first</option>
+          <option value="hardest">Hardest first</option>
+          <option value="success_asc">Low success rate</option>
+        </select>
+      </div>
+
+      <!-- Count row + legend -->
+      <div class="pa-count-row">
+        <span id="countLabel">Showing all problems</span>
+        <div class="pa-count-legend">
+          <span><span class="pa-legend-dot" style="background:var(--pa-green)"></span> Solved</span>
+          <span><span class="pa-legend-dot" style="background:var(--pa-amber)"></span> Attempted</span>
+          <span><span class="pa-legend-dot" style="background:var(--color-border-tertiary)"></span> Unseen</span>
+        </div>
+      </div>
+
+      <!-- Problem cards grid -->
+      <div class="pa-prob-grid" id="probGrid" role="list">
+        <div class="pa-loading">
+          <div class="pa-spinner"></div>
+          <span style="font-size:13px;color:var(--color-text-secondary)">Loading problems…</span>
+        </div>
+      </div>
+
+    </main>
+  </div><!-- /pa-body -->
+</div><!-- /pa-root -->
+
+<!-- ══ DATA LAYER ══ -->
+<script src="data.js"></script>
+<!-- ══ AUTH ══ -->
+<script src="auth.js"></script>
+
+<!-- ══ PRACTICE ENGINE ══ -->
+<script src="practice.js"></script>
+
+<!-- Theme toggle (mirrors main.js behaviour) -->
+<script>
+(function(){
+  const btn2 = document.getElementById('themeBtn2');
+  const icon2 = document.getElementById('themeIcon2');
+  function syncIcon(){
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    icon2.innerHTML = dark
+      ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'
+      : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+  btn2.addEventListener('click', function(){
+    const html = document.documentElement;
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('bdoh-theme', next);
+    syncIcon();
+    // Also sync the main themeBtn if present
+    if(window.__bdohSyncTheme) window.__bdohSyncTheme(next);
+  });
+  // Load saved theme
+  const saved = localStorage.getItem('bdoh-theme');
+  if(saved) document.documentElement.setAttribute('data-theme', saved);
+  syncIcon();
+})();
+</script>
+
+</body>
+</html>

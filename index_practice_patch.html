@@ -1,0 +1,119 @@
+<!--
+════════════════════════════════════════════════════════════════
+  BDOH PRACTICE ARENA — index.html PATCH INSTRUCTIONS
+════════════════════════════════════════════════════════════════
+
+  You only need to change THREE things inside your existing
+  index.html. Everything else lives in the new files:
+    • practice.html
+    • practice.js
+    • practice.css
+
+────────────────────────────────────────────────────────────────
+  PATCH 1 — Nav link (desktop)
+  Find the <li> for Practice in your nav-links and REPLACE it:
+────────────────────────────────────────────────────────────────
+-->
+
+<!-- BEFORE: -->
+<li><a href="#practice" class="nl">Practice</a></li>
+
+<!-- AFTER: -->
+<li><a href="practice.html" class="nl">Practice</a></li>
+
+
+<!--
+────────────────────────────────────────────────────────────────
+  PATCH 2 — Mobile menu link
+  Find the mobile <a> for Practice and REPLACE it:
+────────────────────────────────────────────────────────────────
+-->
+
+<!-- BEFORE: -->
+<a href="#practice" class="mob-link">Practice</a>
+
+<!-- AFTER: -->
+<a href="practice.html" class="mob-link">Practice</a>
+
+
+<!--
+────────────────────────────────────────────────────────────────
+  PATCH 3 — Hero "Start Practising" button
+  Find the ghost button in the hero and REPLACE its href:
+────────────────────────────────────────────────────────────────
+-->
+
+<!-- BEFORE: -->
+<a href="#practice" class="btn-ghost btn-lg">
+
+<!-- AFTER: -->
+<a href="practice.html" class="btn-ghost btn-lg">
+
+
+<!--
+────────────────────────────────────────────────────────────────
+  PATCH 4 — Practice section teaser (OPTIONAL but recommended)
+  Replace the entire #practice section content with this teaser
+  card so the homepage still has a preview but clicks through
+  to the full arena:
+────────────────────────────────────────────────────────────────
+-->
+
+<section id="practice" class="section">
+  <div class="container">
+    <div class="practice-header">
+      <div>
+        <p class="s-tag reveal">Practice</p>
+        <h2 class="s-title reveal rd1" style="margin-bottom:0">
+          Featured <span class="grad-text">problems</span>
+        </h2>
+      </div>
+      <a href="practice.html" class="btn-primary btn-sm reveal rd2"
+         style="align-self:flex-end;text-decoration:none">
+        Open full arena →
+      </a>
+    </div>
+
+    <!-- Mini preview grid — 4 cards; these are static teasers only -->
+    <div class="prob-grid" id="probBox" role="list"></div>
+
+    <!-- "See all" CTA -->
+    <div style="text-align:center;margin-top:24px" class="reveal">
+      <a href="practice.html" class="btn-ghost btn-lg">
+        Open Practice Arena — 1,635+ problems
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+          <path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!--
+────────────────────────────────────────────────────────────────
+  PATCH 5 — Footer link (optional)
+  In the footer Platform column, update the practice link:
+────────────────────────────────────────────────────────────────
+-->
+
+<!-- BEFORE: -->
+<li><a href="#practice">Practice problems</a></li>
+
+<!-- AFTER: -->
+<li><a href="practice.html">Practice problems</a></li>
+
+
+<!--
+════════════════════════════════════════════════════════════════
+  FILES TO ADD TO YOUR REPO ROOT
+════════════════════════════════════════════════════════════════
+
+  practice.html   ← full practice arena page
+  practice.js     ← all logic (filters, solve panel, stats, gamification)
+  practice.css    ← all styles for the arena
+
+  That's it. No framework, no build step — drop the 3 files in
+  the same directory as your index.html and deploy.
+════════════════════════════════════════════════════════════════
+-->
