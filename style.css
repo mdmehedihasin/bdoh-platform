@@ -558,29 +558,98 @@ ul{list-style:none;padding:0;margin:0}
 /* ── PRACTICE ────────────────────────────────────────────────── */
 .practice-header{
   display:flex;align-items:flex-end;justify-content:space-between;
-  flex-wrap:wrap;gap:20px;margin-bottom:clamp(24px,3vw,36px);
+  flex-wrap:wrap;gap:20px;margin-bottom:clamp(20px,2.5vw,28px);
 }
-.filter-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ── Streak pill ── */
+.streak-pill{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.28);
+  color:#FFD700;padding:8px 16px;border-radius:22px;
+  font-family:var(--fH);font-size:13px;font-weight:700;
+}
+
+/* ── Practice controls row ── */
+.practice-controls{
+  display:flex;flex-wrap:wrap;gap:12px;align-items:center;
+  margin-bottom:14px;
+}
+.prob-search-wrap{
+  position:relative;display:flex;align-items:center;
+  flex:1;min-width:200px;max-width:320px;
+}
+.prob-search-icon{
+  position:absolute;left:13px;color:var(--txt-d);pointer-events:none;
+}
+.prob-search-input{
+  width:100%;background:var(--sf);border:1px solid var(--bd);border-radius:22px;
+  padding:9px 18px 9px 36px;font-family:var(--fB);font-size:13px;color:var(--txt);
+  outline:none;transition:border-color .22s,box-shadow .22s;
+}
+.prob-search-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow)}
+.prob-search-input::placeholder{color:var(--txt-d)}
+
+.filter-row{display:flex;gap:6px;flex-wrap:wrap}
 .f-btn{
   background:var(--sf);border:1px solid var(--bd);
-  color:var(--txt-m);padding:8px 18px;border-radius:22px;
-  font-family:var(--fH);font-size:12.5px;font-weight:600;
-  transition:all .22s;cursor:pointer;
+  color:var(--txt-m);padding:7px 16px;border-radius:20px;
+  font-family:var(--fH);font-size:12px;font-weight:600;
+  transition:all .2s;cursor:pointer;
 }
 .f-btn:hover,.f-btn.active{background:rgba(0,123,143,.18);border-color:var(--teal);color:var(--txt)}
 
+.diff-filter-row{display:flex;gap:5px;flex-wrap:wrap}
+.d-btn{
+  background:var(--sf);border:1px solid var(--bd);
+  color:var(--txt-m);padding:6px 14px;border-radius:20px;
+  font-family:var(--fH);font-size:11.5px;font-weight:700;
+  transition:all .2s;cursor:pointer;
+}
+.d-btn:hover{border-color:var(--bd-a);color:var(--txt)}
+.d-btn.active[data-d="All"]{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:var(--txt)}
+.d-btn.active[data-d="Easy"]{background:rgba(76,175,80,.18);border-color:rgba(76,175,80,.5);color:#81c784}
+.d-btn.active[data-d="Medium"]{background:rgba(255,152,0,.18);border-color:rgba(255,152,0,.5);color:#ffb74d}
+.d-btn.active[data-d="Hard"]{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.5);color:#f87171}
+
+/* ── Status legend ── */
+.prob-status-legend{
+  display:flex;align-items:center;gap:6px;margin-bottom:18px;
+  font-family:var(--fH);font-size:12px;color:var(--txt-d);
+}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.legend-dot.solved{background:#4CAF50}
+.legend-dot.attempted{background:#FFD700}
+.legend-dot.unseen{background:var(--bd-a);border:1px solid rgba(255,255,255,.2)}
+
+/* ── Problem cards ── */
 .prob-grid{
   position:relative;z-index:2;
   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;
 }
 .prob-card{
   background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
-  padding:clamp(18px,2vw,24px);cursor:pointer;transition:all .32s;
+  padding:clamp(18px,2vw,24px);cursor:pointer;transition:all .28s;
+  border-left:4px solid transparent;
+  position:relative;overflow:hidden;
 }
 .prob-card:hover{
-  border-color:var(--bd-a);transform:translateY(-5px);
-  box-shadow:0 18px 44px rgba(0,0,0,.24);
+  border-color:var(--bd-a);transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(0,0,0,.22);
 }
+/* Status border colours — left edge */
+.prob-card.status-solved{border-left-color:#4CAF50}
+.prob-card.status-attempted{border-left-color:#FFD700}
+.prob-card.status-unseen{border-left-color:transparent}
+
+/* Status corner badge */
+.prob-status-badge{
+  position:absolute;top:12px;right:12px;
+  font-family:var(--fH);font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:8px;
+}
+.prob-status-badge.solved{background:rgba(76,175,80,.18);color:#81c784}
+.prob-status-badge.attempted{background:rgba(255,215,0,.15);color:#FFD700}
+
 .prob-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .d-badge{font-size:10.5px;padding:3px 12px;border-radius:9px;font-family:var(--fH);font-weight:700}
 .d-easy{background:rgba(76,175,80,.18);color:#81c784}
@@ -589,16 +658,54 @@ ul{list-style:none;padding:0;margin:0}
 .p-subj{font-size:10.5px;color:var(--txt-d);font-family:var(--fH);font-weight:700;text-transform:uppercase;letter-spacing:1.2px}
 .p-title{font-family:var(--fH);font-size:clamp(14px,1.4vw,16px);font-weight:800;color:var(--txt);margin-bottom:9px}
 .p-stmt{font-size:13px;color:var(--txt-m);line-height:1.68;margin-bottom:15px}
-.p-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--bd);padding-top:13px}
+.p-foot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--bd);padding-top:13px;gap:8px;flex-wrap:wrap}
 .p-meta{font-size:11px;color:var(--txt-d);font-family:var(--fH)}
+
+/* Success rate bar on card */
+.p-success-bar{height:3px;border-radius:2px;background:var(--bd);margin-bottom:14px;overflow:hidden}
+.p-success-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--green));transition:width .6s ease}
+
 .p-start-btn{
   display:inline-flex;align-items:center;gap:6px;
   background:var(--gb);color:#fff;padding:7px 16px;border-radius:18px;
   font-family:var(--fH);font-size:12px;font-weight:700;
   border:none;cursor:pointer;transition:all .24s var(--spring);
-  box-shadow:0 3px 12px var(--teal-glow);
+  box-shadow:0 3px 12px var(--teal-glow);white-space:nowrap;
 }
 .p-start-btn:hover{transform:scale(1.06);box-shadow:0 6px 20px var(--teal-glow)}
+
+/* ── +pts toast ── */
+.pts-toast{
+  position:fixed;bottom:32px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(135deg,#007B8F,#4CAF50);
+  color:#fff;padding:12px 28px;border-radius:30px;
+  font-family:var(--fH);font-size:15px;font-weight:800;
+  z-index:9999;pointer-events:none;
+  box-shadow:0 10px 32px rgba(0,123,143,.45);
+  transition:opacity .4s,transform .4s;opacity:0;
+  letter-spacing:.3px;
+}
+.pts-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Solved banner on problem overlay ── */
+.exam-solved-banner{
+  background:rgba(76,175,80,.15);border:1px solid rgba(76,175,80,.3);
+  border-radius:10px;padding:10px 16px;
+  font-family:var(--fH);font-size:13px;font-weight:700;color:#81c784;
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;
+}
+.exam-success-stat{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--fH);font-size:12px;color:var(--txt-d);margin-top:8px;
+}
+
+/* No-results empty state */
+.prob-empty{
+  grid-column:1/-1;text-align:center;padding:60px 20px;
+  font-family:var(--fH);color:var(--txt-d);font-size:15px;
+}
+.prob-empty svg{display:block;margin:0 auto 14px;opacity:.3}
 
 /* ── CONTESTS ────────────────────────────────────────────────── */
 .contest-list{position:relative;z-index:2;display:flex;flex-direction:column;gap:14px}
@@ -987,16 +1094,7 @@ ul{list-style:none;padding:0;margin:0}
 }
 @media(max-width:768px){
   .navbar{padding:14px 20px}.navbar.scrolled{padding:10px 20px}
-  /* Hide desktop-only nav links — keep auth wrap and hamburger visible */
-  .nav-links{display:none}
-  /* Hide "Join Community" button on mobile — it's in the mob-menu CTA */
-  .nav-desktop-only{display:none}
-  /* navAuthWrap stays visible on mobile — sign in btn or profile pill */
-  #navAuthWrap{display:flex!important}
-  /* Make sign-in button slightly smaller on mobile to fit */
-  .bdoh-nav-signin{padding:7px 14px;font-size:12px}
-  /* Profile pill compact on mobile */
-  .bdoh-nav-pill{padding:4px 10px 4px 4px;font-size:12px;gap:6px}
+  .nav-links,.nav-actions .btn-cta-nav{display:none}
   .hamburger{display:flex}
   .stats-strip{grid-template-columns:repeat(2,1fr)}
   .feat-grid,.cat-grid,.prob-grid,.wa-grid,.social-pair,.news-grid,.team-grid{grid-template-columns:1fr}
@@ -1005,6 +1103,9 @@ ul{list-style:none;padding:0;margin:0}
   .footer-bottom{flex-direction:column;text-align:center}
   .sc-card{flex-direction:column}
   .practice-header{flex-direction:column;align-items:flex-start}
+  .practice-controls{flex-direction:column;align-items:flex-start;gap:10px}
+  .prob-search-wrap{max-width:100%}
+  .prob-grid{grid-template-columns:1fr}
 
   /* ── Contest cards: stack vertically on mobile ── */
   .con-card{
@@ -2083,38 +2184,14 @@ body::before {
   display: block;
 }
 
-/* On very small screens, profile pill text is hidden — only avatar shows in navAuthWrap */
+/* Hide profile pill on very small screens — avatar alone shows in mob-menu */
 @media (max-width: 480px) {
-  .bdoh-nav-pill span:last-child { display: none; }
-  .bdoh-nav-pill { padding: 3px; border-radius: 50%; }
-  .bdoh-nav-signin { padding: 7px 12px; font-size: 12px; }
-}
-
-/* ── MOB-MENU AUTH SECTION ───────────────────────────────────── */
-/* Divider between auth card and nav links */
-.mob-menu-divider {
-  height: 1px;
-  background: var(--bd);
-  margin: 8px 0 12px;
-}
-
-/* Sign-in entry in mobile menu (signed-out state) */
-.mob-signin-link {
-  background: linear-gradient(135deg,rgba(0,123,143,.12),rgba(76,175,80,.08));
-  border-color: rgba(0,123,143,.3);
-}
-.mob-signin-link:hover {
-  border-color: var(--teal);
-  background: linear-gradient(135deg,rgba(0,123,143,.2),rgba(76,175,80,.12));
-}
-.mob-signin-icon {
-  background: linear-gradient(135deg,#007B8F,#4CAF50) !important;
-  box-shadow: 0 0 14px var(--teal-glow);
+  .profile-nav-btn { display: none !important; }
 }
 
 /* ── MOB-MENU PROFILE LINK ───────────────────────────────────── */
 .mob-profile-link {
-  display: none; /* auth.js sets display:flex or display:none via inline style */
+  display: none;
   align-items: center;
   gap: 12px;
   padding: 13px 18px;
@@ -2178,209 +2255,3 @@ body::before {
 }
 
 /* 🔧 SURGERY END */
-
-/* ================================================================
-   BDOH — LEADERBOARD HERO OVERHAUL
-   Replaces the cartoonish green trophy heading with an editorial,
-   Bebas Neue-driven professional header true to the BDOH design system.
-================================================================ */
-
-/* ── Leaderboard page hero ── */
-.lb-hero {
-  position: relative;
-  text-align: center;
-  padding: clamp(100px,14vw,160px) clamp(20px,5vw,60px) clamp(48px,6vw,80px);
-  overflow: hidden;
-  z-index: 2;
-}
-
-/* Subtle ruled lines behind the text — architectural, not decorative */
-.lb-hero::before {
-  content: '';
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  width: clamp(600px, 80vw, 1000px);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,123,143,.18), rgba(76,175,80,.12), transparent);
-  pointer-events: none;
-}
-
-/* Top eyebrow — replaces the emoji */
-.lb-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--fH);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: var(--txt-d);
-  margin-bottom: 18px;
-}
-
-.lb-eyebrow-line {
-  display: block;
-  width: 32px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--teal));
-}
-.lb-eyebrow-line.right {
-  background: linear-gradient(90deg, var(--teal), transparent);
-}
-
-/* Main heading — Bebas Neue, massive, gradient-clipped */
-.lb-heading {
-  font-family: var(--fD);             /* Bebas Neue */
-  font-size: clamp(72px, 13vw, 160px);
-  line-height: 0.88;
-  letter-spacing: 4px;
-  margin-bottom: 10px;
-  color: var(--txt);
-  position: relative;
-  display: block;
-}
-
-/* "LEADERBOARD" gets the gradient treatment — no emoji, just raw type */
-.lb-heading-grad {
-  display: block;
-  background: linear-gradient(120deg, #007B8F 0%, #00b4cc 38%, #4CAF50 68%, #FFD700 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-family: var(--fD);
-  font-size: clamp(72px, 13vw, 160px);
-  line-height: 0.88;
-  letter-spacing: 4px;
-}
-
-/* Sub-line below the heading */
-.lb-sub {
-  font-family: var(--fH);
-  font-size: clamp(13px, 1.4vw, 15px);
-  color: var(--txt-d);
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  font-weight: 500;
-  margin-top: 20px;
-  display: block;
-}
-
-/* Thin accent rule under the whole hero */
-.lb-hero-rule {
-  display: block;
-  width: clamp(60px, 8vw, 100px);
-  height: 2px;
-  background: var(--gb);
-  margin: 24px auto 0;
-  border-radius: 2px;
-}
-
-/* ── Override / kill the old cartoonish leaderboard hero elements ── */
-/* These target whatever class structure leaderboard.html uses */
-.lb-title,
-.leaderboard-title,
-.leaderboard-hero h1,
-.leaderboard-hero h2,
-[class*="lb-hero"] h1,
-[class*="lb-hero"] h2 {
-  font-family: var(--fD) !important;
-  font-size: clamp(64px, 11vw, 140px) !important;
-  font-weight: 400 !important;           /* Bebas Neue is always weight 400 */
-  letter-spacing: 3px !important;
-  line-height: 0.9 !important;
-  color: var(--txt) !important;
-  text-shadow: none !important;
-  background: none !important;
-  -webkit-text-fill-color: var(--txt) !important;
-}
-
-/* Kill any trophy emoji injected via ::before / content */
-.leaderboard-hero .trophy-icon,
-.leaderboard-hero .lb-icon,
-.lb-trophy,
-[class*="trophy"] {
-  display: none !important;
-}
-
-/* Kill the big green color used on leaderboard hero text */
-.leaderboard-hero h1 span,
-.leaderboard-hero h2 span,
-.lb-title span {
-  color: var(--teal-lt) !important;
-  background: none !important;
-  -webkit-text-fill-color: var(--teal-lt) !important;
-}
-
-/* ── Leaderboard subtitle / tagline ── */
-.lb-desc,
-.leaderboard-hero p,
-.leaderboard-hero .sub,
-.leaderboard-hero .subtitle {
-  font-family: var(--fH) !important;
-  font-size: clamp(13px, 1.4vw, 15px) !important;
-  color: var(--txt-d) !important;
-  letter-spacing: 2.5px !important;
-  text-transform: uppercase !important;
-  font-weight: 500 !important;
-  margin-top: 16px !important;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.8 !important;
-}
-
-/* ── Podium: make it feel premium, not game-show ── */
-.podium-wrap,
-.leaderboard-podium {
-  background: transparent !important;
-}
-
-/* Remove cartoonish glow rings on podium avatars */
-.podium-avatar {
-  box-shadow: 0 0 0 2px rgba(255,255,255,.1) !important;
-  filter: none !important;
-}
-
-/* Podium numbers: use Bebas Neue */
-.podium-rank,
-.podium-num,
-[class*="podium"] [class*="rank"],
-[class*="podium"] [class*="num"] {
-  font-family: var(--fD) !important;
-  letter-spacing: 1px !important;
-  color: var(--txt-d) !important;
-  text-shadow: none !important;
-}
-
-/* ── Table header row: keep it minimal ── */
-.lb-table thead th,
-.leaderboard-table thead th,
-[class*="lb-tbl"] thead th {
-  font-family: var(--fH) !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  letter-spacing: 2px !important;
-  text-transform: uppercase !important;
-  color: var(--txt-d) !important;
-}
-
-/* ── Responsive leaderboard hero ── */
-@media (max-width: 768px) {
-  .lb-heading,
-  .lb-heading-grad {
-    font-size: clamp(56px, 16vw, 96px) !important;
-    letter-spacing: 2px !important;
-  }
-  .lb-eyebrow { letter-spacing: 2.5px; font-size: 10px; }
-  .lb-sub { font-size: 11px; letter-spacing: 2px; margin-top: 14px; }
-}
-
-@media (max-width: 480px) {
-  .lb-heading,
-  .lb-heading-grad {
-    font-size: clamp(44px, 14vw, 72px) !important;
-    letter-spacing: 1px !important;
-  }
-}
