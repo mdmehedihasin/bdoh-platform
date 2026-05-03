@@ -712,23 +712,21 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
      FIREBASE MODULE — shares config with data.js
 ═══════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
-  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection,
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, deleteDoc,
          addDoc, query, where, orderBy, getDocs, serverTimestamp, increment, limit, arrayUnion }
-  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// ── Firebase config — MUST MATCH your data.js config ──────────
-// The app is already initialised by data.js when loaded on index.html.
-// On the standalone practice.html we init fresh using the same config.
+// ── Firebase config — matches data.js ──────────────────────────
 const FIRE_CFG = {
-  apiKey:            window.BDOH_FIREBASE_CFG?.apiKey            || "REPLACE_WITH_YOUR_API_KEY",
-  authDomain:        window.BDOH_FIREBASE_CFG?.authDomain        || "REPLACE_WITH_YOUR_AUTH_DOMAIN",
-  projectId:         window.BDOH_FIREBASE_CFG?.projectId         || "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket:     window.BDOH_FIREBASE_CFG?.storageBucket     || "REPLACE_WITH_YOUR_STORAGE_BUCKET",
-  messagingSenderId: window.BDOH_FIREBASE_CFG?.messagingSenderId || "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-  appId:             window.BDOH_FIREBASE_CFG?.appId             || "REPLACE_WITH_YOUR_APP_ID"
+  apiKey:            "AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",
+  authDomain:        "bdoh-project.firebaseapp.com",
+  projectId:         "bdoh-project",
+  storageBucket:     "bdoh-project.firebasestorage.app",
+  messagingSenderId: "413106966781",
+  appId:             "1:413106966781:web:f3123769a8d2cec02e2e94"
 };
 
 // Avoid re-initialising if data.js already did it
@@ -738,7 +736,7 @@ const db   = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 // Expose to global
-window._FB  = { doc, getDoc, setDoc, updateDoc, collection, addDoc,
+window._FB  = { doc, getDoc, setDoc, updateDoc, collection, addDoc, deleteDoc,
                 query, where, orderBy, getDocs, serverTimestamp, increment, limit, arrayUnion };
 window._auth = auth;
 window._db   = db;
@@ -1266,7 +1264,7 @@ function renderProblems() {
     return;
   }
 
-  const isAdmin = window.USER_DATA?.role==='admin'||window.USER_DATA?.role==='superadmin'||BDOH?.userRole==='admin';
+  const isAdmin = window.USER_DATA?.role==='admin'||window.USER_DATA?.role==='superadmin'||window.BDOH?.userRole==='admin';
   const adminToolbar = document.getElementById('adminToolbarBtn');
   if(adminToolbar) adminToolbar.style.display = isAdmin ? 'block' : 'none';
 
@@ -1540,7 +1538,7 @@ function renderUserCard(user, userData){
   const total=(window.ALL_PROBLEMS||[]).length;
   const pct=total?Math.round(solved/total*100):0;
   const photo=user.photoURL?`<img src="${user.photoURL}" alt="">`:'';
-  const isAdmin = window.USER_DATA?.role==='admin' || window.USER_DATA?.role==='superadmin' || BDOH?.userRole==='admin';
+  const isAdmin = window.USER_DATA?.role==='admin' || window.USER_DATA?.role==='superadmin' || window.BDOH?.userRole==='admin';
   const adminBtn = isAdmin ? `<button class="btn-mini btn-mini-teal" onclick="openAdminPanel()" style="background:linear-gradient(135deg,#b8860b,#FFD700);color:#000">Admin Panel</button>` : '';
   wrap.innerHTML=`<div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
     <div class="user-avatar">${photo||init}</div>
