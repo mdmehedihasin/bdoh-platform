@@ -764,12 +764,12 @@ function goPage(id,el){
   if(id==='panelists')renderPlTbl();
   if(id==='results')renderResults();
   if(id==='dashboard')renderDashboard();
+  if(id==='analytics')renderAnalytics();
+  updateMetrics();
   /* Close mobile sidebar after navigation */
   const sb=document.getElementById('adminSidebar');
   if(sb.classList.contains('mob-open')) toggleMobSidebar();
 }
-  if(id==='analytics')renderAnalytics();
-  updateMetrics();
 
 
 function updateMetrics(){
@@ -848,7 +848,14 @@ function saveP(){
   if(window.BDOH_DB)window.BDOH_DB.saveProblem(np).catch(()=>{});
   toast(pIdx>=0?'Problem updated.':'Problem added.');
 }
-function delP(i){if(!confirm('Delete this problem?'))return;BDOH.problems.splice(i,1);renderPTbl();updateMetrics();bdohSave();toast('Deleted.',false)}
+function delP(i){
+  if(!confirm('Delete this problem?'))return;
+  const p=BDOH.problems[i];
+  BDOH.problems.splice(i,1);
+  renderPTbl();updateMetrics();bdohSave();
+  if(window.BDOH_DB&&p) window.BDOH_DB.deleteProblem(p.id).catch(()=>{});
+  toast('Deleted.',false);
+}
 function closePF(){document.getElementById('pModal').classList.remove('open')}
 
 // ============================================================
@@ -1433,6 +1440,43 @@ window._bdohAdminOnAuthed = async function(){
   const ok = await _adminLoadCloud();
   if(ok) toast('Data loaded.');
   else    toast('Could not load cloud data — check connection.', false);
+
+  /* ── Real-time listeners: keep all panels live without manual refresh ── */
+  if(!window.BDOH_DB) return;
+  try {
+    const {onSnapshot,collection,query,orderBy} =
+      await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const db = window.BDOH_DB.db;
+
+    /* Contests — live */
+    onSnapshot(collection(db,'contests'), snap => {
+      BDOH.contests = snap.docs.map(d=>({id:d.id,...d.data()}));
+      localStorage.setItem('bdoh_contests_cache', JSON.stringify(BDOH.contests));
+      updateMetrics();
+      if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
+      if(document.getElementById('pg-contests')?.classList.contains('on'))  renderCTbl();
+      if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
+      if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
+    });
+
+    /* Problems — live */
+    onSnapshot(collection(db,'problems'), snap => {
+      BDOH.problems = snap.docs.map(d=>({id:d.id,...d.data()}));
+      updateMetrics();
+      if(document.getElementById('pg-problems')?.classList.contains('on')) renderPTbl();
+      if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
+    });
+
+    /* Submissions — live (latest 500) */
+    onSnapshot(query(collection(db,'submissions'),orderBy('submittedAt','desc')), snap => {
+      BDOH.submissions = snap.docs.map(d=>({id:d.id,...d.data()}));
+      updateMetrics();
+      if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
+      if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
+      if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();
+    });
+
+  } catch(e){ console.warn('Real-time listeners failed:', e); }
 };
 
 /* Handle ?page= URL param — e.g. admin.html?page=problems for panelists */
@@ -1454,7 +1498,7 @@ function exportDataSnapshot(){
 <!-- Firebase Auth for admin login -->
 <script type="module">
   import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
   import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const cfg={apiKey:"AIzaSyBHl3ysjKWoQjJMOCtAPdfiURsXjjuRjck",authDomain:"bdoh-project.firebaseapp.com",projectId:"bdoh-project",storageBucket:"bdoh-project.firebasestorage.app",messagingSenderId:"413106966781",appId:"1:413106966781:web:f3123769a8d2cec02e2e94"};
@@ -1545,7 +1589,7 @@ function exportDataSnapshot(){
       overlay.style.display='none';
 
       /* Role badge label */
-      const roleLabels = {superadmin:'Super Admin',admin:'Admin',panelist:'Panelist',moderator:'Moderator'};
+      const roleLabels = {superadmin:'Super Admin',super_admin:'Super Admin',admin:'Admin',panelist:'Panelist',moderator:'Moderator'};
       document.getElementById('sidebar-role').textContent = roleLabels[role] || role;
       document.getElementById('admin-user-badge').textContent = (user.displayName||user.email||'').split('@')[0];
 
