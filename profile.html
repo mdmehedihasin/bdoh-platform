@@ -1830,16 +1830,26 @@ window.saveProfile = async () => {
   btn.disabled = true;
   btn.textContent = 'Saving…';
   const subjs = [...document.querySelectorAll('input[name="subj"]:checked')].map(c => c.value);
+  const newDisplayName = document.getElementById('efName')?.value?.trim() || '';
+  const newInstitution = document.getElementById('efInstitution')?.value?.trim() || '';
   try {
     await updateDoc(doc(db, 'users', uid), {
-      displayName:  document.getElementById('efName')?.value?.trim() || '',
-      institution:  document.getElementById('efInstitution')?.value?.trim() || '',
+      displayName:  newDisplayName,
+      institution:  newInstitution,
       district:     document.getElementById('efDistrict')?.value?.trim() || '',
       division:     document.getElementById('efDivision')?.value || '',
       subjects:     subjs,
       lastActive:   serverTimestamp()
       /* role, isVerified, isBanned, rating etc. are intentionally excluded */
     });
+    /* ── Sync leaderboard entry so display name & institution update everywhere ── */
+    try {
+      await setDoc(doc(db, 'leaderboard', uid), {
+        displayName: newDisplayName,
+        institution: newInstitution,
+        updatedAt:   new Date().toISOString()
+      }, { merge: true });
+    } catch(_) {}
     showToast('✓ Profile saved!');
     /* Refresh displayed info */
     const snap = await getDoc(doc(db, 'users', uid));

@@ -380,6 +380,7 @@ input:checked+.toggle-slider:before{transform:translateX(19px)}
         <h3>All Problems</h3>
         <div class="tbl-hdr-btns">
           <input id="prob-search" type="text" placeholder="🔍 Search problems…" style="width:200px;padding:8px 14px" oninput="renderPTbl()"/>
+          <button class="btn-secondary" onclick="seedDefaultProblems()" title="Upload the 6 built-in sample problems to Firestore">⬆ Seed Defaults</button>
           <button class="btn-add" onclick="openPF()">+ Add Problem</button>
         </div>
       </div>
@@ -857,6 +858,21 @@ function delP(i){
   toast('Deleted.',false);
 }
 function closePF(){document.getElementById('pModal').classList.remove('open')}
+
+async function seedDefaultProblems(){
+  if(!window.BDOH_DB){toast('Firebase not connected.',false);return;}
+  if(!confirm('This will upload the 6 default sample problems to Firestore.\nExisting problems with the same IDs will be overwritten.\n\nContinue?'))return;
+  toast('Seeding default problems to Firestore…');
+  let seeded=0;
+  for(const p of BDOH_DEFAULTS.problems){
+    try{await window.BDOH_DB.saveProblem({...p});seeded++;}
+    catch(e){console.warn('seed error',p.id,e);}
+  }
+  /* Local update so table refreshes even if snapshot is slow */
+  BDOH.problems=[...BDOH_DEFAULTS.problems];
+  renderPTbl();updateMetrics();
+  toast(seeded+' problems seeded to Firestore! ✓');
+}
 
 // ============================================================
 // CONTEST WIZARD
@@ -1394,7 +1410,8 @@ async function _adminLoadCloud(){
 
     BDOH.contests    = contests;
     BDOH.submissions = subs;
-    BDOH.problems    = problems;
+    /* Fallback: if Firestore problems collection is empty, use BDOH_DEFAULTS.problems */
+    BDOH.problems    = problems.length > 0 ? problems : [...BDOH_DEFAULTS.problems];
     allUsers         = users;   /* populate users table cache */
 
     updateMetrics();
@@ -1461,7 +1478,8 @@ window._bdohAdminOnAuthed = async function(){
 
     /* Problems — live */
     onSnapshot(collection(db,'problems'), snap => {
-      BDOH.problems = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const p = snap.docs.map(d=>({id:d.id,...d.data()}));
+      BDOH.problems = p.length > 0 ? p : [...BDOH_DEFAULTS.problems];
       updateMetrics();
       if(document.getElementById('pg-problems')?.classList.contains('on')) renderPTbl();
       if(document.getElementById('pg-analytics')?.classList.contains('on')) renderAnalytics();

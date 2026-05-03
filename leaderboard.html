@@ -39,22 +39,28 @@ html::after{
 [data-theme=light] html::after{
   background:rgba(240,245,249,.7);
 }
-body{background:transparent;color:var(--txt);font-family:var(--fB);min-height:100vh;padding-top:80px;position:relative;z-index:1;}
+body{background:transparent;color:var(--txt);font-family:var(--fB);min-height:100vh;padding-top:64px;position:relative;z-index:1;}
 a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer;border:none;background:none}
 
 .navbar{position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;
-  justify-content:space-between;padding:14px clamp(20px,4vw,56px);
-  background:rgba(6,9,26,.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd)}
-.nav-brand{display:flex;align-items:center;gap:12px}
+  justify-content:space-between;padding:14px clamp(16px,4vw,56px);
+  background:rgba(6,9,26,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);
+  min-height:64px}
+[data-theme=light] .navbar{background:rgba(240,245,249,.92)}
+.nav-brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
 .nav-logo{width:40px;height:40px;border-radius:50%;background:var(--gb);display:flex;align-items:center;
-  justify-content:center;font-family:var(--fH);font-weight:800;color:#fff;font-size:14px}
+  justify-content:center;font-family:var(--fH);font-weight:800;color:#fff;font-size:14px;flex-shrink:0}
 .nav-title{font-family:var(--fH);font-weight:800;font-size:15px;color:var(--txt)}
 .nav-back{display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:20px;
   background:var(--sf);border:1px solid var(--bd);color:var(--m);font-family:var(--fH);
-  font-size:13px;font-weight:600;transition:all .22s}
+  font-size:13px;font-weight:600;transition:all .22s;white-space:nowrap}
 .nav-back:hover{border-color:var(--ba);color:var(--txt)}
+@media(max-width:480px){
+  .nav-back span{display:none}
+  .nav-back{padding:8px 12px}
+}
 
-.container{max-width:1000px;margin:0 auto;padding:40px clamp(16px,4vw,40px)}
+.container{max-width:1000px;margin:0 auto;padding:clamp(24px,4vw,40px) clamp(14px,4vw,40px)}
 
 /* PAGE HEADER */
 .page-header{text-align:center;margin-bottom:44px;padding:0 16px}
@@ -69,8 +75,8 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
 .page-sub{color:var(--m);font-size:14px;max-width:480px;margin:0 auto;line-height:1.7;letter-spacing:.01em}
 
 /* TOP 3 PODIUM */
-.podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-bottom:40px}
-.podium-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-bottom:40px;padding:0 8px}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
 .podium-place{font-family:var(--fH);font-size:11px;font-weight:700;text-transform:uppercase;
   letter-spacing:2px;color:var(--m)}
 .podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -81,7 +87,7 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
   box-shadow:0 0 30px rgba(255,215,0,.35)}
 .podium-2 .podium-avatar{width:68px;height:68px;font-size:20px;border-color:#c0c0c0}
 .podium-3 .podium-avatar{width:60px;height:60px;font-size:18px;border-color:#cd7f32}
-.podium-name{font-family:var(--fH);font-size:13px;font-weight:700;color:var(--txt);text-align:center;max-width:100px}
+.podium-name{font-family:var(--fH);font-size:13px;font-weight:700;color:var(--txt);text-align:center;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .podium-rating{font-family:var(--fH);font-size:12px;font-weight:700}
 .podium-crown{text-align:center;height:30px;display:flex;align-items:center;justify-content:center}
 .podium-block{border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;
@@ -150,11 +156,26 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
 @keyframes sk{0%,100%{opacity:.5}50%{opacity:1}}
 
 @media(max-width:600px){
-  .podium{gap:8px}
-  .lb-controls{flex-direction:column;align-items:stretch}
+  .podium{gap:4px;flex-wrap:nowrap;width:100%;justify-content:center}
+  .podium-item{flex:1;min-width:0;max-width:33%}
+  .podium-1 .podium-avatar{width:60px;height:60px;font-size:18px}
+  .podium-2 .podium-avatar{width:52px;height:52px;font-size:16px}
+  .podium-3 .podium-avatar{width:46px;height:46px;font-size:14px}
+  .podium-1 .podium-block{width:100%;min-width:0;height:60px}
+  .podium-2 .podium-block{width:100%;min-width:0;height:46px}
+  .podium-3 .podium-block{width:100%;min-width:0;height:34px}
+  .podium-name{font-size:10px;max-width:80px;word-break:break-word}
+  .podium-rating{font-size:10px}
+  .lb-controls{flex-direction:column;align-items:stretch;gap:8px}
   .lb-tabs{justify-content:center}
-  .lb-table thead th:nth-child(4),.lb-table tbody td:nth-child(4),
+  .lb-search{min-width:0}
   .lb-table thead th:nth-child(5),.lb-table tbody td:nth-child(5){display:none}
+  .lb-table thead th:nth-child(6),.lb-table tbody td:nth-child(6){display:none}
+  .lb-table tbody td{padding:10px 12px;font-size:13px}
+  .user-av{width:30px;height:30px;font-size:11px}
+  .user-name{font-size:13px}
+  .page-header{margin-bottom:28px}
+  .page-title{font-size:clamp(28px,8vw,44px);letter-spacing:-1px}
 }
 </style>
 </head>
@@ -167,12 +188,15 @@ a{color:inherit;text-decoration:none}button{font-family:var(--fB);cursor:pointer
       <div class="nav-title">Leaderboard</div>
     </a>
   </div>
-  <div style="display:flex;gap:10px;position:relative;z-index:2">
+  <div style="display:flex;gap:8px;align-items:center;position:relative;z-index:2">
     <a href="profile.html" class="nav-back" style="display:flex;align-items:center;gap:6px">
       <svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-      Profile
+      <span>Profile</span>
     </a>
-    <a href="index.html" class="nav-back">&#8592; Home</a>
+    <a href="index.html" class="nav-back"><svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg><span> Home</span></a>
+    <button onclick="toggleTheme()" style="width:36px;height:36px;border-radius:9px;background:var(--sf);border:1px solid var(--bd);color:var(--txt);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0" aria-label="Toggle theme" id="themeBtn2">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" id="themeIcon2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
   </div>
 </nav>
 
@@ -239,6 +263,18 @@ let allRows = [];
 let currentTab = 'global';
 let currentUserUid = null;
 
+/* ── Theme ── */
+(function(){
+  const saved = localStorage.getItem('bdoh_theme');
+  if(saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('bdoh_theme', next);
+}
+
 const RATING_COLORS = { 2400:'#f87171', 2200:'#FFD700', 2000:'#81c784', 1800:'#5bcfdf', 1200:'#007B8F' };
 function getRatingColor(r){ return r>=2400?'#f87171':r>=2200?'#FFD700':r>=2000?'#81c784':r>=1800?'#5bcfdf':'#007B8F'; }
 
@@ -281,11 +317,6 @@ async function loadTab(tab){
 
 function renderPodium(top3){
   if(!top3.length){ document.getElementById('podiumArea').innerHTML = ''; return; }
-  const order = [top3[1], top3[0], top3[2]].filter(Boolean);
-  const podiumOrder = top3[1] ? [1,0,2] : [0]; // indices in top3
-  const positions = [[1, top3[0]], top3[1]?[2,top3[1]]:null, top3[2]?[3,top3[2]]:null].filter(Boolean);
-  const heights = {1:72,2:54,3:40};
-  const sizes = {1:80,2:68,3:60};
 
   /* Display: 2nd, 1st, 3rd */
   const display = [];
@@ -293,19 +324,22 @@ function renderPodium(top3){
   display.push({rank:1, data:top3[0]});
   if(top3[2]) display.push({rank:3, data:top3[2]});
 
+  const heights = {1:72,2:54,3:40};
+  const sizes = {1:80,2:68,3:60};
+  const rColors = {1:'#FFD700',2:'#c0c0c0',3:'#cd7f32'};
+
   document.getElementById('podiumArea').innerHTML = display.map(({rank, data:u})=>{
     const name = u.displayName||u.name||u.userName||'—';
     const initials = name.charAt(0).toUpperCase();
-    const medals = {1:'1',2:'2',3:'3'};
-    const rColors = {1:'#FFD700',2:'#c0c0c0',3:'#cd7f32'};
+    const blockW = {1:100,2:90,3:84}[rank];
     return `<div class="podium-item podium-${rank}">
       ${rank===1?'<div class="podium-crown"><svg viewBox="0 0 24 24" width="26" height="26" fill="#FFD700"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm0 2h14v2H5v-2z"/></svg></div>':'<div style="height:30px"></div>'}
       <div class="podium-avatar" style="width:${sizes[rank]}px;height:${sizes[rank]}px;font-size:${sizes[rank]/3.2}px;border-color:${rColors[rank]}">
         ${u.photoURL?`<img src="${u.photoURL}" alt="${name}"/>`:`<span>${initials}</span>`}
       </div>
-      <div class="podium-name">${name.split(' ').slice(0,2).join(' ')}</div>
+      <div class="podium-name" title="${name}">${name.split(' ').slice(0,2).join(' ')}</div>
       <div class="podium-rating" style="color:${rColors[rank]}">${u.rating||u.score||'—'}</div>
-      <div class="podium-block" style="width:${sizes[rank]+20}px;height:${heights[rank]}px">${rank}</div>
+      <div class="podium-block" style="width:${blockW}px;height:${heights[rank]}px">${rank}</div>
     </div>`;
   }).join('');
 }

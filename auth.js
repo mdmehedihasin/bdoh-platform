@@ -82,7 +82,7 @@
 /* Profile pill (when signed in) — owned by auth.js for navAuthWrap */
 .bdoh-nav-pill{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;
   border-radius:22px;border:1px solid rgba(0,123,143,.3);background:rgba(0,123,143,.1);
-  color:#e8edf5;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;
+  color:var(--txt,#e8edf5);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;
   text-decoration:none;transition:all .22s;cursor:pointer}
 .bdoh-nav-pill:hover{border-color:rgba(0,180,204,.5);background:rgba(0,123,143,.18);transform:translateY(-1px)}
 .bdoh-nav-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;overflow:hidden;
@@ -90,6 +90,14 @@
   display:flex;align-items:center;justify-content:center;
   font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;color:#fff;font-size:12px}
 .bdoh-nav-av img{width:100%;height:100%;object-fit:cover}
+/* Name label inside pill */
+.bdoh-nav-pill-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+/* Mobile: collapse pill to avatar circle only */
+@media(max-width:768px){
+  .bdoh-nav-pill{padding:3px;border-radius:50%;gap:0;border-color:rgba(0,123,143,.45)}
+  .bdoh-nav-pill-name{display:none}
+  .bdoh-nav-av{width:34px;height:34px;font-size:14px}
+}
 </style>`;
 
   const MODAL = `<div id="bdohAuthModal">
@@ -165,7 +173,7 @@ function _renderNavWrap(user, profile){
           ? `<img src="${photoURL}" alt="${name}" crossorigin="anonymous"/>`
           : initial}
       </span>
-      ${name}
+      <span class="bdoh-nav-pill-name">${name}</span>
     </a>`;
 
     /* Mobile menu: show profile card, hide sign-in link */
