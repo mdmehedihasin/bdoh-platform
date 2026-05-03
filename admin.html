@@ -773,11 +773,14 @@ function goPage(id,el){
 
 
 function updateMetrics(){
-  document.getElementById('m-p').textContent=BDOH.problems.length;
-  document.getElementById('m-c').textContent=BDOH.contests.length;
-  const subs=BDOH.submissions||[];
-  document.getElementById('m-sub').textContent=subs.length;
+  document.getElementById('m-p').textContent  = (BDOH.problems||[]).length;
+  document.getElementById('m-c').textContent  = (BDOH.contests||[]).length;
+  const mU = document.getElementById('m-u');
+  if(mU) mU.textContent = (typeof allUsers !== 'undefined' ? allUsers : []).length;
+  const subs = BDOH.submissions||[];
+  document.getElementById('m-sub').textContent = subs.length;
 }
+
 
 // ============================================================
 // DASHBOARD
@@ -1374,19 +1377,43 @@ if(!BDOH.submissions)BDOH.submissions=[];if(!BDOH.contests)BDOH.contests=[];
 async function _adminLoadCloud(){
   if(!window.BDOH_DB) return false;
   try{
-    const[contests,subs]=await Promise.all([window.BDOH_DB.getContests(),window.BDOH_DB.getSubmissions()]);
-    BDOH.contests=contests; BDOH.submissions=subs;
-    updateMetrics(); renderDashboard();
-    if(document.getElementById('pg-results')?.classList.contains('on')) renderResults();
-    const sel=document.getElementById('res-filter');
+    /* Load all four data types in parallel */
+    const[contests, subs, problems, users] = await Promise.all([
+      window.BDOH_DB.getContests(),
+      window.BDOH_DB.getSubmissions(),
+      window.BDOH_DB.getProblems(),
+      window.BDOH_DB.getAllUsers(500).catch(()=>[])
+    ]);
+
+    BDOH.contests    = contests;
+    BDOH.submissions = subs;
+    BDOH.problems    = problems;
+    allUsers         = users;   /* populate users table cache */
+
+    updateMetrics();
+    renderDashboard();
+    if(document.getElementById('pg-problems')?.classList.contains('on'))  renderPTbl();
+    if(document.getElementById('pg-results')?.classList.contains('on'))   renderResults();
+    if(document.getElementById('pg-contests')?.classList.contains('on'))  renderCTbl();
+
+    /* Populate contest filter dropdown in results tab */
+    const sel = document.getElementById('res-filter');
     if(sel){
-      const prev=sel.value;
-      sel.innerHTML='<option value="">All Contests</option>'+
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">All Contests</option>' +
         contests.map(c=>`<option value="${c.id}">${c.title||c.id}</option>`).join('');
-      if(prev) sel.value=prev;
+      if(prev) sel.value = prev;
     }
+
+    /* Update user count metric */
+    const mU = document.getElementById('m-u');
+    if(mU) mU.textContent = users.length;
+
     return true;
-  }catch(e){console.error('Admin cloud load:',e);return false;}
+  }catch(e){
+    console.error('Admin cloud load error:', e);
+    return false;
+  }
 }
 async function refreshResults(){
   toast('Refreshing...');
@@ -1395,13 +1422,18 @@ async function refreshResults(){
 }
 async function adminInit(){
   updateMetrics(); renderDashboard();
-  bdohFirebaseReady(async()=>{
-    const ok=await _adminLoadCloud();
-    if(ok) toast('Cloud data loaded.');
-    else toast('Could not load cloud data.',false);
-  });
+  /* Data is loaded from window._bdohAdminOnAuthed() which is called
+     after the auth role check succeeds — so Firestore reads happen
+     only after Firebase Auth has confirmed the user's permissions. */
 }
 adminInit();
+
+/* Called by the auth block after role is confirmed and panel is unlocked */
+window._bdohAdminOnAuthed = async function(){
+  const ok = await _adminLoadCloud();
+  if(ok) toast('Data loaded.');
+  else    toast('Could not load cloud data — check connection.', false);
+};
 
 /* Handle ?page= URL param — e.g. admin.html?page=problems for panelists */
 (function handlePageParam(){
@@ -1518,36 +1550,27 @@ function exportDataSnapshot(){
       document.getElementById('admin-user-badge').textContent = (user.displayName||user.email||'').split('@')[0];
 
       /* ── ROLE-BASED UI RESTRICTIONS ── */
-
       if(role === 'panelist'){
-        /* Panelists see ONLY the Problems page */
-        /* Hide all nav items except Problems */
         document.querySelectorAll('.nav-item').forEach(btn => {
           const text = btn.textContent.trim();
           if(!text.includes('Problems') && !text.includes('View Live Site')){
             btn.style.display = 'none';
           }
         });
-        /* Hide section labels and separators */
         document.querySelectorAll('.nav-section-lbl, .nav-sep').forEach(el => el.style.display='none');
-        /* Switch to problems page immediately */
         const probBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.textContent.includes('Problems'));
         if(probBtn) goPage('problems', probBtn);
-        /* Hide topbar action buttons that panelists shouldn't use */
         document.querySelectorAll('.topbar-r .btn-secondary').forEach(b=>b.style.display='none');
-
       } else {
-        /* admin / superadmin */
-
-        /* Hide Users & Roles nav from non-superadmin */
         const navUsers = document.getElementById('nav-users');
         if(navUsers && role !== 'superadmin') navUsers.style.display = 'none';
-
-        /* Disable role-change selects for non-superadmin */
         if(role !== 'superadmin'){
           document.querySelectorAll('.role-select').forEach(el=>el.disabled=true);
         }
       }
+
+      /* ── NOW load cloud data — auth is confirmed, Firestore permissions are active ── */
+      if(window._bdohAdminOnAuthed) window._bdohAdminOnAuthed();
 
     } else {
       /* Signed out — show login overlay */
