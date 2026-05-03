@@ -1,5 +1,5 @@
 /* ================================================================
-   BDOH DATA.JS v4.3 — DEFINITIVE PRODUCTION BUILD
+   BDOH DATA.JS v4.4 — RACE-CONDITION & ERROR-HANDLING FIXES
    All field names match profile.html, admin.html, leaderboard.html
    Fixes:
      • Submissions ALWAYS write to Firestore with correct schema
@@ -7,6 +7,10 @@
      • Leaderboard reads from submissions when /leaderboard empty
      • User stats update immediately after every submission
      • No more "nothing shows in profile" — totalSolves etc auto-update
+     • v4.4: window.BDOH_DB_READY promise so admin.html can await it
+     • v4.4: roles read wrapped in try/catch — transient errors no longer
+             crash the auth callback or block admin panel load
+     • v4.4: bdoh:dbReady event fired after window.BDOH_DB is set
 ================================================================ */
 
 const BDOH_FIREBASE_CONFIG = {
@@ -61,6 +65,11 @@ const BDOH = {
 let _db=null, _auth=null, _fbReady=false, _fbReadyCallbacks=[];
 function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbacks.push(cb); }
 
+/* ── Ready promise — admin.html awaits this so it never calls BDOH_DB before
+   Firebase has initialised. Resolves with window.BDOH_DB (or null on failure). ── */
+let _bdohDbReadyResolve;
+window.BDOH_DB_READY = new Promise(res => { _bdohDbReadyResolve = res; });
+
 (async function initFirebase(){
   try {
     const {initializeApp,getApps} = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -97,8 +106,8 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
           BDOH.userProfile = snap.data();
           await updateDoc(uRef, {lastActive:serverTimestamp()});
         }
-        const rSnap = await getDoc(doc(_db,'roles',user.uid));
-        BDOH.userRole = rSnap.exists() ? rSnap.data().role : (BDOH.userProfile.role||'user');
+        const rSnap = await getDoc(doc(_db,'roles',user.uid)).catch(()=>null);
+        BDOH.userRole = (rSnap&&rSnap.exists()) ? rSnap.data().role : (BDOH.userProfile.role||'user');
         window.dispatchEvent(new CustomEvent('bdoh:authReady',
           {detail:{user,profile:BDOH.userProfile,role:BDOH.userRole}}));
         if(typeof window.bdohOnSignedIn==='function') window.bdohOnSignedIn(user);
@@ -353,7 +362,9 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
         return p.includes('*')||p.includes(action);
       },
 
-      /* ── INTERNAL: update user stats + leaderboard after every submission ── */
+      /* ── INTERNAL: update user stats + leaderboard after every submission ──
+         Uses atomic increment() — NO composite Firestore indexes required.
+         Never re-queries all submissions, so it can't silently zero-out stats. ── */
       async _updateUserStats(uid, sub){
         try {
           const uRef  = doc(_db,'users',uid);
@@ -361,72 +372,56 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
           if(!uSnap.exists()) return;
           const u = uSnap.data();
 
-          /* ── What changed this submission ── */
+          /* ── What changed? ── */
           const scored     = sub.score||0;
           const isCorrect  = !!(sub.isCorrect || (scored>0 && scored>=(sub.maxScore||1)*.5));
           const isPractice = sub.contestId==='practice';
 
-          /* ── Atomic increments — NO composite index needed ── */
+          /* ── Atomic field increments (single-field — no index needed) ── */
           const updates = {
             totalAttempts: increment(1),
             totalPoints:   increment(scored),
             lastActive:    serverTimestamp()
           };
-          if(isCorrect){
-            updates.totalSolves    = increment(1);
-            updates.practiceSolves = isPractice ? increment(1) : increment(0);
-          }
+          if(isCorrect) updates.totalSolves = increment(1);
 
-          /* Track unique contest IDs for contestCount */
+          /* Track unique contest IDs so contestCount is accurate */
           if(!isPractice){
             const known = u.knownContestIds||[];
             if(!known.includes(sub.contestId)){
-              updates.contestCount    = increment(1);
-              updates.knownContestIds = [...known, sub.contestId];
+              updates.contestCount   = increment(1);
+              updates.knownContestIds= [...known, sub.contestId];
             }
           }
 
-          /* ── Rating formula (see RATING_SYSTEM.md) ──
-             Practice: small fixed delta based on difficulty
-             Contest:  ELO-style based on % of max score achieved        */
+          /* ── ELO delta — contests only ── */
           let newRating  = u.rating||1200;
           let ratingHist = u.ratingHistory||[1200];
-
-          if(isPractice && isCorrect){
-            /* Practice correct solve: +5 easy, +10 medium, +15 hard, +20 expert */
-            const diffMap = {easy:5, medium:10, hard:15, expert:20};
-            const practiceGain = diffMap[(sub.difficulty||'medium').toLowerCase()] || 10;
-            newRating = Math.min(3000, newRating + practiceGain);
-            ratingHist = [...ratingHist, newRating].slice(-50);
-            updates.rating        = newRating;
-            updates.ratingHistory = ratingHist;
-          } else if(!isPractice && (sub.maxScore||0)>0){
-            /* Contest ELO delta: range -40 to +60 based on score percentage */
-            const pct   = scored / sub.maxScore;
-            const delta = Math.round((pct - 0.5) * 100);   // -50 to +50
-            const capped = Math.max(-40, Math.min(60, delta));
-            newRating   = Math.max(800, Math.min(3000, newRating + capped));
-            ratingHist  = [...ratingHist, newRating].slice(-50);
+          if(!isPractice && (sub.maxScore||0)>0){
+            const pct   = scored/sub.maxScore;
+            const delta = Math.round((pct-.5)*40);
+            newRating   = Math.max(800,Math.min(3000,newRating+delta));
+            ratingHist  = [...ratingHist,newRating].slice(-50);
             updates.rating        = newRating;
             updates.ratingHistory = ratingHist;
           }
 
-          /* ── subjectStats ── */
+          /* ── subjectStats — incremental merge ── */
           const ss      = {...(u.subjectStats||{})};
           const subject = sub.subject||'';
-          if(subject && subject!=='Mixed'){
+          if(subject&&subject!=='Mixed'){
             if(!ss[subject]) ss[subject]={solves:0,attempts:0};
-            ss[subject] = {
-              attempts: (ss[subject].attempts||0)+1,
-              solves:   (ss[subject].solves||0)+(isCorrect?1:0)
+            ss[subject]={
+              attempts:(ss[subject].attempts||0)+1,
+              solves:  (ss[subject].solves||0)+(isCorrect?1:0)
             };
             updates.subjectStats = ss;
           }
 
-          /* ── Badges ── */
-          const badges    = [...(u.badges||[])];
-          const award     = id=>{ if(!badges.includes(id)) badges.push(id); };
-          const projSolves= (u.totalSolves||0)+(isCorrect?1:0);
+          /* ── Badges — projected totals ── */
+          const badges     = [...(u.badges||[])];
+          const award      = id=>{ if(!badges.includes(id)) badges.push(id); };
+          const projSolves = (u.totalSolves||0)+(isCorrect?1:0);
           if(projSolves>=1)   award('first_solve');
           if(projSolves>=10)  award('10_solves');
           if(projSolves>=50)  award('50_solves');
@@ -439,43 +434,32 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
           if(SUBJS.every(s=>(ss[s]?.solves||0)>=1)) award('all_subjects');
           if(badges.length!==(u.badges||[]).length) updates.badges=badges;
 
-          /* ── Write to /users/{uid} ── */
+          /* ── Write atomically ── */
           await updateDoc(uRef, updates);
 
-          /* ── Update in-memory cache ── */
-          if(BDOH.userProfile && BDOH.userProfile.uid===uid){
-            BDOH.userProfile = {
+          /* ── Update in-memory cache so profile page sees changes without reload ── */
+          if(BDOH.userProfile&&BDOH.userProfile.uid===uid){
+            BDOH.userProfile={
               ...BDOH.userProfile,
-              totalAttempts: (BDOH.userProfile.totalAttempts||0)+1,
-              totalPoints:   (BDOH.userProfile.totalPoints||0)+scored,
-              totalSolves:   (BDOH.userProfile.totalSolves||0)+(isCorrect?1:0),
-              rating: newRating, ratingHistory: ratingHist,
-              subjectStats: ss, badges
+              totalAttempts:(BDOH.userProfile.totalAttempts||0)+1,
+              totalPoints:  (BDOH.userProfile.totalPoints||0)+scored,
+              totalSolves:  (BDOH.userProfile.totalSolves||0)+(isCorrect?1:0),
+              rating:newRating, ratingHistory:ratingHist,
+              subjectStats:ss, badges
             };
           }
 
-          /* ── Sync /leaderboard/{uid} ──
-             Uses projected values so leaderboard is immediately up-to-date.
-             Both practice solves and contest solves count toward totalSolves. ── */
+          /* ── Sync /leaderboard/{uid} ── */
           const projAttempts = (u.totalAttempts||0)+1;
           const projPoints   = (u.totalPoints||0)+scored;
-          const projSolvesLB = projSolves;
-          const projAcc      = projAttempts>0 ? Math.round(projSolvesLB/projAttempts*100) : 0;
-          const projContests = !isPractice && !(u.knownContestIds||[]).includes(sub.contestId)
-            ? (u.contestCount||0)+1 : (u.contestCount||0);
-
+          const projContests = (u.contestCount||0)+(!isPractice&&!(u.knownContestIds||[]).includes(sub.contestId)?1:0);
           await setDoc(doc(_db,'leaderboard',uid),{
-            userId:       uid,
-            displayName:  u.displayName||'—',
-            photoURL:     u.photoURL||null,
-            institution:  u.institution||'',
-            rating:       newRating,
-            totalSolves:  projSolvesLB,   /* includes both practice & contest solves */
-            totalPoints:  projPoints,
-            accuracy:     projAcc,
-            contestCount: projContests,
-            subjectStats: ss,
-            updatedAt:    new Date().toISOString()
+            userId:uid, displayName:u.displayName||'—', photoURL:u.photoURL||null,
+            institution:u.institution||'', rating:newRating,
+            totalSolves:projSolves, totalPoints:projPoints,
+            accuracy:projAttempts>0?Math.round(projSolves/projAttempts*100):0,
+            contestCount:projContests, subjectStats:ss,
+            updatedAt:new Date().toISOString()
           },{merge:true});
 
         } catch(e){ console.warn('_updateUserStats error:',e); }
@@ -485,6 +469,10 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
     _fbReady=true;
     _fbReadyCallbacks.forEach(cb=>cb(_db,_auth));
     _fbReadyCallbacks=[];
+
+    /* ── Resolve the ready promise so admin.html can safely call BDOH_DB methods ── */
+    _bdohDbReadyResolve(window.BDOH_DB);
+    window.dispatchEvent(new CustomEvent('bdoh:dbReady', {detail: window.BDOH_DB}));
 
     /* Load and cache contests immediately */
     try {
@@ -504,6 +492,8 @@ function bdohFirebaseReady(cb){ if(_fbReady) cb(_db,_auth); else _fbReadyCallbac
     _fbReady=true;
     _fbReadyCallbacks.forEach(cb=>cb(null,null));
     _fbReadyCallbacks=[];
+    /* Resolve with null so awaiters don't hang forever */
+    _bdohDbReadyResolve(null);
   }
 })();
 

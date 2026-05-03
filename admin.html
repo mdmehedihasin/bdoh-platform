@@ -1452,23 +1452,24 @@ async function adminInit(){
 }
 adminInit();
 
-/* Called by the auth block after role is confirmed and panel is unlocked */
+/* Called by the auth block after role is confirmed AND window.BDOH_DB is ready */
 window._bdohAdminOnAuthed = async function(){
   const ok = await _adminLoadCloud();
   if(ok) toast('Data loaded.');
   else    toast('Could not load cloud data — check connection.', false);
 
-  /* ── Real-time listeners: keep all panels live without manual refresh ── */
-  if(!window.BDOH_DB) return;
+  /* ── Real-time listeners: keep all panels live without manual refresh ──
+     Use window.BDOH_DB.db directly — no need to re-import Firebase modules. ── */
+  if(!window.BDOH_DB || !window.BDOH_DB.db) return;
   try {
-    const {onSnapshot,collection,query,orderBy} =
+    const {onSnapshot, collection, query, orderBy} =
       await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
     const db = window.BDOH_DB.db;
 
     /* Contests — live */
     onSnapshot(collection(db,'contests'), snap => {
       BDOH.contests = snap.docs.map(d=>({id:d.id,...d.data()}));
-      localStorage.setItem('bdoh_contests_cache', JSON.stringify(BDOH.contests));
+      try{ localStorage.setItem('bdoh_contests_cache', JSON.stringify(BDOH.contests)); }catch(_){}
       updateMetrics();
       if(document.getElementById('pg-dashboard')?.classList.contains('on')) renderDashboard();
       if(document.getElementById('pg-contests')?.classList.contains('on'))  renderCTbl();
@@ -1497,14 +1498,15 @@ window._bdohAdminOnAuthed = async function(){
   } catch(e){ console.warn('Real-time listeners failed:', e); }
 };
 
-/* Handle ?page= URL param — e.g. admin.html?page=problems for panelists */
-(function handlePageParam(){
+/* Handle ?page= URL param — e.g. admin.html?page=problems for panelists.
+   Called AFTER _bdohAdminOnAuthed() completes so data is already loaded. */
+window._bdohHandlePageParam = function(){
   const p = new URLSearchParams(location.search).get('page');
   if(!p) return;
   const btn = Array.from(document.querySelectorAll('.nav-item'))
     .find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+p+"'"));
-  if(btn) { setTimeout(()=>{ goPage(p, btn); }, 600); }
-})();
+  if(btn) goPage(p, btn);
+};
 
 function exportDataSnapshot(){
   const json=JSON.stringify({panelists:BDOH.panelists,contests:BDOH.contests,problems:BDOH.problems,whatsapp:BDOH.whatsapp,submissions:BDOH.submissions},null,2);
@@ -1558,15 +1560,29 @@ function exportDataSnapshot(){
   });
 
   async function getEffectiveRole(user){
-    /* Check /roles/{uid} first, then /users/{uid}.role, then deny */
+    /* ── Strategy: read /roles/{uid} first (most authoritative), then fall back
+       to /users/{uid}.role. Log errors so they're visible in DevTools. ── */
     try{
       const rSnap = await getDoc(doc(db,'roles',user.uid));
-      if(rSnap.exists() && rSnap.data().role) return rSnap.data().role;
-    }catch(_){}
+      if(rSnap.exists() && rSnap.data().role){
+        console.log('[BDOH] Role from /roles/:', rSnap.data().role);
+        return rSnap.data().role;
+      }
+    }catch(err){
+      /* This fires if Firestore rules deny the read — should not happen because
+         rules allow read: if isSignedIn() && isOwner(uid), but log it so we know. */
+      console.warn('[BDOH] Could not read /roles/'+user.uid+':', err.code, err.message);
+    }
     try{
       const uSnap = await getDoc(doc(db,'users',user.uid));
-      if(uSnap.exists() && uSnap.data().role) return uSnap.data().role;
-    }catch(_){}
+      if(uSnap.exists() && uSnap.data().role){
+        console.log('[BDOH] Role from /users/:', uSnap.data().role);
+        return uSnap.data().role;
+      }
+    }catch(err){
+      console.warn('[BDOH] Could not read /users/'+user.uid+':', err.code, err.message);
+    }
+    console.warn('[BDOH] No role found for user, defaulting to "user"');
     return 'user';
   }
 
@@ -1575,12 +1591,14 @@ function exportDataSnapshot(){
     if(user){
       /* Determine role — normalise underscore variant */
       let role = 'user';
-      try{ role = await getEffectiveRole(user); }catch(_){}
+      try{ role = await getEffectiveRole(user); }catch(err){
+        console.error('[BDOH] getEffectiveRole failed:', err);
+      }
       if(role==='super_admin') role='superadmin';
 
       const ALLOWED = ['superadmin','admin','panelist'];
       if(!ALLOWED.includes(role)){
-        /* Not an admin — show access denied, sign them out */
+        /* Not authorised — show access denied */
         overlay.innerHTML=`
           <div style="text-align:center;font-family:var(--fH);padding:40px;max-width:440px">
             <div style="font-size:52px;margin-bottom:16px">🚫</div>
@@ -1590,7 +1608,7 @@ function exportDataSnapshot(){
             </p>
             <p style="color:rgba(238,241,255,.5);font-size:13px;margin-bottom:24px">
               Your role (<strong>${role}</strong>) does not have admin access.<br>
-              Only <strong>Admin</strong> and <strong>Super Admin</strong> accounts can access this panel.
+              Only <strong>Admin</strong>, <strong>Panelist</strong>, and <strong>Super Admin</strong> accounts can access this panel.
             </p>
             <button onclick="window._bdohAdminSignOut()"
               style="padding:10px 24px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);
@@ -1620,8 +1638,6 @@ function exportDataSnapshot(){
           }
         });
         document.querySelectorAll('.nav-section-lbl, .nav-sep').forEach(el => el.style.display='none');
-        const probBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.textContent.includes('Problems'));
-        if(probBtn) goPage('problems', probBtn);
         document.querySelectorAll('.topbar-r .btn-secondary').forEach(b=>b.style.display='none');
       } else {
         const navUsers = document.getElementById('nav-users');
@@ -1631,8 +1647,31 @@ function exportDataSnapshot(){
         }
       }
 
-      /* ── NOW load cloud data — auth is confirmed, Firestore permissions are active ── */
-      if(window._bdohAdminOnAuthed) window._bdohAdminOnAuthed();
+      /* ── CRITICAL FIX: wait for data.js to finish setting up window.BDOH_DB
+         before loading cloud data. BDOH_DB_READY is a Promise that resolves
+         as soon as data.js completes its async Firebase init. If data.js is
+         already done (common on fast connections), this resolves immediately. ── */
+      const dbRef = window.BDOH_DB_READY
+        ? await window.BDOH_DB_READY
+        : window.BDOH_DB; /* fallback if data.js loaded synchronously somehow */
+
+      if(!dbRef){
+        toast('Firebase not ready — reload the page.', false);
+        console.error('[BDOH] window.BDOH_DB was null after BDOH_DB_READY resolved');
+        return;
+      }
+
+      /* ── NOW load cloud data — both auth AND Firestore SDK are confirmed ready ── */
+      if(window._bdohAdminOnAuthed) await window._bdohAdminOnAuthed();
+
+      /* ── For panelists: navigate to problems page AFTER data has loaded ── */
+      if(role === 'panelist'){
+        const probBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.textContent.includes('Problems'));
+        if(probBtn) goPage('problems', probBtn);
+      }
+
+      /* ── Handle ?page= URL param now that data is ready ── */
+      if(window._bdohHandlePageParam) window._bdohHandlePageParam();
 
     } else {
       /* Signed out — show login overlay */
