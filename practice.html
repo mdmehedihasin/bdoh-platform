@@ -3,313 +3,1936 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<meta name="description" content="BDOH Practice Arena — Solve olympiad problems in Physics, Math, Chemistry, Biology, Astronomy, and Informatics."/>
+<meta name="description" content="BDOH Practice Arena — Solve olympiad problems, earn points, track your progress."/>
 <meta name="theme-color" content="#007B8F"/>
 <title>Practice Arena — Bangladesh Olympiadians Hub</title>
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
-<link rel="icon" href="assets/logo.png" type="image/png"/>
-<link rel="stylesheet" href="style.css"/>
-<link rel="stylesheet" href="practice.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<!-- MathJax for equations -->
+<script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
+<style>
+/* ══════════════════════════════════════════════
+   TOKENS & RESET
+══════════════════════════════════════════════ */
+:root {
+  --bg:        #080e14;
+  --bg2:       #0d1520;
+  --bg3:       #111d2c;
+  --surface:   #0f1c2e;
+  --surface2:  #152438;
+  --border:    rgba(0,180,200,.12);
+  --border2:   rgba(0,180,200,.22);
+  --teal:      #00c6d8;
+  --teal2:     #007B8F;
+  --green:     #4CAF50;
+  --gold:      #FFD700;
+  --red:       #ff4d6d;
+  --purple:    #9d6cf7;
+  --text:      #e8f0fe;
+  --text2:     #8fa3be;
+  --text3:     #5a7090;
+  --radius:    14px;
+  --radius-sm: 8px;
+  --glow:      0 0 40px rgba(0,198,216,.13);
+}
+[data-theme="light"] {
+  --bg: #f0f4f8; --bg2: #e4ecf4; --bg3: #dae5f0;
+  --surface: #fff; --surface2: #f5f8fc;
+  --border: rgba(0,100,140,.12); --border2: rgba(0,100,140,.22);
+  --teal: #0097aa; --teal2: #006070;
+  --text: #0d1520; --text2: #3a5070; --text3: #7090b0;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* ══════════════════════════════════════════════
+   KINETIC BACKGROUND
+══════════════════════════════════════════════ */
+#bgCanvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;opacity:.5;
+}
+.blobs{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.06;animation:blobFloat 18s ease-in-out infinite}
+.b1{width:600px;height:600px;background:radial-gradient(circle,#00c6d8,transparent);top:-15%;left:-10%;animation-delay:0s}
+.b2{width:500px;height:500px;background:radial-gradient(circle,#4CAF50,transparent);top:40%;right:-10%;animation-delay:-6s}
+.b3{width:400px;height:400px;background:radial-gradient(circle,#9d6cf7,transparent);bottom:-10%;left:30%;animation-delay:-12s}
+@keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-40px) scale(1.05)}66%{transform:translate(-20px,20px) scale(.95)}}
+
+/* ══════════════════════════════════════════════
+   NAVBAR
+══════════════════════════════════════════════ */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(16px,4vw,48px);height:64px;
+  background:rgba(8,14,20,.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:background .3s;
+}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.nav-logo{width:36px;height:36px;border-radius:8px}
+.nav-brand-text{font-family:'Syne',sans-serif;font-size:.95rem;line-height:1.1;color:var(--text)}
+.nav-brand-text strong{display:block;font-weight:800;color:var(--teal)}
+.nav-links{display:flex;gap:4px;list-style:none;align-items:center}
+.nav-links a{
+  color:var(--text2);font-size:.85rem;font-weight:500;
+  padding:6px 12px;border-radius:6px;text-decoration:none;
+  transition:all .2s;white-space:nowrap;
+}
+.nav-links a:hover,.nav-links a.active{color:var(--teal);background:rgba(0,198,216,.08)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.btn-theme{
+  background:none;border:1px solid var(--border2);color:var(--text2);
+  width:36px;height:36px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.btn-theme:hover{color:var(--teal);border-color:var(--teal)}
+.nav-user-pill{
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:50px;padding:4px 12px 4px 4px;cursor:pointer;
+  transition:all .2s;text-decoration:none;color:var(--text);
+}
+.nav-user-pill:hover{border-color:var(--teal);background:var(--surface2)}
+.nav-user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0;
+}
+.nav-user-avatar img{width:100%;height:100%;object-fit:cover}
+.nav-user-name{font-size:.8rem;font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-user-pts{font-size:.72rem;color:var(--gold);font-weight:700}
+.btn-signin{
+  background:linear-gradient(135deg,var(--teal2),var(--teal));
+  color:#fff;border:none;padding:7px 16px;border-radius:8px;
+  font-size:.82rem;font-weight:600;cursor:pointer;transition:.2s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-signin:hover{opacity:.85;transform:translateY(-1px)}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+.hamburger span{width:22px;height:2px;background:var(--text2);border-radius:2px;transition:.3s}
+
+/* ══════════════════════════════════════════════
+   MOBILE MENU
+══════════════════════════════════════════════ */
+.mob-overlay{
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(4px);
+}
+.mob-overlay.open{display:block}
+.mob-drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:1000;
+  width:min(320px,90vw);
+  background:var(--bg2);
+  border-left:1px solid var(--border);
+  transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;padding:20px;gap:8px;overflow-y:auto;
+}
+.mob-drawer.open{transform:translateX(0)}
+.mob-close{
+  align-self:flex-end;background:none;border:1px solid var(--border2);
+  color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:8px;
+}
+.mob-link{
+  display:block;color:var(--text2);text-decoration:none;padding:10px 14px;
+  border-radius:8px;font-size:.92rem;font-weight:500;transition:.2s;
+}
+.mob-link:hover{background:var(--surface2);color:var(--teal)}
+.mob-link.active{background:rgba(0,198,216,.1);color:var(--teal);font-weight:600}
+
+/* ══════════════════════════════════════════════
+   HERO BANNER
+══════════════════════════════════════════════ */
+.arena-hero{
+  position:relative;z-index:1;
+  padding:100px clamp(16px,5vw,64px) 40px;
+  text-align:center;
+}
+.arena-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,198,216,.08);border:1px solid rgba(0,198,216,.2);
+  border-radius:50px;padding:5px 16px;
+  font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:20px;
+}
+.arena-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.arena-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(52px,8vw,110px);
+  line-height:.9;letter-spacing:-.01em;
+  margin-bottom:12px;
+}
+.arena-title .line1{display:block;color:var(--text)}
+.arena-title .line2{display:block;background:linear-gradient(90deg,var(--teal),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.arena-sub{
+  color:var(--text2);font-size:clamp(.9rem,2vw,1.08rem);max-width:560px;
+  margin:0 auto 32px;line-height:1.7;
+}
+.arena-stats-row{
+  display:flex;justify-content:center;gap:clamp(16px,4vw,48px);
+  flex-wrap:wrap;margin-bottom:0;
+}
+.astat{text-align:center}
+.astat-n{
+  display:block;
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);
+  background:linear-gradient(135deg,var(--teal),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;
+}
+.astat-l{display:block;font-size:.75rem;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+
+/* ══════════════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════════════ */
+.arena-main{
+  position:relative;z-index:1;
+  max-width:1400px;margin:0 auto;
+  padding:0 clamp(12px,3vw,40px) 80px;
+  display:grid;
+  grid-template-columns:280px 1fr;
+  grid-template-rows:auto 1fr;
+  gap:20px;
+  align-items:start;
+}
+
+/* ══════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════ */
+.sidebar{
+  grid-column:1;
+  position:sticky;top:80px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.sidebar-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  transition:.2s;
+}
+.sidebar-card:hover{border-color:var(--border2)}
+.sidebar-title{
+  font-family:'Syne',sans-serif;font-size:.72rem;
+  text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text3);margin-bottom:14px;
+  display:flex;align-items:center;gap:6px;
+}
+.sidebar-title svg{opacity:.6}
+
+/* Subject filter */
+.subj-list{display:flex;flex-direction:column;gap:4px}
+.subj-btn{
+  display:flex;align-items:center;gap:10px;
+  background:none;border:none;width:100%;text-align:left;
+  padding:9px 11px;border-radius:var(--radius-sm);
+  color:var(--text2);font-size:.85rem;font-weight:500;cursor:pointer;
+  transition:all .18s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.subj-btn:hover{background:var(--surface2);color:var(--text)}
+.subj-btn.active{background:rgba(0,198,216,.1);color:var(--teal);font-weight:600}
+.subj-btn .subj-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.subj-btn .subj-count{margin-left:auto;font-size:.72rem;color:var(--text3);background:var(--bg3);padding:2px 7px;border-radius:50px}
+.subj-btn.active .subj-count{background:rgba(0,198,216,.15);color:var(--teal)}
+
+/* Difficulty filter */
+.diff-pills{display:flex;flex-wrap:wrap;gap:6px}
+.diff-pill{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text2);font-size:.75rem;font-weight:600;
+  padding:5px 12px;border-radius:50px;cursor:pointer;
+  transition:all .18s;border:none;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.diff-pill:hover{background:var(--surface2);color:var(--text)}
+.diff-pill.active{background:rgba(0,198,216,.15);color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
+.diff-pill.d-easy.active{background:rgba(76,175,80,.15);color:var(--green);box-shadow:0 0 0 1px var(--green)}
+.diff-pill.d-hard.active{background:rgba(255,77,109,.15);color:var(--red);box-shadow:0 0 0 1px var(--red)}
+.diff-pill.d-medium.active{background:rgba(255,215,0,.15);color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+
+/* User card */
+.user-card-inner{display:flex;flex-direction:column;gap:12px}
+.user-avatar-wrap{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;font-weight:700;color:#fff;overflow:hidden;
+}
+.user-avatar-wrap img{width:100%;height:100%;object-fit:cover}
+.user-name-big{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--text)}
+.user-pts-big{font-size:.82rem;color:var(--gold);font-weight:600}
+.user-pts-big span{font-family:'DM Mono',monospace;font-size:1.1rem}
+.progress-row{display:flex;flex-direction:column;gap:6px}
+.progress-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--text3)}
+.progress-bar{height:4px;background:var(--bg3);border-radius:50px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:50px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.user-actions{display:flex;gap:8px}
+.btn-mini{
+  flex:1;padding:7px 10px;border-radius:var(--radius-sm);
+  font-size:.75rem;font-weight:600;cursor:pointer;
+  text-align:center;text-decoration:none;
+  transition:.18s;font-family:'Plus Jakarta Sans',sans-serif;
+  border:none;
+}
+.btn-mini-outline{
+  background:none;border:1px solid var(--border2);color:var(--text2);
+}
+.btn-mini-outline:hover{border-color:var(--teal);color:var(--teal)}
+.btn-mini-teal{background:linear-gradient(135deg,var(--teal2),var(--teal));color:#fff}
+.btn-mini-teal:hover{opacity:.85}
+.not-signed-in{text-align:center;padding:8px 0}
+.not-signed-in p{font-size:.8rem;color:var(--text3);margin-bottom:10px;line-height:1.5}
+.btn-sign-in-full{
+  width:100%;padding:9px;border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--teal2),var(--teal));
+  color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;
+  border:none;font-family:'Plus Jakarta Sans',sans-serif;transition:.2s;
+}
+.btn-sign-in-full:hover{opacity:.85;transform:translateY(-1px)}
+
+/* ══════════════════════════════════════════════
+   PROBLEM LIST AREA
+══════════════════════════════════════════════ */
+.prob-area{grid-column:2;min-width:0}
+
+.prob-toolbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.search-wrap{
+  flex:1;min-width:200px;max-width:360px;
+  position:relative;
+}
+.search-wrap svg{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  color:var(--text3);pointer-events:none;
+}
+.search-input{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:9px 12px 9px 36px;
+  color:var(--text);font-size:.85rem;font-family:'Plus Jakarta Sans',sans-serif;
+  outline:none;transition:.2s;
+}
+.search-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,198,216,.1)}
+.search-input::placeholder{color:var(--text3)}
+.sort-select{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);padding:9px 32px 9px 12px;border-radius:var(--radius-sm);
+  font-size:.82rem;font-family:'Plus Jakarta Sans',sans-serif;outline:none;
+  cursor:pointer;appearance:none;transition:.2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238fa3be' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+}
+.sort-select:focus{border-color:var(--teal)}
+.result-count{margin-left:auto;font-size:.8rem;color:var(--text3);white-space:nowrap}
+
+/* Problems grid */
+.prob-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));
+  gap:14px;
+}
+
+.prob-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  cursor:pointer;
+  transition:all .22s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;gap:10px;
+}
+.prob-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--subj-color,var(--teal)),transparent);
+  opacity:0;transition:.22s;
+}
+.prob-card:hover{
+  border-color:var(--border2);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(0,0,0,.3),var(--glow);
+}
+.prob-card:hover::before{opacity:1}
+.prob-card.solved{border-color:rgba(76,175,80,.3)}
+.prob-card.solved::before{opacity:1;background:linear-gradient(90deg,var(--green),transparent)}
+
+.prob-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.prob-subj-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 9px;border-radius:50px;
+  background:rgba(var(--subj-rgb,.5),var(--subj-a,.1));
+  color:var(--subj-color);
+  border:1px solid rgba(var(--subj-rgb),var(--subj-border-a,.18));
+}
+.prob-subj-tag .dot{width:5px;height:5px;border-radius:50%;background:var(--subj-color)}
+.diff-badge{
+  font-size:.68rem;font-weight:700;letter-spacing:.04em;
+  padding:3px 9px;border-radius:50px;white-space:nowrap;
+  flex-shrink:0;
+}
+.diff-badge.easy{background:rgba(76,175,80,.15);color:var(--green);border:1px solid rgba(76,175,80,.3)}
+.diff-badge.medium{background:rgba(255,215,0,.12);color:var(--gold);border:1px solid rgba(255,215,0,.25)}
+.diff-badge.hard{background:rgba(255,77,109,.12);color:var(--red);border:1px solid rgba(255,77,109,.25)}
+.diff-badge.olympiad{background:rgba(157,108,247,.12);color:var(--purple);border:1px solid rgba(157,108,247,.25)}
+
+.prob-title{
+  font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;
+  color:var(--text);line-height:1.35;flex:1;
+}
+.prob-preview{font-size:.8rem;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prob-card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:8px;border-top:1px solid var(--border);
+  margin-top:auto;
+}
+.prob-pts{font-size:.78rem;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:4px}
+.prob-pts svg{opacity:.8}
+.prob-solved-badge{
+  display:flex;align-items:center;gap:4px;
+  font-size:.72rem;font-weight:600;color:var(--green);
+}
+.prob-meta{font-size:.72rem;color:var(--text3);display:flex;align-items:center;gap:4px}
+.prob-solve-btn{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(0,198,216,.1);border:1px solid rgba(0,198,216,.2);
+  color:var(--teal);font-size:.78rem;font-weight:600;
+  padding:6px 14px;border-radius:6px;cursor:pointer;transition:.18s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.prob-solve-btn:hover{background:rgba(0,198,216,.2);border-color:var(--teal)}
+
+/* empty state */
+.empty-state{
+  grid-column:1/-1;text-align:center;padding:60px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.empty-state svg{opacity:.25}
+.empty-state h3{font-family:'Syne',sans-serif;color:var(--text2);font-size:1.1rem}
+.empty-state p{color:var(--text3);font-size:.85rem}
+
+/* ══════════════════════════════════════════════
+   PROBLEM SOLVE MODAL
+══════════════════════════════════════════════ */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:clamp(8px,3vw,24px);
+  animation:fadeIn .2s ease;
+}
+.modal-backdrop.open{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.solve-modal{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  width:100%;max-width:900px;
+  max-height:90vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 80px rgba(0,198,216,.06);
+  animation:slideUp .25s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+.modal-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:24px 28px 0;gap:16px;flex-shrink:0;
+}
+.modal-header-left{flex:1;min-width:0}
+.modal-subj-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.modal-title{
+  font-family:'Syne',sans-serif;font-size:clamp(1rem,2.5vw,1.25rem);
+  font-weight:800;color:var(--text);line-height:1.25;
+}
+.modal-close{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text2);width:36px;height:36px;border-radius:9px;
+  cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:.18s;
+}
+.modal-close:hover{background:rgba(255,77,109,.15);border-color:rgba(255,77,109,.4);color:var(--red)}
+
+.modal-tabs{
+  display:flex;gap:0;padding:0 28px;margin-top:16px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.modal-tab{
+  padding:10px 18px;font-size:.83rem;font-weight:600;color:var(--text3);
+  cursor:pointer;border-bottom:2px solid transparent;transition:.18s;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.modal-tab:hover{color:var(--text2)}
+.modal-tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+
+.modal-body{flex:1;overflow-y:auto;padding:24px 28px;min-height:0}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-track{background:transparent}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Tab panels */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Problem statement */
+.stmt-body{
+  font-size:.92rem;line-height:1.75;color:var(--text);
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.stmt-body p{margin-bottom:12px}
+.stmt-info-row{
+  display:flex;flex-wrap:wrap;gap:10px;
+  padding:14px 16px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);margin:16px 0;
+}
+.stmt-info-item{font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+.stmt-info-item strong{color:var(--text)}
+
+/* Hint */
+.hint-toggle-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(157,108,247,.1);border:1px solid rgba(157,108,247,.25);
+  color:var(--purple);font-size:.8rem;font-weight:600;
+  padding:7px 14px;border-radius:var(--radius-sm);cursor:pointer;
+  transition:.18s;margin-top:12px;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.hint-toggle-btn:hover{background:rgba(157,108,247,.2)}
+.hint-box{
+  background:rgba(157,108,247,.06);border:1px solid rgba(157,108,247,.2);
+  border-radius:var(--radius-sm);padding:14px 16px;
+  font-size:.85rem;color:var(--text2);line-height:1.65;
+  margin-top:10px;display:none;
+}
+.hint-box.visible{display:block;animation:fadeIn .2s ease}
+
+/* Answer area */
+.answer-section{display:flex;flex-direction:column;gap:14px}
+.answer-type-label{font-size:.8rem;color:var(--text3);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.answer-input-wrap{position:relative}
+.answer-input{
+  width:100%;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  color:var(--text);font-size:1rem;font-family:'DM Mono',monospace;
+  outline:none;transition:.2s;
+  resize:none;
+}
+.answer-input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,198,216,.1)}
+.answer-input::placeholder{color:var(--text3);font-family:'Plus Jakarta Sans',sans-serif}
+.answer-input.correct{border-color:var(--green);box-shadow:0 0 0 3px rgba(76,175,80,.1)}
+.answer-input.wrong{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,77,109,.1)}
+
+.submit-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:linear-gradient(135deg,var(--teal2),var(--teal));
+  color:#fff;border:none;padding:13px 28px;border-radius:var(--radius-sm);
+  font-size:.9rem;font-weight:700;cursor:pointer;transition:.2s;
+  font-family:'Plus Jakarta Sans',sans-serif;width:100%;
+}
+.submit-btn:hover:not(:disabled){opacity:.87;transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.feedback-box{
+  border-radius:var(--radius-sm);padding:14px 16px;
+  display:none;animation:fadeIn .2s ease;
+}
+.feedback-box.visible{display:block}
+.feedback-box.correct{background:rgba(76,175,80,.1);border:1px solid rgba(76,175,80,.3)}
+.feedback-box.wrong{background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.3)}
+.feedback-title{font-weight:700;font-size:.9rem;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.feedback-box.correct .feedback-title{color:var(--green)}
+.feedback-box.wrong .feedback-title{color:var(--red)}
+.feedback-detail{font-size:.82rem;color:var(--text2);line-height:1.5}
+
+.pts-burst{
+  display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,215,0,.05));
+  border:1px solid rgba(255,215,0,.35);
+  color:var(--gold);font-weight:800;font-size:1rem;
+  padding:8px 16px;border-radius:8px;margin-top:8px;
+  animation:ptsBurst .4s cubic-bezier(.4,0,.2,1);
+}
+@keyframes ptsBurst{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+
+/* Solution */
+.solution-lock{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 20px;gap:10px;text-align:center;
+}
+.solution-lock svg{opacity:.3}
+.solution-lock p{color:var(--text3);font-size:.85rem}
+.solution-content{
+  font-size:.88rem;line-height:1.8;color:var(--text2);
+}
+.solution-content .sol-step{
+  display:flex;gap:12px;margin-bottom:14px;
+  padding:12px 14px;background:var(--surface);border-radius:var(--radius-sm);
+  border-left:3px solid var(--teal);
+}
+.sol-step-num{
+  font-family:'DM Mono',monospace;font-size:.75rem;font-weight:500;
+  color:var(--teal);white-space:nowrap;padding-top:2px;
+}
+
+/* Timer */
+.timer-display{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:6px 12px;
+  font-family:'DM Mono',monospace;font-size:.88rem;font-weight:500;color:var(--text2);
+}
+.timer-display.danger{color:var(--red);border-color:rgba(255,77,109,.3);background:rgba(255,77,109,.06);animation:timerPulse 1s ease-in-out infinite}
+@keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.7}}
+.modal-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;border-top:1px solid var(--border);flex-shrink:0;
+  flex-wrap:wrap;gap:10px;
+}
+.modal-nav-btns{display:flex;gap:8px}
+.btn-nav{
+  display:flex;align-items:center;gap:5px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);font-size:.8rem;font-weight:600;
+  padding:8px 14px;border-radius:var(--radius-sm);cursor:pointer;
+  transition:.18s;font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-nav:hover{border-color:var(--teal);color:var(--teal)}
+.btn-nav:disabled{opacity:.35;cursor:not-allowed}
+.prob-counter{font-size:.8rem;color:var(--text3)}
+
+/* ══════════════════════════════════════════════
+   HISTORY / SUBMISSIONS TAB
+══════════════════════════════════════════════ */
+.history-area{display:flex;flex-direction:column;gap:10px}
+.history-item{
+  display:grid;grid-template-columns:auto 1fr auto auto;
+  align-items:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:12px 16px;
+  transition:.18s;
+}
+.history-item:hover{border-color:var(--border2)}
+.hi-status{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.hi-status.correct{background:var(--green);box-shadow:0 0 6px var(--green)}
+.hi-status.wrong{background:var(--red);box-shadow:0 0 6px var(--red)}
+.hi-title{font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hi-subj{font-size:.72rem;color:var(--text3);margin-top:2px}
+.hi-pts{font-size:.8rem;font-weight:700;color:var(--gold)}
+.hi-date{font-size:.72rem;color:var(--text3);white-space:nowrap}
+.hi-empty{text-align:center;padding:32px;color:var(--text3);font-size:.85rem}
+
+/* ══════════════════════════════════════════════
+   LEADERBOARD STRIP
+══════════════════════════════════════════════ */
+.lb-strip{
+  grid-column:1/-1;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px 28px;
+  margin-top:8px;
+}
+.lb-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.lb-list{display:flex;flex-direction:column;gap:8px}
+.lb-row{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;border-radius:var(--radius-sm);
+  transition:.18s;
+}
+.lb-row:hover{background:var(--surface2)}
+.lb-rank{
+  font-family:'DM Mono',monospace;font-size:.8rem;font-weight:500;
+  color:var(--text3);width:24px;text-align:center;flex-shrink:0;
+}
+.lb-rank.gold{color:#FFD700;font-weight:700}
+.lb-rank.silver{color:#C0C0C0;font-weight:700}
+.lb-rank.bronze{color:#CD7F32;font-weight:700}
+.lb-avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--teal),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.75rem;font-weight:700;color:#fff;overflow:hidden;
+}
+.lb-avatar img{width:100%;height:100%;object-fit:cover}
+.lb-name{flex:1;font-size:.85rem;font-weight:600;color:var(--text)}
+.lb-pts{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:600;color:var(--gold)}
+.lb-solved{font-size:.75rem;color:var(--text3)}
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+.toast-wrap{
+  position:fixed;bottom:24px;right:24px;z-index:3000;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+}
+.toast{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:12px;padding:12px 18px;
+  display:flex;align-items:center;gap:10px;
+  font-size:.85rem;font-weight:500;color:var(--text);
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  animation:toastIn .3s cubic-bezier(.4,0,.2,1);
+  pointer-events:all;
+  max-width:320px;
+}
+.toast.success{border-color:rgba(76,175,80,.4);background:rgba(8,20,10,.95)}
+.toast.error{border-color:rgba(255,77,109,.4);background:rgba(20,8,12,.95)}
+.toast.info{border-color:rgba(0,198,216,.4);background:rgba(8,14,20,.95)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.toast-icon{width:18px;height:18px;flex-shrink:0}
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+.arena-footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:24px clamp(16px,4vw,64px);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;
+}
+.footer-brand-mini{
+  display:flex;align-items:center;gap:8px;
+  text-decoration:none;color:var(--text2);font-size:.82rem;font-weight:500;
+}
+.footer-back{
+  display:flex;align-items:center;gap:6px;
+  color:var(--teal);font-size:.82rem;font-weight:600;text-decoration:none;
+  transition:.18s;
+}
+.footer-back:hover{gap:10px}
+.footer-copy{font-size:.78rem;color:var(--text3)}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════ */
+@media(max-width:900px){
+  .arena-main{grid-template-columns:1fr}
+  .sidebar{
+    grid-column:1;position:static;
+    display:none;
+  }
+  .sidebar.mob-open{
+    display:flex;
+    position:fixed;inset:0;top:64px;z-index:900;
+    background:var(--bg);overflow-y:auto;padding:20px;
+    border-right:none;
+  }
+  .prob-area{grid-column:1}
+  .filter-fab{
+    display:flex!important;
+    position:fixed;bottom:24px;left:24px;z-index:800;
+    align-items:center;gap:8px;
+    background:linear-gradient(135deg,var(--teal2),var(--teal));
+    color:#fff;border:none;padding:12px 20px;border-radius:50px;
+    font-size:.85rem;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(0,198,216,.3);
+    font-family:'Plus Jakarta Sans',sans-serif;
+    transition:.2s;
+  }
+  .filter-fab:hover{transform:scale(1.04)}
+  .modal-header{flex-direction:column;gap:8px}
+  .modal-body{padding:16px}
+  .modal-header{padding:16px 16px 0}
+  .modal-tabs{padding:0 16px}
+  .modal-footer{padding:12px 16px}
+  .solve-modal{border-radius:16px 16px 0 0;max-height:96vh}
+  .modal-backdrop{align-items:flex-end;padding:0}
+}
+@media(max-width:580px){
+  .prob-toolbar{flex-direction:column;align-items:stretch}
+  .search-wrap{max-width:100%}
+  .result-count{margin-left:0}
+  .hamburger{display:flex}
+  .nav-links{display:none}
+}
+@media(min-width:581px){
+  .hamburger{display:none}
+  .mob-overlay,.mob-drawer{display:none!important}
+}
+.filter-fab{display:none}
+
+/* ══════════════════════════════════════════════
+   LOADING SKELETON
+══════════════════════════════════════════════ */
+.skeleton{
+  background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:6px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-card{height:160px;border-radius:var(--radius)}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ══════════════════════════════════════════════
+   SUBJECT COLOR VARS
+══════════════════════════════════════════════ */
+.s-physics{--subj-color:#5bcfdf;--subj-rgb:91,207,223;--subj-a:.1;--subj-border-a:.2}
+.s-mathematics{--subj-color:#81c784;--subj-rgb:129,199,132;--subj-a:.1;--subj-border-a:.2}
+.s-chemistry{--subj-color:#FFD700;--subj-rgb:255,215,0;--subj-a:.08;--subj-border-a:.18}
+.s-biology{--subj-color:#4dd0e1;--subj-rgb:77,208,225;--subj-a:.1;--subj-border-a:.2}
+.s-informatics{--subj-color:#ce93d8;--subj-rgb:206,147,216;--subj-a:.1;--subj-border-a:.2}
+.s-astronomy{--subj-color:#ffb74d;--subj-rgb:255,183,77;--subj-a:.09;--subj-border-a:.2}
+</style>
 </head>
 <body>
 
-<!-- ══ +PTS TOAST ══ -->
-<div class="pa-pts-toast" id="ptsToast">+0 pts</div>
+<!-- BACKGROUND -->
+<canvas id="bgCanvas"></canvas>
+<div class="blobs" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
 
-<!-- ══ SOLVE MODAL ══ -->
-<div class="pa-solve-overlay" id="solveOverlay" role="dialog" aria-modal="true" aria-labelledby="solveName">
+<!-- MOBILE OVERLAY -->
+<div class="mob-overlay" id="mobOverlay" onclick="closeMobMenu()"></div>
+<div class="mob-drawer" id="mobDrawer" role="dialog" aria-label="Navigation">
+  <button class="mob-close" onclick="closeMobMenu()">✕</button>
+  <a href="index.html" class="mob-link">🏠 Home</a>
+  <a href="index.html#practice" class="mob-link active">⚡ Practice</a>
+  <a href="index.html#contests" class="mob-link">🏆 Contests</a>
+  <a href="leaderboard.html" class="mob-link">📊 Leaderboard</a>
+  <a href="profile.html" class="mob-link" id="mobProfileLink">👤 My Profile</a>
+</div>
 
-  <div class="pa-solve-panel">
+<!-- NAVBAR -->
+<nav class="navbar" id="mainNav">
+  <a href="index.html" class="nav-brand">
+    <img src="assets/logo.png" alt="BDOH" class="nav-logo" onerror="this.style.display='none'"/>
+    <span class="nav-brand-text">Bangladesh<strong>Olympiadians Hub</strong></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#" class="active">Practice Arena</a></li>
+    <li><a href="index.html#contests">Contests</a></li>
+    <li><a href="leaderboard.html">Leaderboard</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn-theme" id="themeBtn" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <div id="navUserWrap"></div>
+    <button class="hamburger" id="hbBtn" aria-label="Menu" aria-expanded="false" onclick="openMobMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
 
-    <!-- Panel topbar -->
-    <div class="pa-solve-topbar">
-      <div style="flex:1;min-width:0">
-        <div class="pa-solve-name" id="solveName">Problem Title</div>
+<!-- HERO BANNER -->
+<header class="arena-hero">
+  <div class="arena-eyebrow">
+    <span class="dot"></span>
+    Practice Arena · Bangladesh Olympiadians Hub
+  </div>
+  <h1 class="arena-title">
+    <span class="line1">SHARPEN YOUR</span>
+    <span class="line2">MIND</span>
+  </h1>
+  <p class="arena-sub">Tackle real olympiad problems across 6 disciplines. Every correct answer earns you points — tracked live on your profile and the leaderboard.</p>
+  <div class="arena-stats-row" id="heroStats">
+    <div class="astat"><span class="astat-n" id="statTotal">—</span><span class="astat-l">Problems</span></div>
+    <div class="astat"><span class="astat-n" id="statSolved">—</span><span class="astat-l">Solved Today</span></div>
+    <div class="astat"><span class="astat-n" id="statMyPts">—</span><span class="astat-l">Your Points</span></div>
+  </div>
+</header>
+
+<!-- MAIN ARENA -->
+<main class="arena-main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- User Card -->
+    <div class="sidebar-card" id="userCard">
+      <div class="sidebar-title">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
+        Your Profile
       </div>
-
-      <!-- Session progress pips -->
-      <div class="pa-prog-row" id="solveProgRow"></div>
-
-      <!-- Timer -->
-      <div class="pa-timer" id="solveTimer">15:00</div>
-
-      <!-- Close -->
-      <button class="pa-close-btn" onclick="PA.closePanel()" aria-label="Close">✕</button>
+      <div id="userCardInner">
+        <div class="not-signed-in">
+          <p>Sign in to track your points and submission history.</p>
+          <button class="btn-sign-in-full" onclick="triggerSignIn()">Sign In with Google</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Split body -->
-    <div class="pa-solve-body">
-
-      <!-- LEFT: Statement -->
-      <div class="pa-solve-left">
-        <div class="pa-input-label" style="margin-bottom:8px">Problem Statement</div>
-
-        <div class="pa-stmt" id="solveStmt"></div>
-
-        <div class="pa-given-box" id="solveGiven" style="display:none"></div>
-
-        <!-- Hint + formula sheet -->
-        <div class="pa-hint-btns">
-          <button class="pa-hint-chip" id="hintBtn1" onclick="PA.revealHint(1)">💡 Hint</button>
-          <button class="pa-hint-chip" id="hintBtn2" onclick="PA.revealHint(2)">💡 Hint 2</button>
-          <button class="pa-hint-chip" id="formulaBtn" onclick="PA.toggleFormulas()">📐 Formula sheet</button>
-        </div>
-
-        <div class="pa-hint-content" id="hintBox1"></div>
-        <div class="pa-hint-content" id="hintBox2"></div>
-        <div class="pa-hint-content" id="formulaBox" style="border-color:rgba(55,138,221,.3);background:var(--pa-blue-bg)"></div>
+    <!-- Subject Filter -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L13 10.414V17a1 1 0 01-.553.894l-4-2A1 1 0 018 15v-4.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+        Subject
       </div>
-
-      <!-- RIGHT: Answer + solution -->
-      <div class="pa-solve-right">
-
-        <!-- Answer input -->
-        <div>
-          <div class="pa-input-label">Your Answer</div>
-          <input class="pa-answer-input" id="answerInput"
-            type="text"
-            placeholder="Enter numerical value…"
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Your numerical answer"
-            onkeydown="if(event.key==='Enter')PA.submit()"/>
-          <div class="pa-tolerance" id="toleranceLabel">Tolerance: ±0.5</div>
-        </div>
-
-        <button class="pa-submit-btn" id="submitBtn" onclick="PA.submit()">
-          <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/></svg>
-          Submit Answer
+      <div class="subj-list" id="subjList">
+        <button class="subj-btn active" data-subj="All" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#8fa3be"></span>All Subjects
+          <span class="subj-count" id="cnt-all">0</span>
         </button>
+        <button class="subj-btn" data-subj="Physics" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#5bcfdf"></span>Physics
+          <span class="subj-count" id="cnt-Physics">0</span>
+        </button>
+        <button class="subj-btn" data-subj="Mathematics" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#81c784"></span>Mathematics
+          <span class="subj-count" id="cnt-Mathematics">0</span>
+        </button>
+        <button class="subj-btn" data-subj="Chemistry" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#FFD700"></span>Chemistry
+          <span class="subj-count" id="cnt-Chemistry">0</span>
+        </button>
+        <button class="subj-btn" data-subj="Biology" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#4dd0e1"></span>Biology
+          <span class="subj-count" id="cnt-Biology">0</span>
+        </button>
+        <button class="subj-btn" data-subj="Informatics" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#ce93d8"></span>Informatics
+          <span class="subj-count" id="cnt-Informatics">0</span>
+        </button>
+        <button class="subj-btn" data-subj="Astronomy" onclick="setSubject(this)">
+          <span class="subj-dot" style="background:#ffb74d"></span>Astronomy
+          <span class="subj-count" id="cnt-Astronomy">0</span>
+        </button>
+      </div>
+    </div>
 
-        <!-- Feedback -->
-        <div class="pa-feedback" id="feedbackBox">
-          <span id="feedbackText"></span>
-        </div>
+    <!-- Difficulty Filter -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+        Difficulty
+      </div>
+      <div class="diff-pills">
+        <button class="diff-pill active" data-diff="All" onclick="setDiff(this)">All</button>
+        <button class="diff-pill d-easy" data-diff="Easy" onclick="setDiff(this)">Easy</button>
+        <button class="diff-pill d-medium" data-diff="Medium" onclick="setDiff(this)">Medium</button>
+        <button class="diff-pill d-hard" data-diff="Hard" onclick="setDiff(this)">Hard</button>
+        <button class="diff-pill" data-diff="Olympiad" onclick="setDiff(this)">Olympiad</button>
+      </div>
+    </div>
 
-        <!-- Solution -->
-        <div class="pa-solution-wrap">
-          <div class="pa-input-label">Solution</div>
-          <div class="pa-solution-locked" id="solutionLocked">
-            <svg viewBox="0 0 20 20" width="24" height="24" fill="currentColor"><path d="M5 9V7a7 7 0 0114 0v2a2 2 0 012 2v5a2 2 0 01-2 2H3a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z"/></svg>
-            <p>Submit your answer to unlock the full worked solution.</p>
+    <!-- Mini Leaderboard -->
+    <div class="sidebar-card">
+      <div class="sidebar-title">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        Top Solvers
+      </div>
+      <div class="lb-list" id="sidebarLb">
+        <div style="color:var(--text3);font-size:.78rem;padding:8px 0">Loading leaderboard…</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- PROBLEM AREA -->
+  <section class="prob-area">
+    <div class="prob-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        <input class="search-input" id="searchInput" type="search" placeholder="Search problems…" oninput="renderProblems()"/>
+      </div>
+      <select class="sort-select" id="sortSelect" onchange="renderProblems()">
+        <option value="default">Sort: Default</option>
+        <option value="pts-high">Points: High → Low</option>
+        <option value="pts-low">Points: Low → High</option>
+        <option value="diff-easy">Difficulty: Easy first</option>
+        <option value="diff-hard">Difficulty: Hard first</option>
+      </select>
+      <span class="result-count" id="resultCount">Loading…</span>
+    </div>
+
+    <!-- Skeleton loaders while fetching -->
+    <div class="prob-grid" id="skeletonGrid">
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+      <div class="skeleton skel-card"></div>
+    </div>
+
+    <div class="prob-grid" id="probGrid" style="display:none"></div>
+  </section>
+
+</main>
+
+<!-- FILTER FAB (mobile) -->
+<button class="filter-fab" id="filterFab" onclick="toggleSidebar()">
+  <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-.293.707L13 10.414V17a1 1 0 01-.553.894l-4-2A1 1 0 018 15v-4.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+  Filters
+</button>
+
+<!-- SOLVE MODAL -->
+<div class="modal-backdrop" id="solveModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="solve-modal">
+    <div class="modal-header">
+      <div class="modal-header-left">
+        <div class="modal-subj-row">
+          <span id="modalSubjTag" class="prob-subj-tag"></span>
+          <span id="modalDiffBadge" class="diff-badge"></span>
+          <div class="timer-display" id="timerDisplay">
+            <svg viewBox="0 0 20 20" width="13" height="13" fill="currentColor"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/></svg>
+            <span id="timerVal">15:00</span>
           </div>
-          <div class="pa-solution-content" id="solutionContent"></div>
         </div>
-
-        <!-- Nav -->
-        <div class="pa-nav-row">
-          <button class="pa-nav-btn" id="prevBtn" onclick="PA.navigate(-1)" disabled>
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M7.707 14.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L3.414 7H15a1 1 0 110 2H3.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
-            Prev
-          </button>
-          <span class="pa-progress-label" id="progressLabel">1 / 10</span>
-          <button class="pa-nav-btn next" id="nextBtn" onclick="PA.navigate(1)">
-            Next
-            <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8.293 1.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L12.586 9H1a1 1 0 010-2h11.586L8.293 2.707a1 1 0 010-1.414z"/></svg>
-          </button>
-        </div>
-
-      </div><!-- /pa-solve-right -->
-    </div><!-- /pa-solve-body -->
-  </div><!-- /pa-solve-panel -->
-</div><!-- /pa-solve-overlay -->
-
-<!-- ══ PAGE SHELL ══ -->
-<div class="pa-root">
-
-  <!-- TOP BAR -->
-  <header class="pa-topbar">
-    <a class="pa-topbar-brand" href="index.html">
-      <img src="assets/logo.png" alt="BDOH" width="32" height="32"/>
-      <span>BDOH</span>
-    </a>
-    <span style="color:var(--color-border-tertiary);font-size:16px">›</span>
-    <div class="pa-topbar-title">Practice Arena</div>
-
-    <!-- Search -->
-    <div class="pa-search-wrap">
-      <svg class="pa-search-icon" viewBox="0 0 20 20" width="14" height="14" fill="currentColor">
-        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-      </svg>
-      <input class="pa-search" id="searchBox" type="text" placeholder="Search problems…"
-        aria-label="Search problems"
-        oninput="PA.applyFilters()"/>
+        <h2 class="modal-title" id="modalTitle">Problem Title</h2>
+      </div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
     </div>
 
-    <div class="pa-topbar-actions">
-      <div class="pa-streak" id="streakBadge" title="Daily solve streak">
-        🔥 <span id="streakCount">0</span>
-      </div>
-      <div class="pa-rating" id="ratingBadge" title="Your current rating">
-        ⚡ <span id="ratingNum">—</span>
-      </div>
-      <!-- Auth button rendered by auth.js -->
-      <div id="navAuthWrap2"></div>
-
-      <!-- Theme toggle -->
-      <button class="btn-theme" id="themeBtn2" aria-label="Toggle theme">
-        <svg id="themeIcon2" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5"/>
-          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-      </button>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="problem" onclick="switchTab(this)">Problem</button>
+      <button class="modal-tab" data-tab="answer" onclick="switchTab(this)">Submit Answer</button>
+      <button class="modal-tab" data-tab="solution" id="solutionTab" onclick="switchTab(this)">Solution 🔒</button>
+      <button class="modal-tab" data-tab="history" onclick="switchTab(this)">My History</button>
     </div>
-  </header>
 
-  <!-- BODY -->
-  <div class="pa-body">
-
-    <!-- LEFT SIDEBAR — personal stats -->
-    <aside class="pa-sidebar" aria-label="Personal statistics">
-
-      <!-- Streak -->
-      <div class="pa-stat-card">
-        <div class="pa-stat-card-title">Daily Streak</div>
-        <div class="pa-big-num" id="sideStreakNum">0 <span style="font-size:14px;font-weight:400;color:var(--color-text-secondary)">days</span></div>
-        <div class="pa-streak-dots" id="sideStreakDots"></div>
-        <div class="pa-big-sub" style="margin-top:6px">Solve 1 problem/day to keep it going</div>
+    <div class="modal-body">
+      <!-- Problem tab -->
+      <div class="tab-panel active" id="tab-problem">
+        <div class="stmt-body" id="modalStmt"></div>
+        <div class="stmt-info-row" id="modalInfoRow"></div>
+        <button class="hint-toggle-btn" id="hintBtn" onclick="toggleHint()">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.001z"/></svg>
+          Show Hint
+        </button>
+        <div class="hint-box" id="hintBox"></div>
       </div>
 
-      <!-- Rating -->
-      <div class="pa-stat-card">
-        <div class="pa-stat-card-title">Rating This Week</div>
-        <div class="pa-big-num">
-          <span id="sideRatingNum">—</span>
-          <span style="font-size:13px;font-weight:400;color:var(--pa-green)" id="sideRatingDelta"></span>
-        </div>
-        <div class="pa-mini-bars" id="sideMiniChart">
-          <div class="pa-mini-bar" style="height:35%"></div>
-          <div class="pa-mini-bar" style="height:50%"></div>
-          <div class="pa-mini-bar" style="height:42%"></div>
-          <div class="pa-mini-bar" style="height:60%"></div>
-          <div class="pa-mini-bar" style="height:55%"></div>
-          <div class="pa-mini-bar" style="height:75%"></div>
-          <div class="pa-mini-bar cur" style="height:88%"></div>
-        </div>
-      </div>
-
-      <!-- Problems solved -->
-      <div class="pa-stat-card">
-        <div class="pa-stat-card-title">Problems Solved</div>
-        <div class="pa-solved-row">
-          <div class="pa-solved-chip g"><span id="sideSolved">0</span>Solved</div>
-          <div class="pa-solved-chip a"><span id="sideAttempted">0</span>Attempted</div>
-          <div class="pa-solved-chip r"><span id="sideSkipped">0</span>Skipped</div>
+      <!-- Answer tab -->
+      <div class="tab-panel" id="tab-answer">
+        <div class="answer-section">
+          <div>
+            <div class="answer-type-label" id="answerTypeLabel">Numerical Answer</div>
+            <div class="answer-input-wrap">
+              <input class="answer-input" id="answerInput" type="text" placeholder="Enter your answer…" autocomplete="off" spellcheck="false"/>
+            </div>
+          </div>
+          <button class="submit-btn" id="submitBtn" onclick="submitAnswer()">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"/></svg>
+            Submit Answer
+          </button>
+          <div class="feedback-box" id="feedbackBox">
+            <div class="feedback-title" id="feedbackTitle"></div>
+            <div class="feedback-detail" id="feedbackDetail"></div>
+            <div id="ptsEarned"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Accuracy by subject -->
-      <div class="pa-stat-card">
-        <div class="pa-stat-card-title">Accuracy by Subject</div>
-        <div id="sideAccBars">
-          <!-- Filled by JS -->
+      <!-- Solution tab -->
+      <div class="tab-panel" id="tab-solution">
+        <div class="solution-lock" id="solutionLock">
+          <svg viewBox="0 0 40 40" width="40" height="40" fill="none"><path d="M12 18v-4a8 8 0 0116 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="8" y="18" width="24" height="18" rx="4" fill="currentColor" opacity=".1" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="28" r="2" fill="currentColor" opacity=".5"/></svg>
+          <p>Submit your answer first to unlock the full solution walkthrough.</p>
+        </div>
+        <div class="solution-content" id="solutionContent" style="display:none"></div>
+      </div>
+
+      <!-- History tab -->
+      <div class="tab-panel" id="tab-history">
+        <div class="history-area" id="historyArea">
+          <div class="hi-empty">Sign in to see your submission history for this problem.</div>
         </div>
       </div>
+    </div>
 
-      <!-- First Solver Hall of Fame -->
-      <div class="pa-stat-card">
-        <div class="pa-stat-card-title">🏅 First Solvers</div>
-        <div id="sideHofList">
-          <!-- Filled by JS -->
-        </div>
+    <div class="modal-footer">
+      <div class="modal-nav-btns">
+        <button class="btn-nav" id="prevBtn" onclick="navigateProblem(-1)">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M7.707 14.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L3.414 7H15a1 1 0 110 2H3.414l4.293 4.293a1 1 0 010 1.414z"/></svg>
+          Prev
+        </button>
+        <span class="prob-counter" id="probCounter">1 / 1</span>
+        <button class="btn-nav" id="nextBtn" onclick="navigateProblem(1)">
+          Next
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8.293 1.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L12.586 9H1a1 1 0 010-2h11.586L8.293 2.707a1 1 0 010-1.414z"/></svg>
+        </button>
       </div>
+      <span id="modalPts" style="font-size:.8rem;color:var(--gold);font-weight:700;display:flex;align-items:center;gap:4px">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
+        — pts
+      </span>
+    </div>
+  </div>
+</div>
 
-    </aside>
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
 
-    <!-- MAIN CONTENT -->
-    <main class="pa-main" role="main">
+<!-- FOOTER -->
+<footer class="arena-footer">
+  <a href="index.html" class="footer-brand-mini">
+    ← Back to BDOH
+  </a>
+  <span class="footer-copy">© 2026 Bangladesh Olympiadians Hub</span>
+  <a href="index.html" class="footer-back">
+    Main Website
+    <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8.293 1.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L12.586 9H1a1 1 0 010-2h11.586L8.293 2.707a1 1 0 010-1.414z"/></svg>
+  </a>
+</footer>
 
-      <!-- Filter row — subjects -->
-      <div class="pa-filters" id="subjectFilters" role="group" aria-label="Filter by subject">
-        <button class="pa-pill active" data-subject="All" onclick="PA.setSubject(this)">All</button>
-        <button class="pa-pill" data-subject="Physics" onclick="PA.setSubject(this)">⚛ Physics</button>
-        <button class="pa-pill" data-subject="Mathematics" onclick="PA.setSubject(this)">∑ Math</button>
-        <button class="pa-pill" data-subject="Chemistry" onclick="PA.setSubject(this)">⚗ Chemistry</button>
-        <button class="pa-pill" data-subject="Biology" onclick="PA.setSubject(this)">🧬 Biology</button>
-        <button class="pa-pill" data-subject="Astronomy" onclick="PA.setSubject(this)">🔭 Astronomy</button>
-        <button class="pa-pill" data-subject="Informatics" onclick="PA.setSubject(this)">💻 Informatics</button>
-      </div>
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup }
+  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection,
+         addDoc, query, where, orderBy, getDocs, serverTimestamp, increment, limit }
+  from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-      <!-- Filter row — difficulty + status + sort -->
-      <div class="pa-filters" id="diffFilters" role="group" aria-label="Filter by difficulty">
-        <button class="pa-pill diff-easy"   data-diff="Easy"   onclick="PA.setDiff(this)">Easy</button>
-        <button class="pa-pill diff-medium" data-diff="Medium" onclick="PA.setDiff(this)">Medium</button>
-        <button class="pa-pill diff-hard"   data-diff="Hard"   onclick="PA.setDiff(this)">Hard</button>
-        <button class="pa-pill diff-expert" data-diff="Expert" onclick="PA.setDiff(this)">Expert</button>
-        <div class="pa-filter-divider"></div>
-        <button class="pa-pill" data-status="solved"    onclick="PA.setStatus(this)">✓ Solved</button>
-        <button class="pa-pill" data-status="attempted" onclick="PA.setStatus(this)">○ Attempted</button>
-        <button class="pa-pill" data-status="unseen"    onclick="PA.setStatus(this)">· Unseen</button>
-        <select class="pa-sort" id="sortSelect" onchange="PA.applyFilters()" aria-label="Sort problems">
-          <option value="popular">Sort: Popular</option>
-          <option value="newest">Newest</option>
-          <option value="easiest">Easiest first</option>
-          <option value="hardest">Hardest first</option>
-          <option value="success_asc">Low success rate</option>
-        </select>
-      </div>
+// ── Firebase config (same as main site) ──────────────────────
+// NOTE: Replace with your actual config from data.js / Firebase console
+const firebaseConfig = {
+  apiKey:            "REPLACE_WITH_YOUR_API_KEY",
+  authDomain:        "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+  projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket:     "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+  appId:             "REPLACE_WITH_YOUR_APP_ID"
+};
 
-      <!-- Count row + legend -->
-      <div class="pa-count-row">
-        <span id="countLabel">Showing all problems</span>
-        <div class="pa-count-legend">
-          <span><span class="pa-legend-dot" style="background:var(--pa-green)"></span> Solved</span>
-          <span><span class="pa-legend-dot" style="background:var(--pa-amber)"></span> Attempted</span>
-          <span><span class="pa-legend-dot" style="background:var(--color-border-tertiary)"></span> Unseen</span>
-        </div>
-      </div>
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-      <!-- Problem cards grid -->
-      <div class="pa-prob-grid" id="probGrid" role="list">
-        <div class="pa-loading">
-          <div class="pa-spinner"></div>
-          <span style="font-size:13px;color:var(--color-text-secondary)">Loading problems…</span>
-        </div>
-      </div>
+// Expose to global scope
+window.FIREBASE_AUTH = auth;
+window.FIREBASE_DB   = db;
+window.FIREBASE_PROVIDER = provider;
+window.FIREBASE_FUNCS = {
+  doc, getDoc, setDoc, updateDoc, collection,
+  addDoc, query, where, orderBy, getDocs,
+  serverTimestamp, increment, limit
+};
 
-    </main>
-  </div><!-- /pa-body -->
-</div><!-- /pa-root -->
-
-<!-- ══ DATA LAYER ══ -->
-<script src="data.js"></script>
-<!-- ══ AUTH ══ -->
-<script src="auth.js"></script>
-
-<!-- ══ PRACTICE ENGINE ══ -->
-<script src="practice.js"></script>
-
-<!-- Theme toggle (mirrors main.js behaviour) -->
-<script>
-(function(){
-  const btn2 = document.getElementById('themeBtn2');
-  const icon2 = document.getElementById('themeIcon2');
-  function syncIcon(){
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    icon2.innerHTML = dark
-      ? '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'
-      : '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+// ── Auth state listener ───────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  window.CURRENT_USER = user;
+  if (user) {
+    // Fetch user doc
+    const uRef = doc(db, 'users', user.uid);
+    const uSnap = await getDoc(uRef);
+    if (uSnap.exists()) {
+      window.USER_DATA = uSnap.data();
+    } else {
+      // Create profile if first time
+      const newUser = {
+        uid: user.uid,
+        name: user.displayName || 'Olympiad Student',
+        email: user.email,
+        photo: user.photoURL || '',
+        points: 0,
+        solvedProblems: [],
+        submissionsCount: 0,
+        joinedAt: serverTimestamp()
+      };
+      await setDoc(uRef, newUser);
+      window.USER_DATA = newUser;
+    }
+    renderUserCard(user, window.USER_DATA);
+    updateHeroStats();
+  } else {
+    window.USER_DATA = null;
+    renderUserCard(null, null);
+    updateHeroStats();
   }
-  btn2.addEventListener('click', function(){
-    const html = document.documentElement;
-    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('bdoh-theme', next);
-    syncIcon();
-    // Also sync the main themeBtn if present
-    if(window.__bdohSyncTheme) window.__bdohSyncTheme(next);
+  renderProblems();
+  loadLeaderboard();
+});
+
+// ── Trigger Sign In ───────────────────────────────────────────
+window.triggerSignIn = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    showToast('Sign-in failed: ' + e.message, 'error');
+  }
+};
+
+// ── Submit Answer to Firestore ────────────────────────────────
+window.recordSubmission = async (problem, isCorrect, userAnswer) => {
+  if (!window.CURRENT_USER) return;
+  const { collection, addDoc, doc, updateDoc, increment, serverTimestamp, getDoc } = window.FIREBASE_FUNCS;
+  const db = window.FIREBASE_DB;
+
+  // Add to submissions collection (admin can view)
+  await addDoc(collection(db, 'submissions'), {
+    uid:         window.CURRENT_USER.uid,
+    userName:    window.CURRENT_USER.displayName,
+    userEmail:   window.CURRENT_USER.email,
+    userPhoto:   window.CURRENT_USER.photoURL || '',
+    problemId:   problem.id,
+    problemTitle:problem.title,
+    subject:     problem.subject,
+    difficulty:  problem.difficulty,
+    userAnswer:  userAnswer,
+    isCorrect:   isCorrect,
+    pointsEarned:isCorrect ? (problem.points || 10) : 0,
+    submittedAt: serverTimestamp()
   });
-  // Load saved theme
-  const saved = localStorage.getItem('bdoh-theme');
-  if(saved) document.documentElement.setAttribute('data-theme', saved);
-  syncIcon();
-})();
+
+  // Update user profile
+  const uRef = doc(db, 'users', window.CURRENT_USER.uid);
+  const updates = { submissionsCount: increment(1) };
+  if (isCorrect) {
+    updates.points = increment(problem.points || 10);
+    // Add to solved list
+    const uSnap = await getDoc(uRef);
+    const solved = (uSnap.data().solvedProblems || []);
+    if (!solved.includes(problem.id)) {
+      solved.push(problem.id);
+      updates.solvedProblems = solved;
+    }
+  }
+  await updateDoc(uRef, updates);
+
+  // Refresh user data
+  const fresh = await getDoc(uRef);
+  window.USER_DATA = fresh.data();
+  renderUserCard(window.CURRENT_USER, window.USER_DATA);
+  updateHeroStats();
+  renderProblems(); // refresh solved indicators
+};
+
+// ── Load submission history for a problem ────────────────────
+window.loadProblemHistory = async (problemId) => {
+  const hArea = document.getElementById('historyArea');
+  if (!window.CURRENT_USER) {
+    hArea.innerHTML = '<div class="hi-empty">Sign in to see your submission history.</div>';
+    return;
+  }
+  const { collection, query, where, orderBy, getDocs } = window.FIREBASE_FUNCS;
+  const db = window.FIREBASE_DB;
+  try {
+    const q = query(
+      collection(db,'submissions'),
+      where('uid','==',window.CURRENT_USER.uid),
+      where('problemId','==',problemId),
+      orderBy('submittedAt','desc')
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      hArea.innerHTML = '<div class="hi-empty">No submissions yet for this problem.</div>';
+      return;
+    }
+    const items = snap.docs.map(d => {
+      const s = d.data();
+      const date = s.submittedAt?.toDate ? s.submittedAt.toDate().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'N/A';
+      return `<div class="history-item">
+        <div class="hi-status ${s.isCorrect?'correct':'wrong'}"></div>
+        <div><div class="hi-title">${s.problemTitle}</div><div class="hi-subj">Answered: ${s.userAnswer}</div></div>
+        <div class="hi-pts">${s.isCorrect?'+'+s.pointsEarned+'pts':'0 pts'}</div>
+        <div class="hi-date">${date}</div>
+      </div>`;
+    }).join('');
+    hArea.innerHTML = items;
+  } catch(e) {
+    hArea.innerHTML = '<div class="hi-empty">Could not load history.</div>';
+  }
+};
+
+// ── Load leaderboard ─────────────────────────────────────────
+window.loadLeaderboard = async () => {
+  const { collection, query, orderBy, getDocs, limit } = window.FIREBASE_FUNCS;
+  const db = window.FIREBASE_DB;
+  const lbEl = document.getElementById('sidebarLb');
+  try {
+    const q = query(collection(db,'users'), orderBy('points','desc'), limit(5));
+    const snap = await getDocs(q);
+    if (snap.empty) { lbEl.innerHTML = '<div style="color:var(--text3);font-size:.78rem">No data yet.</div>'; return; }
+    const ranks = ['gold','silver','bronze','',''];
+    const symbols = ['🥇','🥈','🥉','4','5'];
+    lbEl.innerHTML = snap.docs.map((d,i)=>{
+      const u = d.data();
+      const initials = (u.name||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const photoHtml = u.photo
+        ? `<img src="${u.photo}" alt="" onerror="this.parentElement.innerHTML='${initials}'">`
+        : initials;
+      return `<div class="lb-row">
+        <span class="lb-rank ${ranks[i]}">${symbols[i]}</span>
+        <div class="lb-avatar">${photoHtml}</div>
+        <span class="lb-name">${u.name||'Student'}</span>
+        <span class="lb-pts">${u.points||0}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    lbEl.innerHTML = '<div style="color:var(--text3);font-size:.78rem">Leaderboard unavailable.</div>';
+  }
+};
+
+window.updateHeroStats = () => {
+  document.getElementById('statTotal').textContent = (window.ALL_PROBLEMS||[]).length || '—';
+  document.getElementById('statMyPts').textContent = window.USER_DATA?.points ?? '—';
+  // solved today from submissions is complex; just show solved count
+  const solved = window.USER_DATA?.solvedProblems?.length ?? '—';
+  document.getElementById('statSolved').textContent = solved;
+};
 </script>
 
+<script>
+// ══════════════════════════════════════════════
+//  PROBLEM DATABASE
+//  This mirrors the structure used in data.js —
+//  replace with Firebase fetch in production!
+// ══════════════════════════════════════════════
+window.ALL_PROBLEMS = [
+  // PHYSICS
+  {id:'phy001',subject:'Physics',title:'Projectile at an Angle',difficulty:'Easy',points:10,
+   statement:'A ball is thrown with an initial velocity of $20\\,\\text{m/s}$ at $30°$ above the horizontal. What is the maximum height reached (in metres)? Take $g = 10\\,\\text{m/s}^2$.',
+   hint:'Use $v_y^2 = u_y^2 - 2gH$. Find $u_y$ first.',
+   answer:'5',answerType:'numerical',tolerance:0.1,
+   solution:'The vertical component of initial velocity is $u_y = 20\\sin30° = 10\\,\\text{m/s}$. At maximum height $v_y = 0$. So $H = \\frac{u_y^2}{2g} = \\frac{100}{20} = 5\\,\\text{m}$.',
+   meta:{source:'BPhO 2022',chapter:'Kinematics',year:2022}},
+  {id:'phy002',subject:'Physics',title:'Simple Harmonic Motion Period',difficulty:'Easy',points:10,
+   statement:'A mass of $0.5\\,\\text{kg}$ is attached to a spring with spring constant $k = 200\\,\\text{N/m}$. What is the period of oscillation (in seconds, 2 d.p.)?',
+   hint:'Use $T = 2\\pi\\sqrt{m/k}$.',
+   answer:'0.31',answerType:'numerical',tolerance:0.01,
+   solution:'$T = 2\\pi\\sqrt{\\frac{0.5}{200}} = 2\\pi\\sqrt{0.0025} = 2\\pi \\times 0.05 \\approx 0.314\\,\\text{s} \\approx 0.31\\,\\text{s}$.',
+   meta:{source:'Practice',chapter:'Oscillations',year:2023}},
+  {id:'phy003',subject:'Physics',title:'Electric Field Between Plates',difficulty:'Medium',points:20,
+   statement:'Two parallel plates are separated by $d = 0.01\\,\\text{m}$ with a potential difference of $V = 500\\,\\text{V}$. What is the magnitude of the electric field (in V/m) between the plates?',
+   hint:'$E = V/d$ for uniform fields.',
+   answer:'50000',answerType:'numerical',tolerance:100,
+   solution:'$E = \\frac{V}{d} = \\frac{500}{0.01} = 50{,}000\\,\\text{V/m}$.',
+   meta:{source:'BDOH 2024',chapter:'Electrostatics',year:2024}},
+  {id:'phy004',subject:'Physics',title:'Conservation of Energy on a Ramp',difficulty:'Medium',points:20,
+   statement:'A block of mass $2\\,\\text{kg}$ slides down a frictionless ramp of height $h = 3\\,\\text{m}$. What is its speed at the bottom (in m/s)? Take $g = 10\\,\\text{m/s}^2$.',
+   hint:'$\\frac{1}{2}mv^2 = mgh$',
+   answer:'7.75',answerType:'numerical',tolerance:0.1,
+   solution:'$v = \\sqrt{2gh} = \\sqrt{2 \\times 10 \\times 3} = \\sqrt{60} \\approx 7.746 \\approx 7.75\\,\\text{m/s}$.',
+   meta:{source:'Practice',chapter:'Energy',year:2023}},
+  {id:'phy005',subject:'Physics',title:'Lens Equation',difficulty:'Hard',points:30,
+   statement:'An object is placed $30\\,\\text{cm}$ in front of a converging lens of focal length $20\\,\\text{cm}$. Where is the image formed (in cm from the lens)? Give a positive number for a real image.',
+   hint:'Use $\\frac{1}{f}=\\frac{1}{v}-\\frac{1}{u}$ with sign convention.',
+   answer:'60',answerType:'numerical',tolerance:0.5,
+   solution:'Using $\\frac{1}{v} - \\frac{1}{u} = \\frac{1}{f}$ with $u = -30$, $f = +20$: $\\frac{1}{v} = \\frac{1}{20} + \\frac{1}{-30}$... Actually with the standard $\\frac{1}{f}=\\frac{1}{v}+\\frac{1}{u}$ form: $\\frac{1}{v}=\\frac{1}{f}-\\frac{1}{u}=\\frac{1}{20}-\\frac{-1}{30}=\\frac{1}{20}+\\frac{1}{30}=\\frac{5}{60}=\\frac{1}{12}$... Using $\\frac{1}{v}=\\frac{1}{f}+\\frac{1}{u}$ where $u=-30$: $\\frac{1}{v}=\\frac{1}{20}+\\frac{1}{-30}=\\frac{3-2}{60}=\\frac{1}{60}$, so $v=60\\,\\text{cm}$.',
+   meta:{source:'BPhO Prelim',chapter:'Optics',year:2023}},
+  // MATHEMATICS
+  {id:'mat001',subject:'Mathematics',title:'Sum of Arithmetic Series',difficulty:'Easy',points:10,
+   statement:'Find the sum of the first $50$ positive odd integers.',
+   hint:'The $n$-th odd integer is $2n-1$. Recall $\\sum_{k=1}^{n}(2k-1)=n^2$.',
+   answer:'2500',answerType:'numerical',tolerance:0,
+   solution:'The sum of the first $n$ odd integers is $n^2$. So the sum = $50^2 = 2500$.',
+   meta:{source:'IMO Prep',chapter:'Number Theory',year:2022}},
+  {id:'mat002',subject:'Mathematics',title:'Quadratic Roots Product',difficulty:'Easy',points:10,
+   statement:'If the roots of $x^2 - 7x + k = 0$ are equal, what is the value of $k$?',
+   hint:'For equal roots, discriminant $= 0$.',
+   answer:'12.25',answerType:'numerical',tolerance:0.01,
+   solution:'Discriminant $\\Delta = b^2 - 4ac = 49 - 4k = 0 \\Rightarrow k = \\frac{49}{4} = 12.25$.',
+   meta:{source:'Practice',chapter:'Algebra',year:2023}},
+  {id:'mat003',subject:'Mathematics',title:'Area of Triangle in a Circle',difficulty:'Medium',points:20,
+   statement:'A circle has radius $r = 10$. An equilateral triangle is inscribed in the circle. What is the area of the triangle (to 2 d.p.)?',
+   hint:'Side length of inscribed equilateral triangle in circle of radius $r$ is $r\\sqrt{3}$.',
+   answer:'129.90',answerType:'numerical',tolerance:0.05,
+   solution:'Side $a = r\\sqrt{3} = 10\\sqrt{3}$. Area $= \\frac{\\sqrt{3}}{4}a^2 = \\frac{\\sqrt{3}}{4}\\times 300 = 75\\sqrt{3} \\approx 129.90$.',
+   meta:{source:'BMO',chapter:'Geometry',year:2024}},
+  {id:'mat004',subject:'Mathematics',title:'Modular Arithmetic',difficulty:'Hard',points:30,
+   statement:'What is the remainder when $7^{2025}$ is divided by $5$?',
+   hint:'Find the pattern of $7^n \\pmod{5}$.',
+   answer:'2',answerType:'numerical',tolerance:0,
+   solution:'$7 \\equiv 2 \\pmod{5}$. Powers of $2$ mod $5$: $2^1=2, 2^2=4, 2^3=3, 2^4=1, 2^5=2,\\ldots$ (period 4). $2025 = 4\\times 506 + 1$, so $7^{2025}\\equiv 2^1 = 2\\pmod{5}$.',
+   meta:{source:'BDMO',chapter:'Number Theory',year:2024}},
+  {id:'mat005',subject:'Mathematics',title:'Combinatorics — Handshakes',difficulty:'Medium',points:20,
+   statement:'At a party of $12$ people, everyone shakes hands with every other person exactly once. How many handshakes occur in total?',
+   hint:'Use $\\binom{n}{2}$.',
+   answer:'66',answerType:'numerical',tolerance:0,
+   solution:'$\\binom{12}{2} = \\frac{12\\times 11}{2} = 66$ handshakes.',
+   meta:{source:'Practice',chapter:'Combinatorics',year:2022}},
+  // CHEMISTRY
+  {id:'che001',subject:'Chemistry',title:'Molar Mass of Glucose',difficulty:'Easy',points:10,
+   statement:'What is the molar mass of glucose ($C_6H_{12}O_6$) in g/mol? Use $C=12, H=1, O=16$.',
+   hint:'Sum atomic masses: $6\\times12 + 12\\times1 + 6\\times16$.',
+   answer:'180',answerType:'numerical',tolerance:0,
+   solution:'$M = 6(12) + 12(1) + 6(16) = 72 + 12 + 96 = 180\\,\\text{g/mol}$.',
+   meta:{source:'BChO 2023',chapter:'Stoichiometry',year:2023}},
+  {id:'che002',subject:'Chemistry',title:'pH of Solution',difficulty:'Medium',points:20,
+   statement:'What is the pH of a $0.001\\,\\text{M}$ $\\text{HCl}$ solution (assume complete dissociation)?',
+   hint:'$\\text{pH} = -\\log[H^+]$.',
+   answer:'3',answerType:'numerical',tolerance:0.01,
+   solution:'$[H^+] = 0.001 = 10^{-3}$, so $\\text{pH} = 3$.',
+   meta:{source:'Practice',chapter:'Acids & Bases',year:2022}},
+  {id:'che003',subject:'Chemistry',title:'Ideal Gas Law',difficulty:'Medium',points:20,
+   statement:'A gas occupies $2\\,\\text{L}$ at $300\\,\\text{K}$ and $1\\,\\text{atm}$. What volume (in L) will it occupy at $600\\,\\text{K}$ and $2\\,\\text{atm}$?',
+   hint:'Use $\\frac{P_1V_1}{T_1}=\\frac{P_2V_2}{T_2}$.',
+   answer:'2',answerType:'numerical',tolerance:0.01,
+   solution:'$V_2 = V_1\\frac{P_1 T_2}{P_2 T_1} = 2\\times\\frac{1\\times600}{2\\times300} = 2\\times1 = 2\\,\\text{L}$.',
+   meta:{source:'BChO',chapter:'Gas Laws',year:2024}},
+  // BIOLOGY
+  {id:'bio001',subject:'Biology',title:'DNA Base Pairing',difficulty:'Easy',points:10,
+   statement:'If one strand of DNA has the sequence 5′-ATCGGT-3′, what is the complementary strand written 5′ to 3′?',
+   hint:'A pairs with T, C pairs with G. Don\'t forget to reverse.',
+   answer:'ACCGAT',answerType:'text',
+   solution:'Complementary (3′→5′): TAGCCA. Reverse to get 5′→3′: ACCGAT.',
+   meta:{source:'BBO',chapter:'Genetics',year:2023}},
+  {id:'bio002',subject:'Biology',title:'Mitosis Stages',difficulty:'Easy',points:10,
+   statement:'During which stage of mitosis do chromosomes align along the cell equator (metaphase plate)? Answer: Metaphase, Anaphase, Telophase, or Prophase.',
+   hint:'Think about what "meta-" means positionally.',
+   answer:'Metaphase',answerType:'text',
+   solution:'During **Metaphase**, chromosomes are aligned at the metaphase plate (equatorial plane), where spindle fibers attach to kinetochores.',
+   meta:{source:'BBO',chapter:'Cell Division',year:2022}},
+  {id:'bio003',subject:'Biology',title:'Enzyme Kinetics',difficulty:'Hard',points:30,
+   statement:'An enzyme has $K_m = 2\\,\\text{mM}$ and $V_{max} = 100\\,\\mu\\text{mol/min}$. At $[S] = 8\\,\\text{mM}$, what is the reaction rate (in $\\mu\\text{mol/min}$)?',
+   hint:'Use the Michaelis-Menten equation: $v = \\frac{V_{max}[S]}{K_m + [S]}$.',
+   answer:'80',answerType:'numerical',tolerance:0.5,
+   solution:'$v = \\frac{100\\times8}{2+8} = \\frac{800}{10} = 80\\,\\mu\\text{mol/min}$.',
+   meta:{source:'BBO',chapter:'Biochemistry',year:2024}},
+  // INFORMATICS
+  {id:'inf001',subject:'Informatics',title:'Time Complexity',difficulty:'Easy',points:10,
+   statement:'What is the Big-O time complexity of binary search on a sorted array of $n$ elements? Express as O(f(n)) e.g. O(n) or O(log n).',
+   hint:'Binary search halves the search space each step.',
+   answer:'O(log n)',answerType:'text',
+   solution:'Binary search eliminates half the remaining elements at each step, giving at most $\\log_2 n$ comparisons. Time complexity = $O(\\log n)$.',
+   meta:{source:'IOI Prep',chapter:'Algorithms',year:2023}},
+  {id:'inf002',subject:'Informatics',title:'Fibonacci Recursion Calls',difficulty:'Medium',points:20,
+   statement:'How many times is the function $f(1)$ called when computing $\\text{fib}(5)$ with naive recursion? (fib(0)=0, fib(1)=1)',
+   hint:'Draw the recursion tree for fib(5).',
+   answer:'5',answerType:'numerical',tolerance:0,
+   solution:'Recursion tree for fib(5): fib(1) is called 5 times. (fib(5)→fib(4)+fib(3)→... trace reveals five calls to fib(1).)',
+   meta:{source:'Practice',chapter:'Recursion',year:2022}},
+  // ASTRONOMY
+  {id:'ast001',subject:'Astronomy',title:'Orbital Period via Kepler',difficulty:'Medium',points:20,
+   statement:'A planet orbits a star at a distance of $4\\,\\text{AU}$. The Earth orbits the same star at $1\\,\\text{AU}$ with a period of 1 year. What is the planet\'s orbital period (in years)?',
+   hint:'Kepler\'s Third Law: $T^2 \\propto a^3$.',
+   answer:'8',answerType:'numerical',tolerance:0.01,
+   solution:'$\\frac{T_p^2}{T_E^2} = \\frac{a_p^3}{a_E^3} = \\frac{64}{1}$, so $T_p = 8\\,\\text{years}$.',
+   meta:{source:'IOAA',chapter:'Celestial Mechanics',year:2024}},
+  {id:'ast002',subject:'Astronomy',title:'Apparent Magnitude',difficulty:'Hard',points:30,
+   statement:'Star A has apparent magnitude $m_1 = 1$ and Star B has $m_2 = 6$. How many times brighter is Star A than Star B (to nearest integer)?',
+   hint:'Magnitude difference of 5 corresponds to a brightness ratio of 100.',
+   answer:'100',answerType:'numerical',tolerance:1,
+   solution:'$\\frac{F_1}{F_2} = 10^{0.4(m_2-m_1)} = 10^{0.4\\times5} = 10^2 = 100$. Star A is 100 times brighter.',
+   meta:{source:'IOAA',chapter:'Photometry',year:2023}},
+];
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let currentSubject = 'All';
+let currentDiff    = 'All';
+let currentProblems= [];
+let activeIdx      = 0;
+let timerInterval  = null;
+let timeLeft       = 900; // 15 min
+let hintVisible    = false;
+let submitted      = false;
+
+// ══════════════════════════════════════════════
+//  SUBJECT / DIFF FILTER
+// ══════════════════════════════════════════════
+function setSubject(el){
+  document.querySelectorAll('.subj-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentSubject = el.dataset.subj;
+  if(window.innerWidth<900) toggleSidebar();
+  renderProblems();
+}
+function setDiff(el){
+  document.querySelectorAll('.diff-pill').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  currentDiff = el.dataset.diff;
+  renderProblems();
+}
+
+// ══════════════════════════════════════════════
+//  RENDER PROBLEMS
+// ══════════════════════════════════════════════
+const subjColors = {
+  Physics:'#5bcfdf', Mathematics:'#81c784', Chemistry:'#FFD700',
+  Biology:'#4dd0e1', Informatics:'#ce93d8', Astronomy:'#ffb74d'
+};
+const diffOrder = {Easy:1,Medium:2,Hard:3,Olympiad:4};
+
+function renderProblems(){
+  const grid = document.getElementById('probGrid');
+  const skel = document.getElementById('skeletonGrid');
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const sort   = document.getElementById('sortSelect').value;
+  const solved = window.USER_DATA?.solvedProblems || [];
+
+  // Update counts
+  const allProbs = window.ALL_PROBLEMS || [];
+  document.getElementById('cnt-all').textContent = allProbs.length;
+  ['Physics','Mathematics','Chemistry','Biology','Informatics','Astronomy'].forEach(s=>{
+    document.getElementById('cnt-'+s).textContent = allProbs.filter(p=>p.subject===s).length;
+  });
+
+  let filtered = allProbs.filter(p=>{
+    const matchSubj = currentSubject==='All' || p.subject===currentSubject;
+    const matchDiff = currentDiff==='All' || p.difficulty===currentDiff;
+    const matchSearch = !search || p.title.toLowerCase().includes(search) || p.subject.toLowerCase().includes(search);
+    return matchSubj && matchDiff && matchSearch;
+  });
+
+  // Sort
+  if(sort==='pts-high') filtered.sort((a,b)=>(b.points||0)-(a.points||0));
+  else if(sort==='pts-low') filtered.sort((a,b)=>(a.points||0)-(b.points||0));
+  else if(sort==='diff-easy') filtered.sort((a,b)=>(diffOrder[a.difficulty]||0)-(diffOrder[b.difficulty]||0));
+  else if(sort==='diff-hard') filtered.sort((a,b)=>(diffOrder[b.difficulty]||0)-(diffOrder[a.difficulty]||0));
+
+  currentProblems = filtered;
+  document.getElementById('resultCount').textContent = `${filtered.length} problem${filtered.length!==1?'s':''}`;
+
+  skel.style.display='none';
+  grid.style.display='grid';
+
+  if(!filtered.length){
+    grid.innerHTML=`<div class="empty-state">
+      <svg viewBox="0 0 64 64" width="64" height="64" fill="none"><circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="2"/><path d="M20 24h24M20 32h16M20 40h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <h3>No problems found</h3>
+      <p>Try adjusting your filters or search query.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((p,i)=>{
+    const isSolved = solved.includes(p.id);
+    const color = subjColors[p.subject]||'#8fa3be';
+    const subjClass = 's-'+p.subject.toLowerCase();
+    return `<article class="prob-card ${subjClass} ${isSolved?'solved':''}"
+        style="--subj-color:${color}"
+        onclick="openProblem(${i})" tabindex="0" role="button"
+        onkeydown="if(event.key==='Enter')openProblem(${i})">
+      <div class="prob-card-top">
+        <span class="prob-subj-tag"><span class="dot"></span>${p.subject}</span>
+        <span class="diff-badge ${p.difficulty.toLowerCase()}">${p.difficulty}</span>
+      </div>
+      <h3 class="prob-title">${p.title}</h3>
+      <p class="prob-preview">${p.statement.replace(/\$[^$]*\$/g,'[eq]').replace(/\\[^\\]*\\/g,'').slice(0,90)}…</p>
+      <div class="prob-card-footer">
+        <div class="prob-pts">
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>
+          ${p.points||10} pts
+        </div>
+        ${isSolved?`<div class="prob-solved-badge"><svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>Solved</div>`
+          :`<div class="prob-meta">
+              <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor"><path d="M9 12H7.5a.5.5 0 000 1H9v-1zm1 0v1h1.5a.5.5 0 000-1H10zm-5.75-4a.75.75 0 000 1.5h11.5a.75.75 0 000-1.5H4.25z"/></svg>
+              ${p.meta?.source||'BDOH'}
+            </div>`}
+        <button class="prob-solve-btn" onclick="event.stopPropagation();openProblem(${i})">
+          Solve →
+        </button>
+      </div>
+    </article>`;
+  }).join('');
+
+  // Re-run MathJax
+  if(window.MathJax?.typesetPromise) MathJax.typesetPromise([grid]).catch(()=>{});
+  updateHeroStats();
+}
+
+// ══════════════════════════════════════════════
+//  OPEN PROBLEM MODAL
+// ══════════════════════════════════════════════
+function openProblem(idx){
+  activeIdx = idx;
+  const p = currentProblems[idx];
+  if(!p) return;
+
+  // Header
+  const color = subjColors[p.subject]||'#8fa3be';
+  const subjClass='s-'+p.subject.toLowerCase();
+  document.getElementById('modalSubjTag').className = `prob-subj-tag ${subjClass}`;
+  document.getElementById('modalSubjTag').innerHTML = `<span class="dot" style="background:${color}"></span>${p.subject}`;
+  document.getElementById('modalSubjTag').style.cssText = `--subj-color:${color}`;
+  document.getElementById('modalDiffBadge').className = `diff-badge ${p.difficulty.toLowerCase()}`;
+  document.getElementById('modalDiffBadge').textContent = p.difficulty;
+  document.getElementById('modalTitle').textContent = p.title;
+  document.getElementById('modalPts').innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/></svg>${p.points||10} pts`;
+
+  // Statement
+  document.getElementById('modalStmt').innerHTML = `<p>${p.statement}</p>`;
+  document.getElementById('modalInfoRow').innerHTML = `
+    <div class="stmt-info-item"><strong>Source:</strong>${p.meta?.source||'BDOH'}</div>
+    <div class="stmt-info-item"><strong>Chapter:</strong>${p.meta?.chapter||'—'}</div>
+    <div class="stmt-info-item"><strong>Answer Type:</strong>${p.answerType==='text'?'Text':'Numerical'}</div>
+    ${p.tolerance!==undefined?`<div class="stmt-info-item"><strong>Tolerance:</strong>±${p.tolerance}</div>`:''}
+  `;
+
+  // Hint
+  hintVisible = false;
+  document.getElementById('hintBox').classList.remove('visible');
+  document.getElementById('hintBox').textContent = p.hint||'No hint available.';
+  document.getElementById('hintBtn').style.display = p.hint?'inline-flex':'none';
+
+  // Answer area
+  document.getElementById('answerInput').value='';
+  document.getElementById('answerInput').className='answer-input';
+  document.getElementById('answerTypeLabel').textContent = p.answerType==='text'?'Text Answer':'Numerical Answer';
+  document.getElementById('answerInput').placeholder = p.answerType==='text'?'Type your answer…':'Enter numerical answer…';
+  document.getElementById('submitBtn').disabled=false;
+  document.getElementById('feedbackBox').className='feedback-box';
+  document.getElementById('ptsEarned').innerHTML='';
+
+  // Solution locked
+  submitted = false;
+  document.getElementById('solutionLock').style.display='flex';
+  document.getElementById('solutionContent').style.display='none';
+  document.getElementById('solutionTab').textContent='Solution 🔒';
+  document.getElementById('solutionContent').innerHTML='';
+
+  // Navigation
+  document.getElementById('probCounter').textContent = `${idx+1} / ${currentProblems.length}`;
+  document.getElementById('prevBtn').disabled = idx===0;
+  document.getElementById('nextBtn').disabled = idx===currentProblems.length-1;
+
+  // Timer
+  clearInterval(timerInterval);
+  timeLeft = 900;
+  updateTimerDisplay();
+  timerInterval = setInterval(tickTimer, 1000);
+
+  // Reset to problem tab
+  switchTabById('problem');
+
+  // Load history
+  if(window.loadProblemHistory) window.loadProblemHistory(p.id);
+
+  // Show
+  document.getElementById('solveModal').classList.add('open');
+  document.body.style.overflow='hidden';
+
+  // Typeset math
+  setTimeout(()=>{
+    if(window.MathJax?.typesetPromise){
+      MathJax.typesetPromise([
+        document.getElementById('modalStmt'),
+        document.getElementById('modalInfoRow')
+      ]).catch(()=>{});
+    }
+  },100);
+}
+
+function closeModal(){
+  document.getElementById('solveModal').classList.remove('open');
+  document.body.style.overflow='';
+  clearInterval(timerInterval);
+}
+
+// Click backdrop to close
+document.getElementById('solveModal').addEventListener('click',function(e){
+  if(e.target===this) closeModal();
+});
+
+// ══════════════════════════════════════════════
+//  TIMER
+// ══════════════════════════════════════════════
+function tickTimer(){
+  timeLeft--;
+  updateTimerDisplay();
+  if(timeLeft<=0){
+    clearInterval(timerInterval);
+    showToast('⏰ Time\'s up!','error');
+    autoSubmit();
+  }
+}
+function updateTimerDisplay(){
+  const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+  const s = String(timeLeft%60).padStart(2,'0');
+  const el = document.getElementById('timerVal');
+  const wrap = document.getElementById('timerDisplay');
+  el.textContent = `${m}:${s}`;
+  wrap.classList.toggle('danger', timeLeft<=60);
+}
+function autoSubmit(){
+  if(!submitted) submitAnswer();
+}
+
+// ══════════════════════════════════════════════
+//  SUBMIT ANSWER
+// ══════════════════════════════════════════════
+async function submitAnswer(){
+  const p = currentProblems[activeIdx];
+  if(!p||submitted) return;
+
+  const raw = document.getElementById('answerInput').value.trim();
+  if(!raw){ showToast('Please enter an answer first','info'); return; }
+
+  document.getElementById('submitBtn').disabled=true;
+  submitted=true;
+  clearInterval(timerInterval);
+
+  let isCorrect = false;
+  if(p.answerType==='text'){
+    isCorrect = raw.toLowerCase().replace(/\s+/g,'') === (p.answer||'').toLowerCase().replace(/\s+/g,'');
+  } else {
+    const userNum = parseFloat(raw.replace(/[, ]/g,''));
+    const correct = parseFloat(p.answer);
+    const tol = p.tolerance||0;
+    isCorrect = !isNaN(userNum) && Math.abs(userNum-correct)<=tol;
+  }
+
+  // Unlock solution
+  document.getElementById('solutionTab').textContent='Solution ✓';
+  document.getElementById('solutionLock').style.display='none';
+  document.getElementById('solutionContent').style.display='block';
+  document.getElementById('solutionContent').innerHTML = buildSolution(p);
+
+  const fb = document.getElementById('feedbackBox');
+  const fbTitle = document.getElementById('feedbackTitle');
+  const fbDetail = document.getElementById('feedbackDetail');
+  const ptsEl = document.getElementById('ptsEarned');
+
+  document.getElementById('answerInput').classList.add(isCorrect?'correct':'wrong');
+
+  if(isCorrect){
+    fb.className='feedback-box visible correct';
+    fbTitle.innerHTML='<svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg> Correct!';
+    fbDetail.textContent = `Well done! That's exactly right.`;
+    const alreadySolved = window.USER_DATA?.solvedProblems?.includes(p.id);
+    if(!alreadySolved){
+      ptsEl.innerHTML=`<div class="pts-burst">⭐ +${p.points||10} points earned!</div>`;
+      showToast(`✅ Correct! +${p.points||10} points`,'success');
+    } else {
+      ptsEl.innerHTML=`<div class="pts-burst" style="color:var(--text2);border-color:var(--border)">Already solved — no new points</div>`;
+      showToast('✅ Correct! (Already solved)','success');
+    }
+  } else {
+    fb.className='feedback-box visible wrong';
+    fbTitle.innerHTML='<svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg> Not Quite';
+    fbDetail.textContent = `The correct answer is ${p.answer}. Check the Solution tab for the full walkthrough.`;
+    ptsEl.innerHTML='';
+    showToast('❌ Incorrect — check the solution','error');
+  }
+
+  // Record in Firebase
+  if(window.recordSubmission) {
+    window.recordSubmission(p, isCorrect, raw).catch(()=>{});
+  }
+
+  // Reload history
+  if(window.loadProblemHistory) window.loadProblemHistory(p.id);
+
+  // Switch to answer tab to show feedback
+  switchTabById('answer');
+
+  // Typeset math in solution
+  setTimeout(()=>{
+    if(window.MathJax?.typesetPromise){
+      MathJax.typesetPromise([document.getElementById('solutionContent')]).catch(()=>{});
+    }
+  },200);
+}
+
+function buildSolution(p){
+  return `<div class="sol-step"><div class="sol-step-num">SOLUTION</div><div>${p.solution||'Solution coming soon.'}</div></div>`;
+}
+
+// ══════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════
+function switchTab(el){
+  const tab = el.dataset.tab;
+  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab)?.classList.add('active');
+  if(tab==='solution' && !submitted){
+    showToast('Submit your answer first to unlock the solution','info');
+    switchTabById('answer');
+  }
+  if(tab==='history' && window.loadProblemHistory){
+    const p = currentProblems[activeIdx];
+    if(p) window.loadProblemHistory(p.id);
+  }
+}
+function switchTabById(id){
+  document.querySelectorAll('.modal-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.tab===id);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p=>{
+    p.classList.toggle('active', p.id==='tab-'+id);
+  });
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function navigateProblem(dir){
+  const newIdx = activeIdx+dir;
+  if(newIdx>=0 && newIdx<currentProblems.length) openProblem(newIdx);
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeModal();
+  if(document.getElementById('solveModal').classList.contains('open')){
+    if(e.key==='ArrowRight') navigateProblem(1);
+    if(e.key==='ArrowLeft') navigateProblem(-1);
+    if(e.key==='Enter' && document.activeElement!==document.getElementById('answerInput')) submitAnswer();
+  }
+});
+
+// ══════════════════════════════════════════════
+//  HINT
+// ══════════════════════════════════════════════
+function toggleHint(){
+  hintVisible=!hintVisible;
+  const box=document.getElementById('hintBox');
+  const btn=document.getElementById('hintBtn');
+  box.classList.toggle('visible',hintVisible);
+  btn.textContent=hintVisible?'Hide Hint':'Show Hint';
+}
+
+// ══════════════════════════════════════════════
+//  USER CARD
+// ══════════════════════════════════════════════
+function renderUserCard(user, userData){
+  const wrap = document.getElementById('userCardInner');
+  const navWrap = document.getElementById('navUserWrap');
+  if(!user){
+    wrap.innerHTML=`<div class="not-signed-in">
+      <p>Sign in to track your points and submission history.</p>
+      <button class="btn-sign-in-full" onclick="triggerSignIn()">Sign In with Google</button>
+    </div>`;
+    navWrap.innerHTML=`<button class="btn-signin" onclick="triggerSignIn()">Sign In</button>`;
+    return;
+  }
+  const initials=(user.displayName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const pts = userData?.points||0;
+  const solved = (userData?.solvedProblems||[]).length;
+  const total = (window.ALL_PROBLEMS||[]).length;
+  const pct = total?Math.round(solved/total*100):0;
+  const photoHtml = user.photoURL
+    ? `<img src="${user.photoURL}" alt="">`
+    : initials;
+  wrap.innerHTML=`<div class="user-card-inner">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="user-avatar-wrap">${photoHtml}</div>
+      <div>
+        <div class="user-name-big">${user.displayName||'Student'}</div>
+        <div class="user-pts-big"><span>${pts}</span> points</div>
+      </div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label"><span>Problems Solved</span><span>${solved}/${total}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="user-actions">
+      <a href="profile.html" class="btn-mini btn-mini-outline">My Profile</a>
+      <button class="btn-mini btn-mini-teal" onclick="loadLeaderboard()">Leaderboard</button>
+    </div>
+  </div>`;
+  navWrap.innerHTML=`<a href="profile.html" class="nav-user-pill">
+    <div class="nav-user-avatar">${photoHtml}</div>
+    <div>
+      <div class="nav-user-name">${user.displayName?.split(' ')[0]||'Student'}</div>
+      <div class="nav-user-pts">⭐ ${pts} pts</div>
+    </div>
+  </a>`;
+}
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+function showToast(msg, type='info'){
+  const wrap=document.getElementById('toastWrap');
+  const icons={success:'✅',error:'❌',info:'ℹ️'};
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<span class="toast-icon">${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';setTimeout(()=>t.remove(),300)},3200);
+}
+
+// ══════════════════════════════════════════════
+//  THEME
+// ══════════════════════════════════════════════
+(function(){
+  const saved=localStorage.getItem('bdoh-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+})();
+document.getElementById('themeBtn').onclick=function(){
+  const cur=document.documentElement.getAttribute('data-theme');
+  const next=cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('bdoh-theme',next);
+};
+
+// ══════════════════════════════════════════════
+//  MOBILE MENU
+// ══════════════════════════════════════════════
+function openMobMenu(){
+  document.getElementById('mobOverlay').classList.add('open');
+  document.getElementById('mobDrawer').classList.add('open');
+}
+function closeMobMenu(){
+  document.getElementById('mobOverlay').classList.remove('open');
+  document.getElementById('mobDrawer').classList.remove('open');
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('mob-open');
+}
+
+// ══════════════════════════════════════════════
+//  BACKGROUND CANVAS
+// ══════════════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('bgCanvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  resize();window.addEventListener('resize',()=>{resize();initParticles()});
+  function initParticles(){
+    particles=Array.from({length:60},()=>({
+      x:Math.random()*W, y:Math.random()*H,
+      vx:(Math.random()-.5)*.3, vy:(Math.random()-.5)*.3,
+      r:Math.random()*1.5+.5,
+      a:Math.random()*.4+.1
+    }));
+  }
+  initParticles();
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,198,216,${p.a})`;ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+window.addEventListener('load',()=>{
+  // Show skeletons briefly, then render
+  setTimeout(()=>{
+    renderProblems();
+  },800);
+});
+</script>
 </body>
 </html>
