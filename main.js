@@ -562,177 +562,35 @@ function renderContests(contests){
   reObserve();
 }
 
-/* ── Problems — state tracking ── */
-let _subjectFilter = 'All';
-let _diffFilter    = 'All';
-
-/* Called by bdoh:authReady to load solved/attempted sets from Firestore */
-window._practiceStatus = {}; /* { problemId: 'solved'|'attempted' } */
-
-async function loadPracticeStatus(){
-  const uid = BDOH.currentUser?.uid;
-  if(!uid || !window.BDOH_DB) return;
-  try {
-    const subs = await window.BDOH_DB.getUserSubmissions(uid);
-    const status = {};
-    /* Walk newest-first so first occurrence wins */
-    subs.forEach(s => {
-      const pid = s.problem_id || s.problemId;
-      if(!pid || s.contestId !== 'practice') return;
-      if(!status[pid]) status[pid] = s.isCorrect ? 'solved' : 'attempted';
-      else if(s.isCorrect) status[pid] = 'solved'; /* upgrade attempted → solved */
-    });
-    window._practiceStatus = status;
-  } catch(_){}
-  renderProblems();
-}
-
-/* ── streak tracking ── */
-function updateStreak(){
-  const uid = BDOH.currentUser?.uid;
-  if(!uid) return;
-  const key    = 'bdoh_streak_' + uid;
-  const today  = new Date().toISOString().slice(0,10);
-  let data;
-  try { data = JSON.parse(localStorage.getItem(key) || 'null'); } catch(_){ data=null; }
-  if(!data) data = { days:0, lastDate:'' };
-  /* Only count once per day */
-  if(data.lastDate === today) return data.days;
-  const yesterday = new Date(Date.now()-864e5).toISOString().slice(0,10);
-  data.days = data.lastDate === yesterday ? data.days + 1 : 1;
-  data.lastDate = today;
-  localStorage.setItem(key, JSON.stringify(data));
-  return data.days;
-}
-function readStreak(){
-  const uid = BDOH.currentUser?.uid; if(!uid) return 0;
-  try { return JSON.parse(localStorage.getItem('bdoh_streak_'+uid)||'null')?.days || 0; } catch(_){ return 0; }
-}
-function showStreakPill(){
-  const days = readStreak();
-  const pill = document.getElementById('streakPill');
-  const cnt  = document.getElementById('streakCount');
-  if(!pill) return;
-  if(BDOH.currentUser && days > 0){
-    if(cnt) cnt.textContent = days;
-    pill.style.display = 'flex';
-  } else {
-    pill.style.display = 'none';
-  }
-}
-
-/* ── +pts toast ── */
-function showPtsToast(pts, correct){
-  let el = document.getElementById('_ptsToast');
-  if(!el){
-    el = document.createElement('div');
-    el.id = '_ptsToast';
-    el.className = 'pts-toast';
-    document.body.appendChild(el);
-  }
-  if(correct && pts){
-    el.textContent = '+' + pts + ' pts';
-  } else if(correct){
-    el.textContent = 'Correct!';
-  } else {
-    el.style.background = 'rgba(239,68,68,.85)';
-    el.textContent = 'Not quite — review the solution';
-  }
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => {
-    el.classList.remove('show');
-    el.style.background = '';
-  }, 2600);
-}
-
-/* ── renderProblems — full version with status, search, difficulty ── */
-function renderProblems(){
-  const box = document.getElementById('probBox');
+/* ── Problems ── */
+function renderProblems(filter='All'){
+  const box=document.getElementById('probBox');
   if(!box) return;
-
-  const search = (document.getElementById('probSearch')?.value || '').toLowerCase().trim();
-  const DM = {Easy:'d-easy', Medium:'d-med', Hard:'d-hard', Expert:'d-hard'};
-
-  let list = [...BDOH.problems];
-
-  /* Subject filter */
-  if(_subjectFilter !== 'All') list = list.filter(p => p.subject === _subjectFilter);
-
-  /* Difficulty filter */
-  if(_diffFilter !== 'All') list = list.filter(p => p.difficulty === _diffFilter);
-
-  /* Search filter */
-  if(search) list = list.filter(p =>
-    p.title.toLowerCase().includes(search) ||
-    p.subject.toLowerCase().includes(search) ||
-    (p.statement||'').toLowerCase().includes(search)
-  );
-
-  /* Update count label */
-  const countEl = document.getElementById('probCount');
-  if(countEl) countEl.textContent = list.length + ' problem' + (list.length !== 1 ? 's' : '');
-
-  if(!list.length){
-    box.innerHTML = `<div class="prob-empty">
-      <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5">
-        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-      </svg>
-      No problems match your filters
-    </div>`;
-    return;
-  }
-
-  box.innerHTML = list.map((p, i) => {
-    const status = window._practiceStatus[p.id] || 'unseen';
-    const successRate = p.solves && p.attempts ? Math.round(p.solves / p.attempts * 100) : Math.round(60 + Math.random()*35);
-    const statusBadge = status === 'solved'
-      ? `<span class="prob-status-badge solved">&#10003; Solved</span>`
-      : status === 'attempted'
-      ? `<span class="prob-status-badge attempted">Attempted</span>`
-      : '';
-    return `
-    <div class="prob-card status-${status} reveal rd${i%3+1}" role="listitem"
+  const list=filter==='All'?BDOH.problems:BDOH.problems.filter(p=>p.subject===filter);
+  const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard'};
+  box.innerHTML=list.map((p,i)=>`
+    <div class="prob-card reveal rd${i%3+1}" role="listitem"
          onclick="openExam('${p.id}')" tabindex="0"
          onkeydown="if(event.key==='Enter')openExam('${p.id}')"
          aria-label="Open problem: ${p.title}">
-      ${statusBadge}
       <div class="prob-top">
-        <span class="d-badge ${DM[p.difficulty]||'d-med'}">${p.difficulty}</span>
+        <span class="d-badge ${DM[p.difficulty]}">${p.difficulty}</span>
         <span class="p-subj">${p.subject}</span>
       </div>
       <div class="p-title">${p.title}</div>
-      <div class="p-stmt">${(p.statement||'').slice(0,108)}…</div>
-      <div class="p-success-bar"><div class="p-success-fill" style="width:${successRate}%"></div></div>
+      <div class="p-stmt">${p.statement.slice(0,110)}…</div>
       <div class="p-foot">
-        <span class="p-meta">${p.timeMin} min &nbsp;·&nbsp; ${(p.solves||0).toLocaleString()} solves &nbsp;·&nbsp; ${successRate}% success</span>
-        <button class="p-start-btn" aria-label="Start ${p.title}">
-          ${status === 'solved' ? 'Redo' : status === 'attempted' ? 'Retry' : 'Start'}
-          <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor"><path d="M4 2l5 4-5 4V2z"/></svg>
+        <span class="p-meta">⏱ ${p.timeMin} min &nbsp;·&nbsp; ${p.solves.toLocaleString()} solves</span>
+        <button class="p-start-btn" aria-label="Start problem: ${p.title}">
+          Start
+          <svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor"><path d="M4 2l5 4-5 4V2z"/></svg>
         </button>
       </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
   reObserve();
 }
 
-/* ── filter setters called from HTML ── */
-window.setSubjectFilter = function(subj){
-  _subjectFilter = subj;
-  document.querySelectorAll('.f-btn').forEach(b => b.classList.toggle('active', b.dataset.f === subj));
-  renderProblems();
-};
-window.setDiffFilter = function(diff){
-  _diffFilter = diff;
-  document.querySelectorAll('.d-btn').forEach(b => b.classList.toggle('active', b.dataset.d === diff));
-  renderProblems();
-};
-window.filterProblems = renderProblems; /* called by search input oninput */
-
-/* keep old filterTo working for any legacy calls */
-window.filterTo = function(subject){ window.setSubjectFilter(subject); };
-
-
+/* ── WhatsApp ── */
 function renderWA(){
   const box=document.getElementById('waBox');
   if(!box) return;
@@ -752,6 +610,22 @@ function renderWA(){
 }
 
 /* ── filter problems by subject ── */
+window.filterTo=function(subject){
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.querySelector(`.f-btn[data-f="${subject}"]`);
+  if(btn)btn.classList.add('active');
+  renderProblems(subject);
+  document.getElementById('practice')?.scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+/* filter buttons */
+document.querySelectorAll('.f-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderProblems(btn.dataset.f);
+  });
+});
 
 function reObserve(){
   const io=new IntersectionObserver(entries=>{
@@ -782,44 +656,15 @@ window.openExam=function(id){
 };
 
 function loadExamProblem(p){
-  const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard',Expert:'d-hard'};
+  const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard'};
   document.getElementById('examSubj').textContent=p.subject.toUpperCase();
   document.getElementById('examTitle').textContent=p.title;
   document.getElementById('examStmt').textContent=p.statement;
   document.getElementById('examPts').textContent=`${p.points} pts`;
   const diff=document.getElementById('examDiff');
   diff.textContent=p.difficulty;
-  diff.className='exam-diff-badge '+(DM[p.difficulty]||'d-med');
-
-  /* Success rate and solve count */
-  const successRate = p.solves && p.attempts ? Math.round(p.solves/p.attempts*100) : null;
-  const metaParts = [`${p.timeMin} min`, `${(p.solves||0).toLocaleString()} solves`];
-  if(successRate) metaParts.push(`${successRate}% success rate`);
-  document.getElementById('examMeta').textContent = metaParts.join(' · ');
-
-  /* Solved banner */
-  const status = window._practiceStatus?.[p.id] || 'unseen';
-  let bannerEl = document.getElementById('examSolvedBanner');
-  if(!bannerEl){
-    bannerEl = document.createElement('div');
-    bannerEl.id = 'examSolvedBanner';
-    bannerEl.className = 'exam-solved-banner';
-    const stmt = document.getElementById('examStmt');
-    if(stmt && stmt.parentNode) stmt.parentNode.insertBefore(bannerEl, stmt);
-  }
-  if(status === 'solved'){
-    bannerEl.style.display = 'flex';
-    bannerEl.innerHTML = `<svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg> You solved this before — try it again or skip ahead`;
-  } else if(status === 'attempted'){
-    bannerEl.style.display = 'flex';
-    bannerEl.style.background = 'rgba(255,215,0,.1)';
-    bannerEl.style.borderColor = 'rgba(255,215,0,.3)';
-    bannerEl.style.color = '#FFD700';
-    bannerEl.innerHTML = `<svg viewBox="0 0 20 20" width="15" height="15" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg> You attempted this before — give it another shot`;
-  } else {
-    bannerEl.style.display = 'none';
-  }
-
+  diff.className='exam-diff-badge '+DM[p.difficulty];
+  document.getElementById('examMeta').textContent=`⏱ ${p.timeMin} min suggested · ${p.solves.toLocaleString()} solves`;
   document.getElementById('hintBtn').textContent='Show Hint';
   document.getElementById('hintBox').textContent=p.hint;
   document.getElementById('hintBox').classList.remove('open');
@@ -1168,10 +1013,6 @@ window.bdohOnSignedIn = async function (user) {
 
   // Fetch & render profile
   await bdohRenderProfile(user);
-
-  /* ── Practice enhancements ── */
-  await loadPracticeStatus();  /* load solved/attempted card status */
-  showStreakPill();             /* show streak counter */
 };
 
 window.bdohOnSignedOut = function () {
@@ -1302,10 +1143,14 @@ async function bdohRenderRecentSubmissions(uid) {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   PRACTICE — save submission, update card status, show toast, streak
-   Uses BDOH_DB.savePracticeSubmission — the correct v4 API.
+   12e. PRACTICE — save submission + award points after answer
+   Uses BDOH_DB.savePracticeSubmission (data.js v4+).
+   No legacy Firebase refs — works with the current architecture.
 ════════════════════════════════════════════════════════════════ */
+
 (function patchSubmitAnswer(){
+  /* submitAnswer is defined synchronously above (section 9).
+     Wrap it immediately — no timeout needed. */
   const _orig = window.submitAnswer;
   if(typeof _orig !== 'function'){
     console.warn('BDOH: submitAnswer not found — practice save disabled');
@@ -1313,87 +1158,68 @@ async function bdohRenderRecentSubmissions(uid) {
   }
 
   window.submitAnswer = function(){
-    /* 1. Run original (shows feedback, disables input) */
+    /* 1. Run the original (shows feedback, marks _answered = true) */
     _orig.call(this);
 
-    /* 2. Fire async save without blocking UI */
-    (async () => {
-      /* Give the original 100ms to set _answered and disable input */
-      await new Promise(r => setTimeout(r, 100));
+    /* 2. Save to Firestore asynchronously — don't block the UI */
+    (async()=>{
+      /* Only save if Firebase is ready and user is signed in */
+      if(!window.BDOH_DB || !BDOH.currentUser) return;
 
-      const p = BDOH.problems.find(x => x.id === _examId);
+      /* Give the UI one tick to update, then read state */
+      await new Promise(r=>setTimeout(r,80));
+
+      /* Read which problem is open */
+      const p = BDOH.problems.find(x=>x.id===_examId);
       if(!p) return;
 
-      const raw = document.getElementById('examInput')?.value?.trim() || '';
+      const raw = (document.getElementById('examInput')?.value||'').trim();
       if(!raw) return;
 
-      /* Evaluate correctness — same logic as original submitAnswer */
-      const val  = parseFloat(raw);
-      const exp  = parseFloat(p.answer);
-      const isOk = p.tolerance === 0
-        ? (raw === p.answer || (!isNaN(val) && val === exp))
-        : (!isNaN(val) && Math.abs(val - exp) <= p.tolerance);
+      /* Evaluate correctness (mirrors original submitAnswer logic) */
+      const val   = parseFloat(raw);
+      const exp   = parseFloat(p.answer);
+      const isOk  = p.tolerance===0
+        ? (raw===p.answer || (!isNaN(val)&&val===exp))
+        : (!isNaN(val)&&Math.abs(val-exp)<=p.tolerance);
 
-      /* Show +pts toast regardless of sign-in state */
-      showPtsToast(p.points, isOk);
-
-      /* Only save to Firestore if user is signed in */
-      if(!BDOH.currentUser || !window.BDOH_DB) return;
-
-      try {
+      try{
         await window.BDOH_DB.savePracticeSubmission(p.id, isOk, raw);
-
-        /* Update local card status cache */
-        const prev = window._practiceStatus[p.id];
-        if(isOk) window._practiceStatus[p.id] = 'solved';
-        else if(prev !== 'solved') window._practiceStatus[p.id] = 'attempted';
-
-        /* Record streak on correct solve */
-        if(isOk){
-          const days = updateStreak();
-          showStreakPill();
-          /* Show streak milestone toast if newly extended */
-          if(days > 1){
-            setTimeout(() => showPtsToast(null, true, `${days}-day streak!`), 2800);
-          }
+        /* Show a +pts toast if correct */
+        if(isOk && p.points){
+          _practicePtsToast('+'+p.points+' pts added to your profile!');
         }
-
-        /* Re-render cards to show updated status border */
-        renderProblems();
-
-      } catch(err){
-        console.warn('BDOH practice save error:', err);
+      }catch(err){
+        console.warn('BDOH practice save error:',err);
       }
     })();
   };
 })();
 
-/* Extended showPtsToast that accepts optional custom message */
-const _basePtsToast = showPtsToast;
-showPtsToast = function(pts, correct, customMsg){
-  let el = document.getElementById('_ptsToast');
-  if(!el){
-    el = document.createElement('div');
-    el.id = '_ptsToast';
-    el.className = 'pts-toast';
-    document.body.appendChild(el);
+/* Small bottom toast for point awards */
+function _practicePtsToast(msg){
+  let t = document.getElementById('_bdohPracToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = '_bdohPracToast';
+    t.style.cssText=[
+      'position:fixed','bottom:28px','left:50%',
+      'transform:translateX(-50%) translateY(16px)',
+      'background:linear-gradient(135deg,#007B8F,#4CAF50)',
+      'color:#fff','padding:11px 24px','border-radius:30px',
+      'font-family:var(--fH,sans-serif)','font-size:14px','font-weight:700',
+      'box-shadow:0 8px 28px rgba(0,123,143,.45)',
+      'z-index:9999','pointer-events:none',
+      'transition:opacity .4s,transform .4s','opacity:0'
+    ].join(';');
+    document.body.appendChild(t);
   }
-  if(customMsg){
-    el.textContent = customMsg;
-    el.style.background = 'linear-gradient(135deg,#007B8F,#4CAF50)';
-  } else if(correct && pts){
-    el.textContent = '+' + pts + ' pts';
-    el.style.background = 'linear-gradient(135deg,#007B8F,#4CAF50)';
-  } else if(correct){
-    el.textContent = 'Correct!';
-    el.style.background = 'linear-gradient(135deg,#007B8F,#4CAF50)';
-  } else {
-    el.textContent = 'Not quite — check the solution below';
-    el.style.background = 'rgba(239,68,68,.85)';
-  }
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => {
-    el.classList.remove('show');
-  }, 2800);
-};
+  t.textContent = msg;
+  t.style.opacity='1';
+  t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>{
+    t.style.opacity='0';
+    t.style.transform='translateX(-50%) translateY(16px)';
+  },3200);
+}
