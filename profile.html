@@ -1547,7 +1547,11 @@ async function ensureUserDoc(user) {
     if (user.photoURL && user.photoURL !== data.photoURL) updates.photoURL = user.photoURL;
     if (user.displayName && !data.displayName) updates.displayName = user.displayName;
     await updateDoc(ref, updates);
-    return snap; /* reuse the snap we already fetched */
+    /* CRITICAL: re-fetch after update so renderProfile sees the CURRENT values
+       (totalPoints, totalSolves, totalAttempts etc written by practice.html).
+       The old `return snap` returned the stale pre-update snapshot — that's why
+       profile always showed 0 even after solving problems. */
+    return await getDoc(ref);
   }
 }
 
@@ -1769,34 +1773,37 @@ function renderBadges(earned) {
 async function renderSubmissions(uid) {
   const box = document.getElementById('submissionsList');
   if (!box) return;
-
-  box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon" style="font-size:28px">⏳</span>Loading submissions…</div>`;
-
+  box.innerHTML = `<div class="subs-empty" style="opacity:.6">Loading…</div>`;
   try {
     let docs = [];
 
-    /* Strategy 1: query by user_id — NO orderBy so no composite index needed */
+    /* No orderBy → no composite index needed. Sort client-side instead. */
     try {
-      const q = query(collection(db, 'submissions'), where('user_id', '==', uid), limit(50));
-      const snap = await getDocs(q);
+      const snap = await getDocs(query(
+        collection(db, 'submissions'),
+        where('user_id', '==', uid),
+        limit(50)
+      ));
       if (!snap.empty) docs = snap.docs.map(d => d.data());
-    } catch(e1) { console.warn('[profile] user_id query:', e1.code); }
+    } catch(_) {}
 
-    /* Strategy 2: fallback userId field */
     if (docs.length === 0) {
       try {
-        const q2 = query(collection(db, 'submissions'), where('userId', '==', uid), limit(50));
-        const snap2 = await getDocs(q2);
+        const snap2 = await getDocs(query(
+          collection(db, 'submissions'),
+          where('userId', '==', uid),
+          limit(50)
+        ));
         if (!snap2.empty) docs = snap2.docs.map(d => d.data());
-      } catch(e2) { console.warn('[profile] userId query:', e2.code); }
+      } catch(_) {}
     }
 
     if (docs.length === 0) {
-      box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon">📭</span>No submissions yet.<br/>Solve problems in the Practice Arena to build your record!</div>`;
+      box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon">📭</span>No submissions yet.<br/>Start solving problems in the Practice Arena!</div>`;
       return;
     }
 
-    /* Sort client-side: newest first — no Firestore index required */
+    /* Sort newest-first client-side */
     docs.sort((a, b) => (b.submittedAt || '').localeCompare(a.submittedAt || ''));
 
     box.innerHTML = `<div class="submissions-list">${docs.slice(0, 30).map(s => {
@@ -1805,19 +1812,16 @@ async function renderSubmissions(uid) {
         const raw = s.submittedAt || (s.timestamp?.toDate ? s.timestamp.toDate().toISOString() : null);
         if (raw) ts = new Date(raw).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
       } catch(_) {}
-
       const ok  = s.isCorrect === true || s.status === 'correct';
-      const pts = s.score || s.rawScore || s.points || 0;
-      const isPractice = s.contestId === 'practice';
-
+      const pts = s.score || s.rawScore || s.points || s.pointsEarned || 0;
       return `<div class="sub-item">
         <div>
-          <div class="sub-prob">${s.problem_title || s.title || 'Problem'}</div>
+          <div class="sub-prob">${s.problem_title || s.title || s.problemTitle || 'Problem'}</div>
           <div class="sub-meta-row">
             <span class="sub-time">${ts}</span>
             ${s.subject    ? `<span class="sub-subj">${s.subject}</span>` : ''}
             ${s.difficulty ? `<span class="sub-subj" style="opacity:.7">${s.difficulty}</span>` : ''}
-            ${isPractice   ? `<span class="sub-subj" style="color:var(--teal);opacity:.9">Practice</span>` : ''}
+            ${s.contestId==='practice' ? `<span class="sub-subj" style="color:var(--teal)">Practice</span>` : ''}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
@@ -1826,10 +1830,9 @@ async function renderSubmissions(uid) {
         </div>
       </div>`;
     }).join('')}</div>`;
-
   } catch (err) {
-    console.warn('[profile] renderSubmissions error:', err);
-    box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon">⚠️</span>Could not load submissions.<br/><small style="opacity:.6">${err.message || ''}</small></div>`;
+    console.warn('renderSubmissions error:', err);
+    box.innerHTML = `<div class="subs-empty"><span class="subs-empty-icon">⚠️</span>Could not load submissions.</div>`;
   }
 }
 
