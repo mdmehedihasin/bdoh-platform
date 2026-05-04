@@ -375,17 +375,37 @@ input:checked+.toggle-slider:before{transform:translateX(19px)}
 
   <!-- PROBLEMS -->
   <div class="pg" id="pg-problems">
+    <!-- Sync info banner -->
+    <div style="background:rgba(0,123,143,.08);border:1px solid var(--ba);border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:18px">⚡</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--fH);font-weight:800;font-size:13px;color:var(--txt)">Practice Arena Sync</div>
+        <div style="font-size:12px;color:var(--m);margin-top:2px">All problems added here are <strong style="color:var(--teal-lt)">instantly synced</strong> to the Practice Arena via Firestore. Students see changes in real-time. Use Bulk Import to add hundreds of problems at once.</div>
+      </div>
+      <a href="practice.html" target="_blank" class="btn-secondary" style="text-decoration:none;padding:7px 14px;white-space:nowrap">🔗 Open Practice Arena</a>
+    </div>
     <div class="tbl-sec">
       <div class="tbl-hdr">
         <h3>All Problems</h3>
         <div class="tbl-hdr-btns">
-          <input id="prob-search" type="text" placeholder="🔍 Search problems…" style="width:200px;padding:8px 14px" oninput="renderPTbl()"/>
-          <button class="btn-secondary" onclick="seedDefaultProblems()" title="Upload the 6 built-in sample problems to Firestore">⬆ Seed Defaults</button>
-          <button class="btn-secondary" onclick="openBulkImport()" title="Import many questions at once via JSON or CSV">📥 Bulk Import</button>
+          <input id="prob-search" type="text" placeholder="🔍 Search problems…" style="width:180px;padding:8px 14px" oninput="renderPTbl()"/>
+          <select id="prob-filter-subj" onchange="renderPTbl()" style="width:auto;padding:8px 12px">
+            <option value="">All Subjects</option>
+            <option>Physics</option><option>Mathematics</option><option>Chemistry</option>
+            <option>Biology</option><option>Informatics</option><option>Astronomy</option>
+          </select>
+          <select id="prob-filter-cat" onchange="renderPTbl()" style="width:auto;padding:8px 12px">
+            <option value="">All Levels</option>
+            <option value="Junior">Junior</option>
+            <option value="Secondary">Secondary</option>
+            <option value="Higher Secondary">Higher Secondary</option>
+          </select>
+          <button class="btn-secondary" onclick="seedDefaultProblems()" title="Upload the built-in sample problems to Firestore">⬆ Seed Defaults</button>
+          <button class="btn-secondary" onclick="openBulkImport()" title="Import many questions at once via JSON or CSV">📥 Bulk Import (100s)</button>
           <button class="btn-add" onclick="openPF()">+ Add Problem</button>
         </div>
       </div>
-      <table><thead><tr><th>Title</th><th>Subject</th><th>Difficulty</th><th>Answer</th><th>Points</th><th>Solves</th><th>Actions</th></tr></thead>
+      <table><thead><tr><th>Title</th><th>Subject</th><th>Level</th><th>Year</th><th>Difficulty</th><th>Answer Type</th><th>Points</th><th>Solves</th><th>Actions</th></tr></thead>
       <tbody id="ptbl"></tbody></table>
     </div>
   </div>
@@ -717,21 +737,60 @@ input:checked+.toggle-slider:before{transform:translateX(19px)}
     <!-- JSON PANEL -->
     <div id="biPanelJson" style="display:flex;flex-direction:column;gap:12px">
       <p style="color:var(--m);font-size:13px;margin:0">
-        Paste a JSON array. Each object must have at minimum: <code style="color:var(--teal-lt)">title, subject, difficulty, statement, answer</code>.
-        Optional fields: <code style="color:var(--teal-lt)">hint, solution, tolerance, timeMin, points, solves</code>.
+        Paste a JSON array of problems. Required fields: <code style="color:var(--teal-lt)">title, subject, difficulty, statement, answer</code>.<br>
+        Practice arena fields: <code style="color:var(--teal-lt)">category, olympiadYear, answerType, options, given, hint, hint2, formulas, source, olympiad, tolerance, points</code>.
       </p>
-      <textarea id="biJsonInput" placeholder='[&#10;  {&#10;    "title": "My Question",&#10;    "subject": "Physics",&#10;    "difficulty": "Easy",&#10;    "statement": "Problem text here...",&#10;    "answer": "3.14",&#10;    "tolerance": 0.05,&#10;    "timeMin": 20,&#10;    "points": 10&#10;  }&#10;]'
-        style="min-height:220px;font-family:monospace;font-size:12px;resize:vertical;width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--bd);color:var(--txt);border-radius:10px;padding:12px">
+      <!-- Download template button -->
+      <button onclick="downloadJSONTemplate()" style="width:fit-content;background:rgba(0,123,143,.12);border:1px solid var(--ba);color:var(--teal-lt);padding:7px 14px;border-radius:8px;font-family:var(--fH);font-size:12px;font-weight:700;cursor:pointer">
+        ⬇ Download Full Template
+      </button>
+      <textarea id="biJsonInput" placeholder='[
+  {
+    "title": "Newton&#39;s Second Law",
+    "subject": "Physics",
+    "difficulty": "Easy",
+    "category": "Junior",
+    "olympiadYear": 2024,
+    "olympiad": "BPhO Junior",
+    "source": "BPhO Junior 2024",
+    "statement": "A 5 kg box is pushed with 20 N force. Find acceleration (m/s²).",
+    "given": "F = 20 N\nm = 5 kg",
+    "answerType": "numerical",
+    "answer": "4",
+    "tolerance": 0.1,
+    "hint": "Use F = ma → a = F/m",
+    "hint2": "Divide force by mass",
+    "formulas": "F = ma\na = F/m",
+    "solution": "a = 20/5 = 4 m/s²",
+    "points": 10
+  },
+  {
+    "title": "MCQ Example",
+    "subject": "Mathematics",
+    "difficulty": "Medium",
+    "category": "Secondary",
+    "olympiadYear": 2023,
+    "olympiad": "BDMO Secondary",
+    "statement": "What is the LCM of 4 and 6?",
+    "answerType": "mcq",
+    "options": ["6","10","12","24"],
+    "answer": "12",
+    "hint": "List multiples of each number",
+    "solution": "Multiples of 4: 4,8,12... Multiples of 6: 6,12... LCM = 12",
+    "points": 8
+  }
+]'
+        style="min-height:260px;font-family:monospace;font-size:12px;resize:vertical;width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--bd);color:var(--txt);border-radius:10px;padding:12px">
       </textarea>
     </div>
 
     <!-- CSV PANEL -->
     <div id="biPanelCsv" style="display:none;flex-direction:column;gap:14px">
       <p style="color:var(--m);font-size:13px;margin:0">
-        Upload a <code style="color:var(--teal-lt)">.csv</code> file. First row must be a header row with column names matching:
-        <code style="color:var(--teal-lt)">title, subject, difficulty, statement, answer</code> (required) and optionally
-        <code style="color:var(--teal-lt)">hint, solution, tolerance, timeMin, points, solves</code>.
-        Column order does not matter.
+        Upload a <code style="color:var(--teal-lt)">.csv</code> file. First row must be headers. Required columns:<br>
+        <code style="color:var(--teal-lt)">title, subject, difficulty, statement, answer</code><br>
+        Optional (for Practice Arena): <code style="color:var(--teal-lt)">category, olympiadYear, olympiad, source, given, answerType, options, hint, hint2, formulas, solution, tolerance, points, timeMin</code><br>
+        For MCQ: <code style="color:var(--teal-lt)">options</code> = pipe-separated e.g. <code style="color:var(--teal-lt)">A|B|C|D</code>, or use <code style="color:var(--teal-lt)">option_a, option_b, option_c, option_d</code> columns.
       </p>
 
       <!-- Drop zone -->
@@ -784,25 +843,100 @@ input:checked+.toggle-slider:before{transform:translateX(19px)}
 <!-- END BULK IMPORT MODAL -->
 
 <div class="mf-bg" id="pModal">
-  <div class="mf-box">
-    <h3 id="pFTitle">Add Problem</h3>
+  <div class="mf-box" style="max-width:900px">
+    <h3 id="pFTitle">Add Practice Problem</h3>
+    <!-- Field grid -->
     <div class="fg">
-      <div class="fg-group full"><label>Title</label><input id="pf-t" type="text" placeholder="Problem title"/></div>
-      <div class="fg-group"><label>Subject</label>
-        <select id="pf-s"><option>Physics</option><option>Mathematics</option><option>Chemistry</option><option>Biology</option><option>Informatics</option><option>Astronomy</option></select></div>
+      <!-- Row 1 -->
+      <div class="fg-group full"><label>Title *</label><input id="pf-t" type="text" placeholder="e.g. Newton's Second Law"/></div>
+      
+      <!-- Row 2 -->
+      <div class="fg-group"><label>Subject *</label>
+        <select id="pf-s">
+          <option>Physics</option><option>Mathematics</option><option>Chemistry</option>
+          <option>Biology</option><option>Informatics</option><option>Astronomy</option>
+        </select>
+      </div>
       <div class="fg-group"><label>Difficulty</label>
-        <select id="pf-d"><option>Easy</option><option>Medium</option><option>Hard</option></select></div>
-      <div class="fg-group full"><label>Full Statement</label><textarea id="pf-st" placeholder="Complete problem statement…"></textarea></div>
-      <div class="fg-group full"><label>Hint</label><textarea id="pf-h" placeholder="Hint for students…" style="min-height:70px"></textarea></div>
-      <div class="fg-group full"><label>Full Solution</label><textarea id="pf-sol" placeholder="Step-by-step solution…"></textarea></div>
-      <div class="fg-group"><label>Correct Answer</label><input id="pf-a" type="text" placeholder="e.g. 4.74"/></div>
-      <div class="fg-group"><label>Tolerance (±)</label><input id="pf-tol" type="number" value="0" step="0.01" min="0"/></div>
-      <div class="fg-group"><label>Time Estimate (min)</label><input id="pf-tm" type="number" value="20" min="1"/></div>
-      <div class="fg-group"><label>Points</label><input id="pf-pt" type="number" value="10" min="1"/></div>
+        <select id="pf-d"><option>Easy</option><option>Medium</option><option>Hard</option></select>
+      </div>
+
+      <!-- Row 3: Category + Year -->
+      <div class="fg-group"><label>Category (Level)</label>
+        <select id="pf-cat">
+          <option value="">— None —</option>
+          <option value="Junior">Junior (Class 6–8)</option>
+          <option value="Secondary">Secondary (Class 9–10)</option>
+          <option value="Higher Secondary">Higher Secondary (Class 11–12)</option>
+        </select>
+      </div>
+      <div class="fg-group"><label>Olympiad Year</label>
+        <input id="pf-yr" type="number" placeholder="e.g. 2024" min="1990" max="2099"/>
+      </div>
+
+      <!-- Row 4: Olympiad name + Source -->
+      <div class="fg-group"><label>Olympiad / Competition</label>
+        <input id="pf-olympiad" type="text" placeholder="e.g. BPhO Secondary"/>
+      </div>
+      <div class="fg-group"><label>Source</label>
+        <input id="pf-source" type="text" placeholder="e.g. BPhO Secondary 2023"/>
+      </div>
+
+      <!-- Statement -->
+      <div class="fg-group full"><label>Full Statement *</label>
+        <textarea id="pf-st" placeholder="Complete problem statement. LaTeX math: $F=ma$…" style="min-height:90px"></textarea>
+      </div>
+      
+      <!-- Given (optional) -->
+      <div class="fg-group full"><label>Given / Variables (optional)</label>
+        <textarea id="pf-given" placeholder="F = 20 N&#10;m = 4 kg&#10;(shown as a code block)" style="min-height:60px"></textarea>
+      </div>
+
+      <!-- Answer type -->
+      <div class="fg-group"><label>Answer Type</label>
+        <select id="pf-at" onchange="toggleMCQFields()">
+          <option value="numerical">Numerical</option>
+          <option value="text">Text / Exact String</option>
+          <option value="mcq">Multiple Choice (MCQ)</option>
+        </select>
+      </div>
+      <div class="fg-group"><label>Correct Answer *</label>
+        <input id="pf-a" type="text" placeholder="e.g. 4.74 or ACCGAT"/>
+      </div>
+      <div class="fg-group"><label>Tolerance (±, for numerical)</label>
+        <input id="pf-tol" type="number" value="0" step="0.01" min="0"/>
+      </div>
+      <div class="fg-group"><label>Points</label>
+        <input id="pf-pt" type="number" value="10" min="1"/>
+      </div>
+      <div class="fg-group"><label>Time Estimate (min)</label>
+        <input id="pf-tm" type="number" value="20" min="1"/>
+      </div>
+
+      <!-- MCQ Options (shown when type=mcq) -->
+      <div class="fg-group full" id="mcqFieldsWrap" style="display:none">
+        <label>MCQ Options (one per line, mark correct with ✓ prefix or set Answer field)</label>
+        <textarea id="pf-opts" placeholder="Option A text&#10;Option B text&#10;Option C text&#10;Option D text" style="min-height:90px;font-family:var(--fB)"></textarea>
+        <p style="font-size:11px;color:var(--m);margin-top:5px">Enter one option per line. The correct answer field above should match exactly one of these.</p>
+      </div>
+
+      <!-- Hints -->
+      <div class="fg-group full"><label>Hint 1</label>
+        <textarea id="pf-h" placeholder="First hint for students…" style="min-height:60px"></textarea>
+      </div>
+      <div class="fg-group full"><label>Hint 2 (optional)</label>
+        <textarea id="pf-h2" placeholder="Second deeper hint…" style="min-height:60px"></textarea>
+      </div>
+      <div class="fg-group full"><label>Formulas / Reference (optional)</label>
+        <textarea id="pf-formulas" placeholder="F = ma&#10;KE = ½mv²&#10;(shown as formula block)" style="min-height:60px"></textarea>
+      </div>
+      <div class="fg-group full"><label>Full Solution</label>
+        <textarea id="pf-sol" placeholder="Step-by-step solution…" style="min-height:90px"></textarea>
+      </div>
     </div>
     <div class="f-btns">
       <button class="btn-cancel" onclick="closePF()">Cancel</button>
-      <button class="btn-add" onclick="saveP()">Save Problem</button>
+      <button class="btn-add" onclick="saveP()">💾 Save Problem</button>
     </div>
   </div>
 </div>
@@ -921,27 +1055,119 @@ function renderDashboard(){
 let pIdx=-1;
 function renderPTbl(){
   const DM={Easy:'d-easy',Medium:'d-med',Hard:'d-hard'};
+  const AT={numerical:'🔢',text:'📝',mcq:'📋'};
   const q=(document.getElementById('prob-search')?.value||'').toLowerCase();
-  const list=BDOH.problems.filter(p=>!q||p.title.toLowerCase().includes(q)||p.subject.toLowerCase().includes(q));
+  const filterSubj=(document.getElementById('prob-filter-subj')?.value||'');
+  const filterCat=(document.getElementById('prob-filter-cat')?.value||'');
+  const list=BDOH.problems.filter(p=>{
+    if(q&&!((p.title||'').toLowerCase().includes(q)||(p.subject||'').toLowerCase().includes(q)||(p.olympiad||'').toLowerCase().includes(q)))return false;
+    if(filterSubj&&p.subject!==filterSubj)return false;
+    if(filterCat&&p.category!==filterCat)return false;
+    return true;
+  });
   document.getElementById('ptbl').innerHTML=list.map((p,i)=>`<tr>
-    <td>${p.title}</td><td>${p.subject}</td>
+    <td>${p.title}</td>
+    <td>${p.subject}</td>
+    <td style="font-size:12px">${p.category||'—'}</td>
+    <td style="font-family:var(--fH);font-weight:700;color:var(--teal-lt)">${p.olympiadYear||p.year||'—'}</td>
     <td><span class="bs ${DM[p.difficulty]||'d-easy'}">${p.difficulty}</span></td>
-    <td style="font-family:monospace;font-size:13px">${p.answer}</td>
-    <td>${p.points}</td><td>${(p.solves||0).toLocaleString()}</td>
+    <td style="font-size:12px">${AT[p.answerType||'numerical']||'🔢'} ${p.answerType||'numerical'}</td>
+    <td>${p.points||10}</td><td>${(p.solves||0).toLocaleString()}</td>
     <td><div class="act-row">
       <button class="act" onclick="editP(${BDOH.problems.indexOf(p)})">Edit</button>
+      <button class="act view" onclick="previewProblem(${BDOH.problems.indexOf(p)})">Preview</button>
       <button class="act del" onclick="delP(${BDOH.problems.indexOf(p)})">Delete</button>
     </div></td>
-  </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--d);padding:30px">No problems</td></tr>';
+  </tr>`).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--d);padding:30px">No problems found. Add or bulk-import some!</td></tr>';
 }
-function openPF(){pIdx=-1;document.getElementById('pFTitle').textContent='Add Problem';['pf-t','pf-st','pf-h','pf-sol','pf-a'].forEach(id=>document.getElementById(id).value='');document.getElementById('pf-tol').value='0';document.getElementById('pf-tm').value='20';document.getElementById('pf-pt').value='10';document.getElementById('pModal').classList.add('open')}
-function editP(i){pIdx=i;const p=BDOH.problems[i];document.getElementById('pFTitle').textContent='Edit Problem';document.getElementById('pf-t').value=p.title;document.getElementById('pf-s').value=p.subject;document.getElementById('pf-d').value=p.difficulty;document.getElementById('pf-st').value=p.statement;document.getElementById('pf-h').value=p.hint||'';document.getElementById('pf-sol').value=p.solution||'';document.getElementById('pf-a').value=p.answer;document.getElementById('pf-tol').value=p.tolerance;document.getElementById('pf-tm').value=p.timeMin;document.getElementById('pf-pt').value=p.points||10;document.getElementById('pModal').classList.add('open')}
+function previewProblem(i){
+  const p=BDOH.problems[i];
+  const info=[
+    p.category?`Level: ${p.category}`:'',
+    p.olympiadYear?`Year: ${p.olympiadYear}`:'',
+    p.olympiad?`Olympiad: ${p.olympiad}`:'',
+  ].filter(Boolean).join(' · ');
+  const opts=(p.options||[]).map((o,oi)=>`<div style="padding:6px 10px;border:1px solid var(--bd);border-radius:7px;font-size:12px;background:${o===p.answer?'rgba(76,175,80,.1)':'rgba(255,255,255,.03)'};">${String.fromCharCode(65+oi)}. ${o} ${o===p.answer?'✓':''}</div>`).join('');
+  alert(`📋 PREVIEW: ${p.title}\n\n${info}\n\n${p.statement}\n\nAnswer: ${p.answer}${p.hint?'\nHint: '+p.hint:''}`);
+}
+function toggleMCQFields(){
+  const t=document.getElementById('pf-at').value;
+  document.getElementById('mcqFieldsWrap').style.display=t==='mcq'?'block':'none';
+  document.getElementById('pf-tol').closest('.fg-group').style.opacity=t==='numerical'?'1':'.4';
+}
+function openPF(){
+  pIdx=-1;
+  document.getElementById('pFTitle').textContent='➕ Add Practice Problem';
+  ['pf-t','pf-st','pf-h','pf-h2','pf-formulas','pf-sol','pf-a','pf-given','pf-olympiad','pf-source','pf-opts'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('pf-tol').value='0';
+  document.getElementById('pf-tm').value='20';
+  document.getElementById('pf-pt').value='10';
+  document.getElementById('pf-yr').value='';
+  document.getElementById('pf-cat').value='';
+  document.getElementById('pf-at').value='numerical';
+  toggleMCQFields();
+  document.getElementById('pModal').classList.add('open');
+}
+function editP(i){
+  pIdx=i;const p=BDOH.problems[i];
+  document.getElementById('pFTitle').textContent='✏️ Edit Problem';
+  document.getElementById('pf-t').value=p.title||'';
+  document.getElementById('pf-s').value=p.subject||'Physics';
+  document.getElementById('pf-d').value=p.difficulty||'Easy';
+  document.getElementById('pf-cat').value=p.category||'';
+  document.getElementById('pf-yr').value=p.olympiadYear||p.year||'';
+  document.getElementById('pf-olympiad').value=p.olympiad||'';
+  document.getElementById('pf-source').value=p.source||'';
+  document.getElementById('pf-st').value=p.statement||'';
+  document.getElementById('pf-given').value=p.given||'';
+  document.getElementById('pf-at').value=p.answerType||'numerical';
+  document.getElementById('pf-a').value=p.answer||'';
+  document.getElementById('pf-tol').value=p.tolerance||'0';
+  document.getElementById('pf-tm').value=p.timeMin||20;
+  document.getElementById('pf-pt').value=p.points||10;
+  document.getElementById('pf-h').value=p.hint||'';
+  document.getElementById('pf-h2').value=p.hint2||'';
+  document.getElementById('pf-formulas').value=p.formulas||'';
+  document.getElementById('pf-sol').value=p.solution||'';
+  if(p.options&&Array.isArray(p.options)){document.getElementById('pf-opts').value=p.options.join('\n');}
+  else{document.getElementById('pf-opts').value='';}
+  toggleMCQFields();
+  document.getElementById('pModal').classList.add('open');
+}
 function saveP(){
-  const np={id:pIdx>=0?BDOH.problems[pIdx].id:'q'+Date.now(),title:document.getElementById('pf-t').value,subject:document.getElementById('pf-s').value,difficulty:document.getElementById('pf-d').value,statement:document.getElementById('pf-st').value,hint:document.getElementById('pf-h').value,solution:document.getElementById('pf-sol').value,answer:document.getElementById('pf-a').value,tolerance:parseFloat(document.getElementById('pf-tol').value)||0,timeMin:parseInt(document.getElementById('pf-tm').value)||20,points:parseInt(document.getElementById('pf-pt').value)||10,solves:pIdx>=0?BDOH.problems[pIdx].solves:0};
+  const title=document.getElementById('pf-t').value.trim();
+  if(!title){toast('Title is required!',false);return;}
+  const ansType=document.getElementById('pf-at').value;
+  const optsRaw=document.getElementById('pf-opts').value.trim();
+  const opts=ansType==='mcq'?optsRaw.split('\n').map(s=>s.trim()).filter(Boolean):[];
+  const yr=parseInt(document.getElementById('pf-yr').value)||null;
+  const np={
+    id:pIdx>=0?BDOH.problems[pIdx].id:'q'+Date.now(),
+    title,
+    subject:document.getElementById('pf-s').value,
+    difficulty:document.getElementById('pf-d').value,
+    category:document.getElementById('pf-cat').value,
+    olympiadYear:yr, year:yr,
+    olympiad:document.getElementById('pf-olympiad').value.trim(),
+    source:document.getElementById('pf-source').value.trim(),
+    statement:document.getElementById('pf-st').value.trim(),
+    given:document.getElementById('pf-given').value.trim(),
+    answerType:ansType,
+    answer:document.getElementById('pf-a').value.trim(),
+    tolerance:parseFloat(document.getElementById('pf-tol').value)||0,
+    timeMin:parseInt(document.getElementById('pf-tm').value)||20,
+    points:parseInt(document.getElementById('pf-pt').value)||10,
+    hint:document.getElementById('pf-h').value.trim(),
+    hint2:document.getElementById('pf-h2').value.trim(),
+    formulas:document.getElementById('pf-formulas').value.trim(),
+    solution:document.getElementById('pf-sol').value.trim(),
+    options:opts,
+    solves:pIdx>=0?BDOH.problems[pIdx].solves||0:0
+  };
   if(pIdx>=0)BDOH.problems[pIdx]=np;else BDOH.problems.push(np);
   closePF();renderPTbl();updateMetrics();bdohSave();
-  if(window.BDOH_DB)window.BDOH_DB.saveProblem(np).catch(()=>{});
-  toast(pIdx>=0?'Problem updated.':'Problem added.');
+  if(window.BDOH_DB)window.BDOH_DB.saveProblem(np).then(()=>toast(pIdx>=0?'Problem updated & synced to Practice Arena!':'Problem added & synced to Practice Arena!')).catch(()=>toast(pIdx>=0?'Updated locally.':'Added locally.'));
+  else toast(pIdx>=0?'Problem updated.':'Problem added.');
 }
 function delP(i){
   if(!confirm('Delete this problem?'))return;
@@ -2164,7 +2390,6 @@ function exportDataSnapshot(){
 
     /* ── Enum field validation (warn, don't reject) ── */
     if (subject && !VALID_SUBJECTS.includes(subject)) {
-      /* We still keep the question but warn — allows custom subjects */
       errs.push(prefix + '"subject" value "' + subject + '" is not a standard subject ' +
                 '(allowed: ' + VALID_SUBJECTS.join(', ') + '). Will import anyway.');
     }
@@ -2172,41 +2397,72 @@ function exportDataSnapshot(){
       errs.push(prefix + '"difficulty" must be Easy, Medium, or Hard. Got: "' + difficulty + '".');
     }
 
-    /* ── Numeric fields — parseFloat/parseInt with defaults ──
-        We use parseFloat even for timeMin/points because some
-        CSV exports might produce "10.0".  We then floor the result
-        for integer fields so "10.0" → 10 cleanly. */
-    const tolerance = parseFloat(raw.tolerance) || 0;  /* default 0 = exact match */
+    /* ── Numeric fields ── */
+    const tolerance = parseFloat(raw.tolerance) || 0;
     const timeMin   = Math.max(1, Math.floor(parseFloat(raw.timeMin) || 20));
     const points    = Math.max(1, Math.floor(parseFloat(raw.points)  || 10));
     const solves    = Math.max(0, Math.floor(parseFloat(raw.solves)  || 0));
+    const yr        = parseInt(raw.olympiadYear || raw.year) || null;
 
-    /* ── If required fields are missing, abort (don't produce a partial object) ── */
+    /* ── answerType validation ── */
+    const VALID_TYPES = ['numerical','text','mcq'];
+    const answerType = (raw.answerType || raw.answer_type || 'numerical').toLowerCase().trim();
+    if (!VALID_TYPES.includes(answerType)) {
+      errs.push(prefix + '"answerType" must be numerical, text, or mcq. Got: "' + answerType + '". Defaulting to numerical.');
+    }
+
+    /* ── MCQ options ── */
+    let options = [];
+    if (answerType === 'mcq') {
+      if (raw.options) {
+        // Support JSON array string or pipe-separated
+        try {
+          options = typeof raw.options === 'string'
+            ? (raw.options.startsWith('[') ? JSON.parse(raw.options) : raw.options.split('|').map(s=>s.trim()))
+            : raw.options;
+        } catch(_) { options = raw.options.split('|').map(s=>s.trim()); }
+      }
+      // Also support option_a, option_b, option_c, option_d
+      if (!options.length) {
+        ['option_a','option_b','option_c','option_d'].forEach(k=>{
+          if (raw[k]) options.push(raw[k].trim());
+        });
+      }
+      if (options.length < 2) {
+        errs.push(prefix + 'MCQ question needs at least 2 options. Provide "options" as pipe-separated values or option_a, option_b columns.');
+      }
+    }
+
     if (errs.some(e => e.includes('Missing required'))) {
       return { ok: false, errors: errs };
     }
 
-    /* ── Build the normalised question object ──
-        We generate IDs as  q_<timestamp>_<rowIndex>  so:
-          a) they are unique across one bulk import run
-          b) they don't collide with existing 'q1','q2'… IDs
-          c) Firestore document IDs must not contain '/' or '.' */
+    /* ── Build the full normalised question object — matches practice arena schema ── */
     const question = {
-      id:         'q_' + Date.now() + '_' + rowNum,
+      id:          'q_' + Date.now() + '_' + rowNum,
       title,
       subject,
       difficulty,
       statement,
-      hint:       (raw.hint     || '').trim(),
-      solution:   (raw.solution || '').trim(),
+      given:        (raw.given        || '').trim(),
+      hint:         (raw.hint         || '').trim(),
+      hint2:        (raw.hint2        || '').trim(),
+      formulas:     (raw.formulas     || '').trim(),
+      solution:     (raw.solution     || '').trim(),
       answer,
+      answerType:   VALID_TYPES.includes(answerType) ? answerType : 'numerical',
       tolerance,
       timeMin,
       points,
-      solves
+      solves,
+      options,
+      category:     (raw.category     || '').trim(),
+      olympiadYear: yr,
+      year:         yr,
+      olympiad:     (raw.olympiad     || '').trim(),
+      source:       (raw.source       || '').trim(),
     };
 
-    /* Return errors as warnings (non-blocking) alongside ok:true */
     return { ok: true, question, errors: errs };
   }
 
@@ -2357,6 +2613,21 @@ function exportDataSnapshot(){
 
 })(); /* end IIFE */
 /* ══ END BULK IMPORT ══ */
+
+/* ── JSON template download ── */
+window.downloadJSONTemplate = function(){
+  const tmpl=[
+    {title:"Sample Question 1",subject:"Physics",difficulty:"Easy",category:"Junior",olympiadYear:2024,olympiad:"BPhO Junior",source:"BPhO Junior 2024",statement:"A 5 kg box is pushed with a 20 N force on a frictionless surface. Find the acceleration in m/s².",given:"F = 20 N\nm = 5 kg",answerType:"numerical",answer:"4",tolerance:0.1,hint:"Use F = ma → a = F/m",hint2:"Divide force by mass",formulas:"F = ma\na = F/m",solution:"a = F/m = 20/5 = 4 m/s²",points:10},
+    {title:"Sample MCQ",subject:"Mathematics",difficulty:"Medium",category:"Secondary",olympiadYear:2023,olympiad:"BDMO Secondary",source:"BDMO Secondary 2023",statement:"What is the LCM of 4 and 6?",answerType:"mcq",options:["6","10","12","24"],answer:"12",hint:"List multiples of each number then find the smallest common one.",solution:"LCM(4,6) = 12",points:8},
+    {title:"Sample Text Answer",subject:"Biology",difficulty:"Easy",category:"Junior",olympiadYear:2022,olympiad:"BBO Junior",source:"BBO Junior 2022",statement:"If the DNA template strand is 5'-ATCGGT-3', what is the complementary strand (5'→3')?",answerType:"text",answer:"ACCGAT",hint:"A pairs with T, G pairs with C. Write complement then reverse.",solution:"Complement (3'→5'): TAGCCA → reverse → 5'→3': ACCGAT",points:12}
+  ];
+  const blob=new Blob([JSON.stringify(tmpl,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='bdoh_practice_problems_template.json';
+  a.click();
+  toast('Template downloaded!');
+};
 
     } else {
       /* Signed out — show login overlay */
