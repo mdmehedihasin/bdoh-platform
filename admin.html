@@ -381,6 +381,7 @@ input:checked+.toggle-slider:before{transform:translateX(19px)}
         <div class="tbl-hdr-btns">
           <input id="prob-search" type="text" placeholder="🔍 Search problems…" style="width:200px;padding:8px 14px" oninput="renderPTbl()"/>
           <button class="btn-secondary" onclick="seedDefaultProblems()" title="Upload the 6 built-in sample problems to Firestore">⬆ Seed Defaults</button>
+          <button class="btn-secondary" onclick="openBulkImport()" title="Import many questions at once via JSON or CSV">📥 Bulk Import</button>
           <button class="btn-add" onclick="openPF()">+ Add Problem</button>
         </div>
       </div>
@@ -689,6 +690,99 @@ input:checked+.toggle-slider:before{transform:translateX(19px)}
 </div>
 
 <!-- PROBLEM FORM -->
+<!-- ════════════════════════════════════════════════════════════
+     BULK IMPORT MODAL
+     ════════════════════════════════════════════════════════════ -->
+<div class="mf-bg" id="bulkImportModal">
+  <div class="mf-box" style="max-width:720px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:0">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0">📥 Bulk Question Importer</h3>
+      <button class="btn-cancel" onclick="closeBulkImport()" style="padding:6px 14px;font-size:13px">✕ Close</button>
+    </div>
+
+    <!-- Tab switcher: JSON vs CSV -->
+    <div id="biTabs" style="display:flex;gap:0;border-radius:10px;overflow:hidden;border:1px solid var(--bd);margin-bottom:18px;flex-shrink:0">
+      <button id="biTabJson" onclick="switchBITab('json')"
+        style="flex:1;padding:10px;background:var(--gb);color:#fff;border:none;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:background .2s">
+        { } Paste JSON
+      </button>
+      <button id="biTabCsv" onclick="switchBITab('csv')"
+        style="flex:1;padding:10px;background:rgba(255,255,255,.05);color:var(--m);border:none;font-family:var(--fH);font-size:13px;font-weight:700;cursor:pointer;transition:background .2s">
+        📄 Upload CSV
+      </button>
+    </div>
+
+    <!-- JSON PANEL -->
+    <div id="biPanelJson" style="display:flex;flex-direction:column;gap:12px">
+      <p style="color:var(--m);font-size:13px;margin:0">
+        Paste a JSON array. Each object must have at minimum: <code style="color:var(--teal-lt)">title, subject, difficulty, statement, answer</code>.
+        Optional fields: <code style="color:var(--teal-lt)">hint, solution, tolerance, timeMin, points, solves</code>.
+      </p>
+      <textarea id="biJsonInput" placeholder='[&#10;  {&#10;    "title": "My Question",&#10;    "subject": "Physics",&#10;    "difficulty": "Easy",&#10;    "statement": "Problem text here...",&#10;    "answer": "3.14",&#10;    "tolerance": 0.05,&#10;    "timeMin": 20,&#10;    "points": 10&#10;  }&#10;]'
+        style="min-height:220px;font-family:monospace;font-size:12px;resize:vertical;width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--bd);color:var(--txt);border-radius:10px;padding:12px">
+      </textarea>
+    </div>
+
+    <!-- CSV PANEL -->
+    <div id="biPanelCsv" style="display:none;flex-direction:column;gap:14px">
+      <p style="color:var(--m);font-size:13px;margin:0">
+        Upload a <code style="color:var(--teal-lt)">.csv</code> file. First row must be a header row with column names matching:
+        <code style="color:var(--teal-lt)">title, subject, difficulty, statement, answer</code> (required) and optionally
+        <code style="color:var(--teal-lt)">hint, solution, tolerance, timeMin, points, solves</code>.
+        Column order does not matter.
+      </p>
+
+      <!-- Drop zone -->
+      <div id="biDropZone"
+        onclick="document.getElementById('biFileInput').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--teal)'"
+        ondragleave="this.style.borderColor='var(--bd)'"
+        ondrop="handleBIFileDrop(event)"
+        style="border:2px dashed var(--bd);border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;transition:border-color .2s;color:var(--m)">
+        <div style="font-size:32px;margin-bottom:8px">📂</div>
+        <div style="font-family:var(--fH);font-weight:700;color:var(--txt);font-size:14px">Drop CSV file here or click to browse</div>
+        <div style="font-size:12px;margin-top:4px">Accepts .csv files only</div>
+        <input id="biFileInput" type="file" accept=".csv" style="display:none" onchange="handleBIFileSelect(event)"/>
+      </div>
+
+      <!-- Preview once a file is loaded -->
+      <div id="biCsvPreview" style="display:none;background:rgba(0,180,204,.06);border:1px solid var(--ba);border-radius:10px;padding:14px">
+        <div style="font-family:var(--fH);font-weight:700;font-size:13px;color:var(--teal-lt);margin-bottom:6px" id="biCsvPreviewTitle">—</div>
+        <div style="font-size:12px;color:var(--m)" id="biCsvPreviewInfo">—</div>
+      </div>
+    </div>
+
+    <!-- Validation errors / warnings -->
+    <div id="biValidationBox" style="display:none;margin-top:14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px;max-height:140px;overflow-y:auto">
+      <div style="font-family:var(--fH);font-weight:700;font-size:13px;color:#f87171;margin-bottom:6px">⚠ Validation Issues</div>
+      <ul id="biValidationList" style="margin:0;padding-left:18px;font-size:12px;color:var(--m);line-height:1.7"></ul>
+    </div>
+
+    <!-- Progress bar (hidden until import starts) -->
+    <div id="biProgressWrap" style="display:none;margin-top:16px;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-family:var(--fH);font-weight:700;font-size:13px;color:var(--txt)" id="biProgressLabel">Importing 0 / 0…</span>
+        <span style="font-size:12px;color:var(--m)" id="biProgressPct">0%</span>
+      </div>
+      <div style="background:rgba(255,255,255,.07);border-radius:20px;height:8px;overflow:hidden">
+        <div id="biProgressBar" style="height:100%;width:0%;background:var(--gb);border-radius:20px;transition:width .25s ease"></div>
+      </div>
+    </div>
+
+    <!-- Footer buttons -->
+    <div class="f-btns" style="margin-top:20px;flex-shrink:0">
+      <span id="biParsedCount" style="font-size:13px;color:var(--m);align-self:center;margin-right:auto"></span>
+      <button class="btn-cancel" onclick="closeBulkImport()">Cancel</button>
+      <button class="btn-secondary" onclick="parseBIInput()" id="biParseBtn">🔍 Validate</button>
+      <button class="btn-add" onclick="runBulkImport()" id="biImportBtn" disabled style="opacity:.4;cursor:not-allowed">⬆ Import All</button>
+    </div>
+
+  </div>
+</div>
+<!-- END BULK IMPORT MODAL -->
+
 <div class="mf-bg" id="pModal">
   <div class="mf-box">
     <h3 id="pFTitle">Add Problem</h3>
@@ -1706,6 +1800,563 @@ function exportDataSnapshot(){
 
       /* ── Handle ?page= URL param now that data is ready ── */
       if(window._bdohHandlePageParam) window._bdohHandlePageParam();
+
+/* ════════════════════════════════════════════════════════════════
+   BULK IMPORT — complete implementation
+   ════════════════════════════════════════════════════════════════
+
+   Architecture overview
+   ─────────────────────
+   State is kept in a plain object `_bi` so every helper function
+   shares the same parsed questions array and current input mode
+   without using global variables that could clash with the rest
+   of admin.html.
+
+   Flow:
+     1. openBulkImport()  → shows modal, resets state
+     2. switchBITab()     → toggles between JSON / CSV panels
+     3. parseBIInput()    → reads whichever tab is active,
+                            validates each question, fills _bi.parsed
+     4. runBulkImport()   → loops through _bi.parsed in chunks of
+                            CHUNK_SIZE, calls BDOH_DB.saveProblem(),
+                            updates progress bar, then refreshes UI
+════════════════════════════════════════════════════════════════ */
+
+(function() { /* IIFE keeps all helpers out of the global scope */
+
+  /* ── Shared state object ── */
+  const _bi = {
+    mode:   'json',      // 'json' | 'csv'
+    parsed: [],          // validated question objects ready to upload
+    csvRaw: ''           // raw CSV string loaded from the dropped file
+  };
+
+  /* ── How many Firestore writes to fire concurrently.
+        Firestore allows ~500 ops/batch but we use sequential
+        micro-batches so the browser's UI thread stays responsive
+        and we can show accurate progress.  10 concurrent writes
+        per tick is a safe balance between speed and stability. ── */
+  const CHUNK_SIZE = 10;
+
+  /* ── Valid values for enum fields — used during validation ── */
+  const VALID_SUBJECTS    = ['Physics','Mathematics','Chemistry','Biology','Informatics','Astronomy'];
+  const VALID_DIFFICULTIES = ['Easy','Medium','Hard'];
+
+  /* ─────────────────────────────────────────────────────────────
+     openBulkImport / closeBulkImport
+     These simply add/remove the `.open` class that the existing
+     `.mf-bg` CSS rule uses to toggle display:flex vs display:none.
+  ───────────────────────────────────────────────────────────── */
+  window.openBulkImport = function() {
+    /* Reset all state so re-opening the modal is always clean */
+    _bi.parsed  = [];
+    _bi.csvRaw  = '';
+    _bi.mode    = 'json';
+
+    /* Reset UI elements */
+    const jsonInput = document.getElementById('biJsonInput');
+    if (jsonInput) jsonInput.value = '';
+
+    document.getElementById('biCsvPreview').style.display  = 'none';
+    document.getElementById('biValidationBox').style.display = 'none';
+    document.getElementById('biProgressWrap').style.display  = 'none';
+    document.getElementById('biParsedCount').textContent    = '';
+    _setImportBtnState(false);
+
+    /* Ensure JSON tab is active visually */
+    switchBITab('json');
+
+    document.getElementById('bulkImportModal').classList.add('open');
+  };
+
+  window.closeBulkImport = function() {
+    document.getElementById('bulkImportModal').classList.remove('open');
+  };
+
+  /* ─────────────────────────────────────────────────────────────
+     switchBITab(mode)
+     Toggles which input panel is visible and updates the tab
+     button styles to match the existing .btn-add / muted look.
+  ───────────────────────────────────────────────────────────── */
+  window.switchBITab = function(mode) {
+    _bi.mode = mode;
+
+    const jsonPanel = document.getElementById('biPanelJson');
+    const csvPanel  = document.getElementById('biPanelCsv');
+    const jsonTab   = document.getElementById('biTabJson');
+    const csvTab    = document.getElementById('biTabCsv');
+
+    /* Show / hide panels */
+    jsonPanel.style.display = mode === 'json' ? 'flex' : 'none';
+    csvPanel.style.display  = mode === 'csv'  ? 'flex' : 'none';
+
+    /* Active tab gets the site's gradient button look;
+       inactive tab gets the muted secondary look */
+    if (mode === 'json') {
+      jsonTab.style.background = 'var(--gb)';
+      jsonTab.style.color      = '#fff';
+      csvTab.style.background  = 'rgba(255,255,255,.05)';
+      csvTab.style.color       = 'var(--m)';
+    } else {
+      csvTab.style.background  = 'var(--gb)';
+      csvTab.style.color       = '#fff';
+      jsonTab.style.background = 'rgba(255,255,255,.05)';
+      jsonTab.style.color      = 'var(--m)';
+    }
+
+    /* Reset validated state whenever the user switches tabs */
+    _bi.parsed = [];
+    _setImportBtnState(false);
+    document.getElementById('biParsedCount').textContent = '';
+    document.getElementById('biValidationBox').style.display = 'none';
+  };
+
+  /* ─────────────────────────────────────────────────────────────
+     handleBIFileDrop / handleBIFileSelect
+     Both funnel into _readCSVFile() which uses the FileReader API
+     to get the raw text content asynchronously.
+  ───────────────────────────────────────────────────────────── */
+  window.handleBIFileDrop = function(e) {
+    e.preventDefault();
+    document.getElementById('biDropZone').style.borderColor = 'var(--bd)';
+    const file = e.dataTransfer.files[0];
+    if (file) _readCSVFile(file);
+  };
+
+  window.handleBIFileSelect = function(e) {
+    const file = e.target.files[0];
+    if (file) _readCSVFile(file);
+  };
+
+  function _readCSVFile(file) {
+    /* Reject non-CSV files immediately */
+    if (!file.name.endsWith('.csv')) {
+      alert('Please upload a .csv file.'); return;
+    }
+
+    const reader = new FileReader();
+
+    /* onload fires when the browser has finished reading the file.
+       result is the full file contents as a UTF-8 string. */
+    reader.onload = function(e) {
+      _bi.csvRaw = e.target.result;
+
+      /* Show a quick preview so the user knows the file loaded */
+      const lines = _bi.csvRaw.split('\n').filter(l => l.trim());
+      document.getElementById('biCsvPreviewTitle').textContent =
+        '✅ ' + file.name;
+      document.getElementById('biCsvPreviewInfo').textContent =
+        lines.length - 1 + ' data rows detected (excluding header). Click "Validate" to continue.';
+      document.getElementById('biCsvPreview').style.display = 'block';
+    };
+
+    reader.readAsText(file); /* triggers the onload callback above */
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     parseBIInput()
+     The "Validate" button calls this.  It decides which parser
+     to run based on _bi.mode, then validates every question
+     with _validateQuestion(), and finally enables or disables
+     the Import button.
+  ───────────────────────────────────────────────────────────── */
+  window.parseBIInput = function() {
+    let rawList = [];
+    const errors = [];
+
+    /* ── Step 1: parse input into a raw JS array ── */
+    if (_bi.mode === 'json') {
+      const raw = document.getElementById('biJsonInput').value.trim();
+      if (!raw) { alert('Please paste a JSON array first.'); return; }
+
+      try {
+        rawList = JSON.parse(raw);
+        /* The top level must be an array, not a single object */
+        if (!Array.isArray(rawList)) {
+          alert('Input must be a JSON array (starts with [ and ends with ]).'); return;
+        }
+      } catch (err) {
+        alert('JSON parse error:\n' + err.message +
+              '\n\nTip: Use a JSON validator at jsonlint.com to find the exact line.');
+        return;
+      }
+
+    } else { /* CSV */
+      if (!_bi.csvRaw) { alert('Please upload a CSV file first.'); return; }
+      rawList = _parseCSV(_bi.csvRaw, errors);
+    }
+
+    /* ── Step 2: validate every row ── */
+    const valid   = [];
+    const warnMsgs = [...errors]; /* start with any CSV-level errors */
+
+    rawList.forEach(function(row, idx) {
+      const result = _validateQuestion(row, idx + 1);
+      if (result.ok) {
+        valid.push(result.question);
+      } else {
+        warnMsgs.push(...result.errors);
+      }
+    });
+
+    /* ── Step 3: show validation results ── */
+    const vBox  = document.getElementById('biValidationBox');
+    const vList = document.getElementById('biValidationList');
+
+    if (warnMsgs.length) {
+      vList.innerHTML = warnMsgs
+        .map(m => '<li>' + _escHtml(m) + '</li>').join('');
+      vBox.style.display = 'block';
+    } else {
+      vBox.style.display = 'none';
+    }
+
+    _bi.parsed = valid;
+
+    /* Update the count badge and toggle the Import button */
+    const countEl = document.getElementById('biParsedCount');
+    if (valid.length === 0) {
+      countEl.textContent = '0 valid questions — fix errors and try again.';
+      countEl.style.color = '#f87171';
+      _setImportBtnState(false);
+    } else {
+      const skipped = rawList.length - valid.length;
+      countEl.textContent =
+        valid.length + ' question' + (valid.length !== 1 ? 's' : '') + ' ready' +
+        (skipped > 0 ? ' (' + skipped + ' skipped)' : '') + '.';
+      countEl.style.color = 'var(--teal-lt)';
+      _setImportBtnState(true);
+    }
+  };
+
+  /* ─────────────────────────────────────────────────────────────
+     _parseCSV(text, errorsArr)
+     Converts raw CSV text → array of plain objects.
+
+     Why a custom parser instead of split(',') ?
+     CSV fields can contain commas inside double-quotes, e.g.:
+       "A long statement, with commas","answer"
+     A naïve split would break those fields.  This parser handles
+     quoted fields correctly by walking character-by-character.
+
+     Returns: array of objects keyed by the header row column names.
+  ───────────────────────────────────────────────────────────── */
+  function _parseCSV(text, errorsArr) {
+    /* Normalise line endings (Windows uses \r\n) */
+    const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+    /* Remove completely empty trailing lines */
+    while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+    if (lines.length < 2) {
+      errorsArr.push('CSV must have at least a header row and one data row.');
+      return [];
+    }
+
+    /* Parse the header row to get column names.
+       We trim and lowercase the header names so columns like
+       " Title " or "TITLE" still map correctly. */
+    const headers = _splitCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+
+    /* Check that required columns exist */
+    const REQUIRED = ['title','subject','difficulty','statement','answer'];
+    const missing  = REQUIRED.filter(r => !headers.includes(r));
+    if (missing.length) {
+      errorsArr.push('CSV is missing required columns: ' + missing.join(', '));
+      return [];
+    }
+
+    /* Parse each data row into an object */
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue; /* skip blank rows */
+
+      const cells = _splitCSVLine(line);
+      const obj   = {};
+
+      /* Map each cell to its header name */
+      headers.forEach(function(header, colIdx) {
+        obj[header] = (cells[colIdx] || '').trim();
+      });
+
+      result.push(obj);
+    }
+
+    return result;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     _splitCSVLine(line)
+     Splits one CSV line into an array of field strings.
+     Handles double-quoted fields (which may contain commas).
+     E.g.: 'foo,"bar,baz",qux'  →  ['foo', 'bar,baz', 'qux']
+  ───────────────────────────────────────────────────────────── */
+  function _splitCSVLine(line) {
+    const fields = [];
+    let current  = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const ch   = line[i];
+      const next = line[i + 1];
+
+      if (ch === '"' && !inQuotes) {
+        /* Opening quote — enter quoted mode */
+        inQuotes = true;
+
+      } else if (ch === '"' && inQuotes) {
+        if (next === '"') {
+          /* Two consecutive quotes inside a quoted field represent
+             a literal double-quote character (CSV escaping rule) */
+          current += '"';
+          i++; /* skip the second quote */
+        } else {
+          /* Closing quote */
+          inQuotes = false;
+        }
+
+      } else if (ch === ',' && !inQuotes) {
+        /* Field separator — save current field and start a new one */
+        fields.push(current);
+        current = '';
+
+      } else {
+        current += ch;
+      }
+    }
+
+    /* Push the last field (there's no trailing comma to trigger it) */
+    fields.push(current);
+    return fields;
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     _validateQuestion(raw, rowNum)
+     Takes a raw object (from JSON or CSV) and returns:
+       { ok: true,  question: <normalised object> }   — passes validation
+       { ok: false, errors:   ['Row N: …', …]     }   — has problems
+
+     Normalisation means:
+       • String fields are trimmed
+       • Numeric fields (tolerance, timeMin, points, solves) are
+         coerced from string → number with sensible defaults
+       • A unique Firestore-compatible ID is generated
+       • Optional fields that are missing get defaults so BDOH_DB
+         never writes undefined values to Firestore
+  ───────────────────────────────────────────────────────────── */
+  function _validateQuestion(raw, rowNum) {
+    const errs = [];
+    const prefix = 'Row ' + rowNum + ': ';
+
+    /* ── Required string fields ── */
+    const title      = (raw.title      || '').trim();
+    const subject    = (raw.subject    || '').trim();
+    const difficulty = (raw.difficulty || '').trim();
+    const statement  = (raw.statement  || '').trim();
+    const answer     = (raw.answer     || '').trim();
+
+    if (!title)      errs.push(prefix + 'Missing required field "title".');
+    if (!subject)    errs.push(prefix + 'Missing required field "subject".');
+    if (!difficulty) errs.push(prefix + 'Missing required field "difficulty".');
+    if (!statement)  errs.push(prefix + 'Missing required field "statement".');
+    if (!answer)     errs.push(prefix + 'Missing required field "answer".');
+
+    /* ── Enum field validation (warn, don't reject) ── */
+    if (subject && !VALID_SUBJECTS.includes(subject)) {
+      /* We still keep the question but warn — allows custom subjects */
+      errs.push(prefix + '"subject" value "' + subject + '" is not a standard subject ' +
+                '(allowed: ' + VALID_SUBJECTS.join(', ') + '). Will import anyway.');
+    }
+    if (difficulty && !VALID_DIFFICULTIES.includes(difficulty)) {
+      errs.push(prefix + '"difficulty" must be Easy, Medium, or Hard. Got: "' + difficulty + '".');
+    }
+
+    /* ── Numeric fields — parseFloat/parseInt with defaults ──
+        We use parseFloat even for timeMin/points because some
+        CSV exports might produce "10.0".  We then floor the result
+        for integer fields so "10.0" → 10 cleanly. */
+    const tolerance = parseFloat(raw.tolerance) || 0;  /* default 0 = exact match */
+    const timeMin   = Math.max(1, Math.floor(parseFloat(raw.timeMin) || 20));
+    const points    = Math.max(1, Math.floor(parseFloat(raw.points)  || 10));
+    const solves    = Math.max(0, Math.floor(parseFloat(raw.solves)  || 0));
+
+    /* ── If required fields are missing, abort (don't produce a partial object) ── */
+    if (errs.some(e => e.includes('Missing required'))) {
+      return { ok: false, errors: errs };
+    }
+
+    /* ── Build the normalised question object ──
+        We generate IDs as  q_<timestamp>_<rowIndex>  so:
+          a) they are unique across one bulk import run
+          b) they don't collide with existing 'q1','q2'… IDs
+          c) Firestore document IDs must not contain '/' or '.' */
+    const question = {
+      id:         'q_' + Date.now() + '_' + rowNum,
+      title,
+      subject,
+      difficulty,
+      statement,
+      hint:       (raw.hint     || '').trim(),
+      solution:   (raw.solution || '').trim(),
+      answer,
+      tolerance,
+      timeMin,
+      points,
+      solves
+    };
+
+    /* Return errors as warnings (non-blocking) alongside ok:true */
+    return { ok: true, question, errors: errs };
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     runBulkImport()
+     The "Import All" button calls this.  It:
+       1. Disables the buttons so the user can't double-click
+       2. Loops through _bi.parsed in chunks of CHUNK_SIZE
+       3. Fires Promise.all() for each chunk so multiple writes
+          happen concurrently without flooding the connection
+       4. After each chunk updates the progress bar and label
+       5. On completion refreshes the table and metrics
+  ───────────────────────────────────────────────────────────── */
+  window.runBulkImport = async function() {
+    if (!window.BDOH_DB) {
+      alert('Firebase is not connected. Please wait a moment and try again.');
+      return;
+    }
+
+    if (_bi.parsed.length === 0) {
+      alert('No valid questions to import. Please validate first.'); return;
+    }
+
+    /* ── Lock the UI ── */
+    document.getElementById('biParseBtn').disabled  = true;
+    document.getElementById('biImportBtn').disabled = true;
+    document.getElementById('biImportBtn').style.opacity = '0.4';
+
+    /* ── Show progress section ── */
+    const progressWrap  = document.getElementById('biProgressWrap');
+    const progressBar   = document.getElementById('biProgressBar');
+    const progressLabel = document.getElementById('biProgressLabel');
+    const progressPct   = document.getElementById('biProgressPct');
+    progressWrap.style.display = 'flex';
+
+    const total = _bi.parsed.length;
+    let done    = 0;
+    let failed  = 0;
+
+    /* Helper: update both the text label and the bar width */
+    function _updateProgress() {
+      const pct = Math.round((done / total) * 100);
+      progressLabel.textContent =
+        'Importing ' + done + ' / ' + total + (failed ? ' (' + failed + ' failed)' : '') + '…';
+      progressPct.textContent = pct + '%';
+      /* Setting width% is what actually animates the bar.
+         The CSS transition:width .25s ease on the bar element
+         makes this look smooth even with rapid updates. */
+      progressBar.style.width = pct + '%';
+    }
+
+    _updateProgress();
+
+    /* ── Chunked upload loop ──
+        We slice _bi.parsed into arrays of CHUNK_SIZE items,
+        then await each chunk before starting the next.
+        This means at most CHUNK_SIZE writes are in-flight at once,
+        preventing the browser from queuing hundreds of XHR calls
+        simultaneously (which causes memory spikes and timeouts). */
+    for (let i = 0; i < total; i += CHUNK_SIZE) {
+      const chunk = _bi.parsed.slice(i, i + CHUNK_SIZE);
+
+      /* Fire all writes in this chunk concurrently */
+      const results = await Promise.allSettled(
+        chunk.map(q => window.BDOH_DB.saveProblem(q))
+      );
+
+      /* Count successes and failures */
+      results.forEach(function(r, idx) {
+        if (r.status === 'fulfilled') {
+          /* On success, also push into the in-memory BDOH.problems
+             array so the table reflects the new data immediately
+             without needing a full Firestore reload. */
+          const q = chunk[idx];
+          const existingIdx = BDOH.problems.findIndex(p => p.id === q.id);
+          if (existingIdx >= 0) {
+            BDOH.problems[existingIdx] = q; /* replace if somehow duplicate */
+          } else {
+            BDOH.problems.push(q);
+          }
+          done++;
+        } else {
+          failed++;
+          console.warn('[BulkImport] Failed to save question:', chunk[idx].id, r.reason);
+        }
+      });
+
+      _updateProgress();
+
+      /* Yield to the browser's event loop between chunks so the
+         progress bar actually re-renders and the tab doesn't freeze.
+         A 0ms setTimeout gives the browser one paint cycle. */
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    /* ── Completion ── */
+    progressLabel.textContent =
+      '✅ Done! ' + done + ' imported' +
+      (failed ? ', ' + failed + ' failed.' : '.');
+    progressBar.style.background =
+      failed ? 'linear-gradient(90deg,#f87171,#ef4444)' : 'var(--gb)';
+    progressPct.textContent = '100%';
+
+    /* Persist to localStorage cache */
+    bdohSave();
+
+    /* Re-render the problems table and dashboard metrics using the
+       existing admin.html functions so the admin sees the new rows
+       without closing and reopening the page */
+    renderPTbl();
+    updateMetrics();
+
+    /* Show toast notification */
+    toast(done + ' problem' + (done !== 1 ? 's' : '') + ' imported successfully!', done > 0);
+
+    /* Re-enable buttons so user can do another import if needed */
+    document.getElementById('biParseBtn').disabled = false;
+    _setImportBtnState(false); /* reset to "needs validation" state */
+    _bi.parsed = [];
+  };
+
+  /* ─────────────────────────────────────────────────────────────
+     _setImportBtnState(enabled)
+     Centralises the enabled/disabled + visual state of the
+     Import button so we don't repeat the 3-line toggle everywhere.
+  ───────────────────────────────────────────────────────────── */
+  function _setImportBtnState(enabled) {
+    const btn = document.getElementById('biImportBtn');
+    if (!btn) return;
+    btn.disabled       = !enabled;
+    btn.style.opacity  = enabled ? '1' : '0.4';
+    btn.style.cursor   = enabled ? 'pointer' : 'not-allowed';
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     _escHtml(str)
+     Minimal HTML-escaping for user-supplied strings that we
+     inject into innerHTML (the validation error list).
+     Without this, a column name containing '<script>' would XSS.
+  ───────────────────────────────────────────────────────────── */
+  function _escHtml(str) {
+    return String(str)
+      .replace(/&/g,  '&amp;')
+      .replace(/</g,  '&lt;')
+      .replace(/>/g,  '&gt;')
+      .replace(/"/g,  '&quot;');
+  }
+
+})(); /* end IIFE */
+/* ══ END BULK IMPORT ══ */
 
     } else {
       /* Signed out — show login overlay */
