@@ -1366,17 +1366,27 @@ window.subscribeProblems = function() {
   try {
     const colRef = collection(db, 'problems');
     window._firestoreUnsubscribe = onSnapshot(colRef, (snap) => {
-      if (snap.empty) return;
-      const freshProbs = snap.docs.map(d => ({...d.data(), id: d.id}));
-      // Merge: Firestore wins over local defaults
+      // Always process the snapshot — even if empty it clears stale data
+      const freshProbs = snap.docs.map(d => {
+        const data = d.data();
+        // Normalise olympiadYear to number so index keys are consistent
+        const yr = parseInt(data.olympiadYear || data.year) || null;
+        return {...data, id: d.id, olympiadYear: yr, year: yr};
+      });
+      // Merge: Firestore wins over local defaults (keyed by id)
       const localMap = new Map((window.ALL_PROBLEMS||[]).map(p=>[p.id,p]));
       freshProbs.forEach(fp => localMap.set(fp.id, fp));
       window.ALL_PROBLEMS = Array.from(localMap.values());
       rebuildIndex();
-      // If on selector phase, re-render
+
+      // Re-render whichever phase is currently visible
       if (document.getElementById('phase-selector').classList.contains('active')) {
         renderSubjectsGrid();
+      } else if (document.getElementById('phase-year').classList.contains('active')) {
+        // User is already on the year-pick screen — refresh it immediately
+        if (selectedSubject && selectedCategory) renderYearGrid();
       }
+
       // Update live badge
       const badge = document.getElementById('liveSyncBadge');
       if (badge) { badge.className = 'sync-badge live'; badge.innerHTML = '<span class="sync-dot"></span>Live Sync Active'; }
@@ -1533,7 +1543,8 @@ function rebuildIndex() {
   (window.ALL_PROBLEMS||[]).forEach(p => {
     const subj = p.subject || '?';
     const cat  = p.category || 'Higher Secondary';
-    const yr   = p.olympiadYear || p.year || '?';
+    // Always coerce to number so "2026" and 2026 land in the same bucket
+    const yr   = parseInt(p.olympiadYear || p.year) || '?';
     if (!_index[subj]) _index[subj] = {};
     if (!_index[subj][cat]) _index[subj][cat] = {};
     if (!_index[subj][cat][yr]) _index[subj][cat][yr] = [];
@@ -2191,7 +2202,7 @@ window.addEventListener('load', () => {
   // Subscribe to real-time Firestore updates (live admin sync)
   setTimeout(() => {
     if (window.subscribeProblems) window.subscribeProblems();
-  }, 1200);
+  }, 300);
 });
 </script>
 
